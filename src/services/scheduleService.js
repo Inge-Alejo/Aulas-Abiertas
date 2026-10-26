@@ -38,6 +38,34 @@ export function normalizeTime(raw) {
 }
 
 /**
+ * Convierte una hora en formato 24h ("07:00", "14:30") a 12h am/pm ("7:00 am", "2:30 pm")
+ * @param {string} raw
+ * @returns {string} Formato 12h con am o pm
+ */
+export function formatTime12h(raw) {
+  if (!raw || typeof raw !== 'string') return '';
+  const trimmed = raw.trim().toLowerCase();
+  
+  // Si ya tiene am o pm, formatear limpiamente
+  if (trimmed.includes('am') || trimmed.includes('pm') || trimmed.includes('a. m.') || trimmed.includes('p. m.')) {
+    return trimmed.replace(/\s+/g, ' ');
+  }
+
+  const parts = trimmed.split(':');
+  if (parts.length < 2) return raw;
+
+  let hours = parseInt(parts[0], 10);
+  const minutes = parts[1].slice(0, 2);
+  if (isNaN(hours)) return raw;
+
+  const suffix = hours >= 12 ? 'pm' : 'am';
+  hours = hours % 12;
+  if (hours === 0) hours = 12;
+
+  return `${hours}:${minutes} ${suffix}`;
+}
+
+/**
  * Valida un formato de fecha ISO YYYY-MM-DD
  * @param {string} dateStr
  * @returns {boolean}
@@ -390,12 +418,13 @@ export function getActiveOrUpcomingSessions(activities, referenceTime = new Date
     const nextSlot = todayUpcoming[0].startTime;
     const nextSessions = todayUpcoming.filter(a => a.startTime === nextSlot);
     const chosen = nextSessions.length > 1 ? nextSessions : todayUpcoming.slice(0, 3);
+    const formattedSlot = formatTime12h(nextSlot);
     return {
       type: 'upcoming_today',
       isLiveNow: false,
-      badgeLabel: `PRÓXIMAS SESIONES HOY (${nextSlot} COT)`,
+      badgeLabel: `PRÓXIMAS SESIONES HOY (${formattedSlot})`,
       sectionTitle: 'Próximas Sesiones de Hoy',
-      statusMessage: `Inician hoy a partir de las ${nextSlot} COT`,
+      statusMessage: `Inician hoy a partir de las ${formattedSlot}`,
       activities: chosen,
       currentTimeStr: currentTime,
       currentDate

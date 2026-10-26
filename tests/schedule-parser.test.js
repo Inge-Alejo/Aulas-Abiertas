@@ -4,6 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   normalizeTime,
+  formatTime12h,
   isValidDate,
   isValidUrl,
   normalizeModality,
@@ -31,6 +32,16 @@ assert.strictEqual(normalizeTime('12:00 am'), '00:00');
 assert.strictEqual(normalizeTime('12:00 pm'), '12:00');
 assert.strictEqual(normalizeTime('hora inválida'), '');
 console.log('  ✓ normalizeTime funciona correctamente en formatos 12h y 24h.');
+
+// 1.1 Pruebas de formato 12h con am/pm
+console.log('1.1 Formato 12h legible con am/pm:');
+assert.strictEqual(formatTime12h('07:00'), '7:00 am');
+assert.strictEqual(formatTime12h('06:30'), '6:30 am');
+assert.strictEqual(formatTime12h('12:00'), '12:00 pm');
+assert.strictEqual(formatTime12h('14:00'), '2:00 pm');
+assert.strictEqual(formatTime12h('15:30'), '3:30 pm');
+assert.strictEqual(formatTime12h('00:00'), '12:00 am');
+console.log('  ✓ formatTime12h convierte correctamente a 12h am/pm sin sufijo COT.');
 
 // 2. Pruebas de validación de fechas ISO
 console.log('2. Validación de fechas ISO:');

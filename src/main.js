@@ -11,7 +11,8 @@ import {
   getUpcomingActivityInfo,
   getActiveOrUpcomingSessions,
   filterActivities,
-  formatDayLabel
+  formatDayLabel,
+  formatTime12h
 } from './services/scheduleService.js';
 
 import {
@@ -267,9 +268,9 @@ function renderSpotlightActivity() {
           <h3 class="spotlight-main-heading">${data.sectionTitle}</h3>
         </div>
         <div class="spotlight-meta-right">
-          <span class="spotlight-realtime-indicator" title="Sincronizado en tiempo real con hora legal colombiana COT">
+          <span class="spotlight-realtime-indicator" title="Sincronizado en tiempo real">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            En tiempo real · COT
+            En tiempo real
           </span>
           <span class="spotlight-sessions-counter">${data.activities.length} ${data.activities.length === 1 ? 'sesión' : 'sesiones'}</span>
         </div>
@@ -295,7 +296,7 @@ function renderSpotlightItemCard(act, isLive) {
         <div class="spotlight-item-top">
           <span class="spotlight-item-time">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            ${act.startTime} COT ${act.endTime ? `– ${act.endTime}` : ''}
+            ${formatTime12h(act.startTime)}${act.endTime ? ` – ${formatTime12h(act.endTime)}` : ''}
           </span>
           <span class="card-modality-badge modality-${(act.modality || 'virtual').toLowerCase()}">${act.modality || 'Virtual'}</span>
         </div>
@@ -532,7 +533,7 @@ function renderActivityCard(act) {
       <div class="card-top-row">
         <span class="card-time-badge">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          ${act.startTime} COT ${act.endTime ? `– ${act.endTime}` : ''}
+          ${formatTime12h(act.startTime)}${act.endTime ? ` – ${formatTime12h(act.endTime)}` : ''}
         </span>
         <span class="card-modality-badge modality-${act.modality.toLowerCase()}">${act.modality}</span>
       </div>
@@ -588,9 +589,9 @@ function renderPlaylists() {
   container.innerHTML = VERIFIED_PLAYLISTS.map((pl, idx) => `
     <div class="playlist-card" id="playlist-card-${idx}">
       <div class="playlist-card-icon" aria-hidden="true">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-          <polygon points="10 8 16 12 10 16 10 8"/>
-          <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/>
+        <svg width="32" height="23" viewBox="0 0 28 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M27.42 3.12C27.1 1.9 26.15 0.95 24.93 0.63 22.73 0.05 14 0 14 0s-8.73.05-10.93.63C1.85.95.9 1.9.58 3.12 0 5.32 0 9.9 0 9.9s0 4.58.58 6.78c.32 1.22 1.27 2.17 2.49 2.49 2.2.58 10.93.58 10.93.58s8.73 0 10.93-.58c1.22-.32 2.17-1.27 2.49-2.49.58-2.2.58-6.78.58-6.78s0-4.58-.58-6.78z" fill="#FF0000"/>
+          <polygon points="11.2,14.2 18.5,9.9 11.2,5.6" fill="#FFFFFF"/>
         </svg>
       </div>
       <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--udea-green-primary); margin-bottom: 4px;">
@@ -938,7 +939,7 @@ function setupAdminPanel() {
           previewTbody.innerHTML = lastScrapedActivities.map((act) => `
             <tr>
               <td><strong>${act.date}</strong></td>
-              <td>${act.start_time || act.startTime} COT</td>
+              <td>${formatTime12h(act.start_time || act.startTime)}</td>
               <td>${act.department}</td>
               <td>${act.title}</td>
               <td><span class="card-modality-badge modality-${(act.modality || '').toLowerCase()}">${act.modality || 'Virtual'}</span></td>
