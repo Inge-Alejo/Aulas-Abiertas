@@ -16,10 +16,17 @@ import {
   getFavoriteActivityIds,
   toggleFavoriteActivity,
   submitActivityQuestion,
-  getFirebaseStatus
+  getFirebaseStatus,
+  loginWithEmail,
+  registerWithEmail,
+  logoutUser,
+  onAuthChange
 } from './services/firebaseService.js';
 
-import { askGeminiAssistant } from './services/geminiService.js';
+import {
+  askGeminiAssistant,
+  scrapeMailerliteWithGemini
+} from './services/geminiService.js';
 
 // Estado global de la aplicación
 const state = {
@@ -148,6 +155,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupFilterListeners();
   setupGeminiChat();
   setupQuestionModal();
+  setupAuthUI();
+  setupMailerliteScraper();
 });
 
 /**
@@ -1073,4 +1082,254 @@ function setupQuestionModal() {
     });
   }
 }
+
+/* ==========================================================================
+   AUTENTICACIÓN CON FIREBASE (LOGIN Y REGISTRO CON CORREO Y CONTRASEÑA)
+   ========================================================================== */
+
+function setupAuthUI() {
+  const loginHeaderBtn = document.getElementById('btn-auth-header');
+  const userBadge = document.getElementById('auth-user-badge');
+  const userNameText = document.getElementById('auth-user-name');
+  const logoutBtn = document.getElementById('btn-auth-logout');
+
+  const modal = document.getElementById('modal-auth-backdrop');
+  const closeBtn = document.getElementById('btn-close-modal-auth');
+  const cancelBtn = document.getElementById('btn-cancel-modal-auth');
+  const form = document.getElementById('form-auth');
+
+  const tabLogin = document.getElementById('tab-auth-login');
+  const tabRegister = document.getElementById('tab-auth-register');
+  const nameGroup = document.getElementById('group-auth-name');
+  const nameInput = document.getElementById('auth-input-name');
+  const emailInput = document.getElementById('auth-input-email');
+  const passwordInput = document.getElementById('auth-input-password');
+  const submitBtn = document.getElementById('btn-submit-modal-auth');
+  const errorAlert = document.getElementById('auth-error-alert');
+  const successAlert = document.getElementById('auth-success-alert');
+
+  let isRegisterMode = false;
+
+  const setMode = (register) => {
+    isRegisterMode = register;
+    tabLogin.classList.toggle('active', !register);
+    tabRegister.classList.toggle('active', register);
+    tabLogin.setAttribute('aria-selected', !register);
+    tabRegister.setAttribute('aria-selected', register);
+    nameGroup.style.display = register ? 'flex' : 'none';
+    submitBtn.textContent = register ? 'Crear Cuenta' : 'Iniciar Sesión';
+    if (errorAlert) errorAlert.style.display = 'none';
+    if (successAlert) successAlert.style.display = 'none';
+  };
+
+  const openAuthModal = () => {
+    if (modal) {
+      modal.style.display = 'flex';
+      modal.setAttribute('aria-hidden', 'false');
+      setMode(false);
+      emailInput?.focus();
+    }
+  };
+
+  const closeAuthModal = () => {
+    if (modal) {
+      modal.style.display = 'none';
+      modal.setAttribute('aria-hidden', 'true');
+      form.reset();
+    }
+  };
+
+  if (loginHeaderBtn) loginHeaderBtn.addEventListener('click', openAuthModal);
+  if (closeBtn) closeBtn.addEventListener('click', closeAuthModal);
+  if (cancelBtn) cancelBtn.addEventListener('click', closeAuthModal);
+  if (modal) {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeAuthModal();
+    });
+  }
+
+  if (tabLogin) tabLogin.addEventListener('click', () => setMode(false));
+  if (tabRegister) tabRegister.addEventListener('click', () => setMode(true));
+
+  // Escuchar estado de autenticación en Firebase / Local
+  onAuthChange((user) => {
+    if (user) {
+      if (loginHeaderBtn) loginHeaderBtn.style.display = 'none';
+      if (userBadge) userBadge.style.display = 'inline-flex';
+      if (userNameText) {
+        userNameText.textContent = user.displayName || user.email.split('@')[0];
+      }
+    } else {
+      if (loginHeaderBtn) loginHeaderBtn.style.display = 'inline-flex';
+      if (userBadge) userBadge.style.display = 'none';
+    }
+  });
+
+  // Cerrar sesión
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+      await logoutUser();
+      showToast('Sesión cerrada correctamente', 'info');
+    });
+  }
+
+  // Envío del formulario de Login / Registro
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+      const displayName = nameInput?.value.trim() || '';
+
+      if (errorAlert) errorAlert.style.display = 'none';
+      if (successAlert) successAlert.style.display = 'none';
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Procesando...';
+
+      try {
+        if (isRegisterMode) {
+          await registerWithEmail(email, password, displayName);
+          showToast(`¡Bienvenido a Aulas Abiertas! Cuenta creada con éxito.`, 'success');
+        } else {
+          await loginWithEmail(email, password);
+          showToast(`¡Bienvenido de nuevo a Aulas Abiertas!`, 'success');
+        }
+        closeAuthModal();
+      } catch (err) {
+        if (errorAlert) {
+          errorAlert.textContent = err.message || 'Error al autenticar.';
+          errorAlert.style.display = 'block';
+        }
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = isRegisterMode ? 'Crear Cuenta' : 'Iniciar Sesión';
+      }
+    });
+  }
+}
+
+/* ==========================================================================
+   EXTRACTOR INTELIGENTE DE BOLETINES MAILERLITE CON GEMINI IA
+   ========================================================================== */
+
+let lastScrapedActivities = [];
+let lastScrapedCsv = '';
+
+function setupMailerliteScraper() {
+  const openBtn = document.getElementById('btn-header-scraper');
+  const modal = document.getElementById('modal-scraper-backdrop');
+  const closeBtn = document.getElementById('btn-close-modal-scraper');
+  const form = document.getElementById('form-scraper-mailerlite');
+  const urlInput = document.getElementById('scraper-input-url');
+  const submitBtn = document.getElementById('btn-run-scraper');
+  const loadingEl = document.getElementById('scraper-loading');
+  const resultsEl = document.getElementById('scraper-results');
+  const countBadge = document.getElementById('scraper-count-badge');
+  const modelBadge = document.getElementById('scraper-model-badge');
+  const tbody = document.getElementById('scraper-preview-tbody');
+  const copyCsvBtn = document.getElementById('btn-scraper-copy-csv');
+  const downloadCsvBtn = document.getElementById('btn-scraper-download-csv');
+
+  const openScraperModal = () => {
+    if (modal) {
+      modal.style.display = 'flex';
+      modal.setAttribute('aria-hidden', 'false');
+      urlInput?.focus();
+    }
+  };
+
+  const closeScraperModal = () => {
+    if (modal) {
+      modal.style.display = 'none';
+      modal.setAttribute('aria-hidden', 'true');
+    }
+  };
+
+  if (openBtn) openBtn.addEventListener('click', openScraperModal);
+  if (closeBtn) closeBtn.addEventListener('click', closeScraperModal);
+  if (modal) {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeScraperModal();
+    });
+  }
+
+  // Envío de scraping con Gemini IA
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const url = urlInput.value.trim();
+      if (!url) return;
+
+      submitBtn.disabled = true;
+      if (loadingEl) loadingEl.style.display = 'block';
+      if (resultsEl) resultsEl.style.display = 'none';
+
+      try {
+        const result = await scrapeMailerliteWithGemini(url);
+        lastScrapedActivities = result.activities || [];
+        lastScrapedCsv = result.csvContent || '';
+
+        if (countBadge) countBadge.textContent = `${result.count || lastScrapedActivities.length} actividades extraídas`;
+        if (modelBadge) modelBadge.textContent = result.modelUsed || 'Gemini 3.5 / 3.1 Flash Lite';
+
+        // Renderizar tabla previa
+        if (tbody) {
+          tbody.innerHTML = lastScrapedActivities.map((act) => `
+            <tr>
+              <td><strong>${act.date}</strong></td>
+              <td>${act.start_time || act.startTime}</td>
+              <td>${act.department}</td>
+              <td>${act.title}</td>
+              <td><span class="card-modality-badge modality-${(act.modality || '').toLowerCase()}">${act.modality || 'Virtual'}</span></td>
+            </tr>
+          `).join('');
+        }
+
+        if (resultsEl) resultsEl.style.display = 'block';
+        showToast(`¡Gemini IA extrajo ${lastScrapedActivities.length} conferencias con éxito!`, 'success');
+      } catch (err) {
+        showToast(`Error al procesar boletín: ${err.message}`, 'error');
+      } finally {
+        submitBtn.disabled = false;
+        if (loadingEl) loadingEl.style.display = 'none';
+      }
+    });
+  }
+
+  // Copiar CSV al portapapeles
+  if (copyCsvBtn) {
+    copyCsvBtn.addEventListener('click', () => {
+      if (!lastScrapedCsv) {
+        showToast('No hay datos CSV para copiar.', 'info');
+        return;
+      }
+      navigator.clipboard.writeText(lastScrapedCsv).then(() => {
+        showToast('¡CSV copiado al portapapeles! Listo para pegar en Google Sheets.', 'success');
+      }).catch(() => {
+        showToast('No se pudo copiar automáticamente. Puedes descargar el archivo .csv.', 'info');
+      });
+    });
+  }
+
+  // Descargar archivo .csv
+  if (downloadCsvBtn) {
+    downloadCsvBtn.addEventListener('click', () => {
+      if (!lastScrapedCsv) {
+        showToast('No hay datos CSV para descargar.', 'info');
+        return;
+      }
+      const blob = new Blob([lastScrapedCsv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `aulas_abiertas_programacion_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      showToast('Descargando archivo CSV...', 'success');
+    });
+  }
+}
+
 

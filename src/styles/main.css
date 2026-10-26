@@ -2125,3 +2125,191 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
     max-width: 100%;
   }
 }
+
+/* ==========================================================================
+   NAVEGACIÓN: EXTRACTOR MAILITE Y LOGIN FIREBASE
+   ========================================================================== */
+
+.btn-nav-scraper {
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--udea-forest);
+  border: 1px solid var(--accent-lime);
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.btn-nav-scraper:hover {
+  background: var(--accent-lime);
+  color: #002E16;
+}
+
+.auth-header-container {
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn-nav-login {
+  background: transparent;
+  color: var(--text-dark);
+  border: 1.5px solid var(--border-subtle);
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.btn-nav-login:hover {
+  border-color: var(--udea-forest);
+  color: var(--udea-forest);
+}
+
+.auth-user-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #F1F5F9;
+  border: 1px solid #CBD5E1;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 0.775rem;
+  color: var(--text-dark);
+  font-weight: 600;
+}
+
+.btn-logout-small {
+  background: #E2E8F0;
+  border: none;
+  color: #475569;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-logout-small:hover {
+  background: #DC2626;
+  color: #FFFFFF;
+}
+
+/* ==========================================================================
+   MODAL DE AUTENTICACIÓN FIREBASE
+   ========================================================================== */
+
+.auth-dialog {
+  max-width: 420px;
+}
+
+.auth-tabs-row {
+  display: flex;
+  border-bottom: 1px solid var(--border-subtle);
+  background: #F8FAFC;
+}
+
+.auth-tab-btn {
+  flex: 1;
+  padding: 12px;
+  text-align: center;
+  border: none;
+  background: transparent;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.auth-tab-btn.active {
+  color: var(--udea-forest);
+  border-bottom-color: var(--accent-lime);
+  background: #FFFFFF;
+}
+
+.auth-alert {
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  margin-bottom: 12px;
+}
+
+.auth-alert.error {
+  background-color: #FEF2F2;
+  border: 1px solid #FCA5A5;
+  color: #991B1B;
+}
+
+.auth-alert.success {
+  background-color: #ECFDF5;
+  border: 1px solid #A7F3D0;
+  color: #065F46;
+}
+
+/* ==========================================================================
+   MODAL SCRAPER DE MAILERLITE CON GEMINI IA
+   ========================================================================== */
+
+.scraper-dialog {
+  max-width: 780px;
+}
+
+.scraper-preview-table-wrapper {
+  max-height: 280px;
+  overflow-y: auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  margin-top: 10px;
+}
+
+.scraper-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+  text-align: left;
+}
+
+.scraper-table th {
+  background: #F1F5F9;
+  padding: 8px 12px;
+  font-weight: 700;
+  color: var(--text-dark);
+  position: sticky;
+  top: 0;
+  border-bottom: 1px solid #CBD5E1;
+}
+
+.scraper-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #F1F5F9;
+  color: var(--text-base);
+}
+
+.scraper-table tr:hover {
+  background-color: #F8FAFC;
+}
+
+.spinner-dot {
+  width: 36px;
+  height: 36px;
+  margin: 0 auto;
+  border: 3px solid rgba(0, 77, 37, 0.2);
+  border-top-color: var(--accent-lime);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+

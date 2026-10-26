@@ -123,3 +123,44 @@ Responde en español con rigor, calidez y brevedad.`;
 
   throw new Error('No se pudo conectar con la API de Gemini usando los modelos candidatos.');
 }
+
+/**
+ * Utiliza Gemini IA para extraer las conferencias completas desde un enlace o texto de MailerLite.
+ * @param {string} url Enlace del boletín MailerLite (ej: https://preview.mailerlite.com/k8w4m4m5a6)
+ * @param {string} rawContent Contenido opcional pegado manualmente
+ * @returns {Promise<{ activities: Array, csvContent: string, count: number, modelUsed: string }>}
+ */
+export async function scrapeMailerliteWithGemini(url, rawContent = '') {
+  // 1. Probar primero vía Serverless (/api/scrape-mailerlite)
+  try {
+    const res = await fetch('/api/scrape-mailerlite', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, rawContent })
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      return data;
+    }
+
+    const errData = await res.json().catch(() => ({}));
+    if (res.status === 400 || res.status === 500) {
+      if (errData.error) throw new Error(errData.error);
+    }
+  } catch (err) {
+    if (err.message && !err.message.includes('fetch')) {
+      throw err;
+    }
+    console.info('[MailerLite Scraper Client] Endpoint serverless no disponible, probando fallback...', err.message);
+  }
+
+  // 2. Si no hay serverless activo (desarrollo puramente local)
+  const clientKey = import.meta.env.VITE_GEMINI_API_KEY;
+  if (!clientKey) {
+    throw new Error('Para utilizar el Extractor Inteligente con Gemini IA, configura GEMINI_API_KEY en Vercel o VITE_GEMINI_API_KEY en tu archivo .env.');
+  }
+
+  throw new Error('En desarrollo local, para extraer URLs externas se recomienda usar el endpoint en Vercel o pegar el texto del boletín.');
+}
+
