@@ -1,0 +1,4 @@
+id,date,start_time,end_time,department,title,speakers,modality,location,meeting_url,recording_url,summary
+AA-2026-1102-01,2026-11-02,07:00,08:00,Medicina Interna,Revisión de guías clínicas y actualización diagnóstica,Dra. María Pérez,Virtual,Plataforma Virtual Teleducación,https://meet.google.com/ejemplo,,Revisión de evidencia reciente y discusión de casos clínicos.
+AA-2026-1102-02,2026-11-02,07:00,08:30,Cirugía General,Club de Revistas: Avances quirúrgicos mínimamente invasivos,Dr. Carlos Gómez; Dra. Elena Restrepo,Presencial,"Aula 349, Facultad de Medicina UdeA",,,Discusión de técnica quirúrgica y protocolos de seguridad perioperatoria.
+AA-2026-1103-01,2026-11-03,07:00,08:00,Pediatría y Puericultura,Actualización en neumología pediátrica y asma infantil,Dr. Juan Camilo Ortiz,Híbrida,"Salón 347, Facultad de Medicina UdeA",https://teams.microsoft.com/ejemplo,,Sesión híbrida con asistencia presencial y transmisión en directo por Teams.

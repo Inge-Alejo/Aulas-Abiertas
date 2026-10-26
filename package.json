@@ -1,0 +1,19 @@
+{
+  "name": "aulas-abiertas-udea",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node tests/schedule-parser.test.js"
+  },
+  "dependencies": {
+    "firebase": "^13.1.0",
+    "papaparse": "^5.5.2"
+  },
+  "devDependencies": {
+    "vite": "^6.2.0"
+  }
+}

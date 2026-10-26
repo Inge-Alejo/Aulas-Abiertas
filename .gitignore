@@ -1,0 +1,39 @@
+# Dependencias
+node_modules/
+.pnp
+.pnp.js
+
+# Producción
+dist/
+dist-ssr/
+*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Entorno y credenciales privadas (NUNCA subir a GitHub)
+.env
+.env*.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Editores y sistema
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
+
+# Vercel
+.vercel
+
+# Agentes locales
+.agents/

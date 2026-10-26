@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aulas Abiertas | Facultad de Medicina - Universidad de Antioquia</title>
+  
+  <!-- Metadatos SEO en Español -->
+  <meta name="description" content="Landing page y visualizador interactivo de programación académica de Aulas Abiertas. Encuentros clínicos, grandes seminarios y conferencias médicas de la Facultad de Medicina UdeA.">
+  <meta name="author" content="Facultad de Medicina, Universidad de Antioquia">
+  <meta name="keywords" content="Aulas Abiertas, Medicina UdeA, Teleducación, Programación Académica, HUSVF, Medicina Interna, Cirugía, Pediatría, Conferencias Médicas">
+  
+  <!-- Open Graph / Redes Sociales -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Aulas Abiertas | Facultad de Medicina - Universidad de Antioquia">
+  <meta property="og:description" content="El conocimiento en salud crece cuando se comparte. Consulte la agenda médica semanal y acceda a las conferencias grabadas de la Facultad de Medicina UdeA.">
+  <meta property="og:locale" content="es_CO">
+  <meta property="og:site_name" content="Facultad de Medicina - Universidad de Antioquia">
+  
+  <!-- Tipografías de Google Fonts: Newsreader (Editorial Serif) y Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;0,6..72,700;0,6..72,800;1,6..72,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="/src/styles/main.css">
+</head>
+<body>
+  <!-- Enlace accesible para saltar directamente al contenido principal -->
+  <a href="#main-content" class="skip-link" id="skip-to-content">Saltar al contenido principal</a>
+
+  <!-- Franja Institucional Superior UdeA -->
+  <div class="institutional-banner" role="complementary" aria-label="Portal Institucional">
+    <div class="container">
+      <div class="institutional-tagline">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+        <span>Universidad de Antioquia — Facultad de Medicina</span>
+      </div>
+      <div class="institutional-links">
+        <a href="https://www.udea.edu.co" target="_blank" rel="noopener noreferrer">Portal UdeA</a>
+        <span>•</span>
+        <a href="https://extension.medicinaudea.co" target="_blank" rel="noopener noreferrer">Educación Continua</a>
+        <span>•</span>
+        <a href="https://www.youtube.com/@teleducacionmedicinaudea" target="_blank" rel="noopener noreferrer">Canal Teleducación</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Encabezado Principal y Navegación -->
+  <header class="site-header" role="banner">
+    <div class="container header-container">
+      <div class="brand-wrapper">
+        <a href="#inicio" aria-label="Aulas Abiertas - Ir al inicio" style="display: flex; align-items: center; gap: 14px;">
+          <img src="/assets/images/logo-udea-fac-medicina.png" alt="Logotipo Oficial Facultad de Medicina Universidad de Antioquia" class="brand-logo-img" width="180" height="52">
+          <div class="brand-divider" aria-hidden="true"></div>
+          <div class="brand-title-group">
+            <span class="brand-project-name">Aulas Abiertas</span>
+            <span class="brand-project-sub">Agenda Académica</span>
+          </div>
+        </a>
+      </div>
+
+      <nav class="site-nav" id="site-nav" role="navigation" aria-label="Navegación principal">
+        <a href="#inicio" class="nav-link active" id="nav-inicio">Inicio</a>
+        <a href="#programacion" class="nav-link" id="nav-programacion">Programación</a>
+        <a href="#biblioteca" class="nav-link" id="nav-biblioteca">Conferencias</a>
+        <a href="#acerca" class="nav-link" id="nav-acerca">Acerca de</a>
+        <a href="#contacto" class="nav-link" id="nav-contacto">Contacto</a>
+        <a href="#programacion" class="btn-cta-nav" id="btn-header-agenda">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Explorar Agenda
+        </a>
+      </nav>
+
+      <button class="mobile-nav-toggle" id="mobile-nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Abrir menú de navegación">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        <span>Menú</span>
+      </button>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <!-- Hero Editorial Principal -->
+    <section class="hero-section" id="inicio" aria-labelledby="hero-title">
+      <div class="container hero-grid">
+        <div class="hero-content-col">
+          <div class="hero-editorial-badge">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            Iniciativa de Teleducación UdeA
+          </div>
+
+          <h1 class="hero-headline" id="hero-title">
+            El conocimiento en salud crece cuando se <span class="highlight">comparte</span>.
+          </h1>
+
+          <p class="hero-description">
+            Encuentros académicos, comités de expertos y grandes rondas clínicas para aprender, conversar y mantenerse al día con los avances del saber médico, desde la <strong>Facultad de Medicina de la Universidad de Antioquia</strong>.
+          </p>
+
+          <div class="hero-actions">
+            <a href="#programacion" class="btn-primary" id="hero-btn-programacion">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              Explorar Programación Semanal
+            </a>
+            <a href="#biblioteca" class="btn-secondary" id="hero-btn-biblioteca">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="10 8 16 12 10 16 10 8"/><circle cx="12" cy="12" r="10"/></svg>
+              Ver Conferencias Grabadas
+            </a>
+          </div>
+
+          <div class="hero-stats">
+            <div class="stat-item">
+              <span class="stat-number">+150</span>
+              <span class="stat-label">Años de historia y tradición médica en Colombia</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">12+</span>
+              <span class="stat-label">Especialidades clínicas y quirúrgicas cada semana</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">100%</span>
+              <span class="stat-label">Acceso público abierto a la comunidad de la salud</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-visual-card">
+          <div class="hero-image-frame">
+            <img src="/assets/images/hero_facultad_medicina.jpg" alt="Claustro histórico de la Facultad de Medicina de la Universidad de Antioquia" class="hero-img" width="600" height="440" loading="eager">
+            <div class="hero-caption">
+              <span><strong>Campus de la Salud</strong> · Carrera 51D No. 62-29</span>
+              <span>Medellín, Colombia</span>
+            </div>
+          </div>
+
+          <div class="hero-floating-badge" aria-hidden="true">
+            <span class="floating-badge-title">Universidad de Antioquia</span>
+            <span class="floating-badge-sub">Acreditación de Alta Calidad</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Próxima Actividad Destacada (Spotlight de Honor) -->
+    <section class="spotlight-section" aria-label="Actividad Académica Destacada">
+      <div class="container" id="spotlight-container">
+        <!-- Rellenado dinámicamente por JavaScript -->
+      </div>
+    </section>
+
+    <!-- Visualizador de Programación Semanal (NÚCLEO FUNCIONAL) -->
+    <section class="schedule-section" id="programacion" aria-labelledby="schedule-heading">
+      <div class="container">
+        <header class="section-editorial-header">
+          <span class="section-label">Agenda Dinámica</span>
+          <h2 class="section-title" id="schedule-heading">Programación Semanal</h2>
+        </header>
+
+        <!-- Barra de Control: Navegación de Semanas & Estado de Google Sheets -->
+        <div class="schedule-control-bar">
+          <div class="week-navigator" role="group" aria-label="Navegador de semanas">
+            <button class="btn-nav-week" id="btn-prev-week" aria-label="Semana anterior">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+              <span>Anterior</span>
+            </button>
+
+            <div class="current-week-display">
+              <span class="current-week-title" id="current-week-title">Cargando semana...</span>
+              <span class="current-week-meta">Horarios en hora legal de Colombia (COT / UTC-5)</span>
+            </div>
+
+            <button class="btn-nav-week" id="btn-next-week" aria-label="Semana siguiente">
+              <span>Siguiente</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+
+          <div class="data-status-info">
+            <span class="status-badge" id="status-source-badge">Conectando...</span>
+            <span id="status-last-updated">Actualizado: --:--</span>
+            
+            <button class="btn-refresh" id="btn-refresh" aria-label="Actualizar datos de programación">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+              <span>Actualizar datos</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Filtros Combinables y Buscador Integrado -->
+        <div class="filter-toolbar" role="search" aria-label="Filtros de actividades">
+          <div class="search-box-wrapper">
+            <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="text" id="search-input" class="search-input" placeholder="Buscar por tema, ponente, departamento o aula..." aria-label="Buscar en la programación">
+          </div>
+
+          <div>
+            <select id="filter-day" class="filter-select" aria-label="Filtrar por día de la semana">
+              <option value="">Todos los días</option>
+            </select>
+          </div>
+
+          <div>
+            <select id="filter-department" class="filter-select" aria-label="Filtrar por departamento">
+              <option value="">Todos los departamentos</option>
+            </select>
+          </div>
+
+          <div>
+            <select id="filter-modality" class="filter-select" aria-label="Filtrar por modalidad">
+              <option value="">Todas las modalidades</option>
+              <option value="Virtual">Virtual</option>
+              <option value="Presencial">Presencial</option>
+              <option value="Híbrida">Híbrida</option>
+            </select>
+          </div>
+
+          <div>
+            <button id="btn-toggle-favorites-filter" class="filter-favorites-btn" aria-pressed="false" title="Mostrar únicamente actividades guardadas">
+              <span class="star-icon">★</span> Mis Favoritos <span id="fav-count-badge" class="fav-count-badge">0</span>
+            </button>
+          </div>
+
+          <div>
+            <button id="btn-clear-filters" class="btn-clear-filters" style="display: none;" aria-label="Limpiar todos los filtros">
+              Limpiar filtros ✕
+            </button>
+          </div>
+        </div>
+
+        <!-- Contador dinámico de resultados -->
+        <div class="results-summary-row">
+          <span id="results-count" class="results-count-badge">Cargando actividades...</span>
+          <span style="font-size: 0.8125rem;">Facultad de Medicina · Hospital Universitario San Vicente Fundación</span>
+        </div>
+
+        <!-- Indicador de carga inicial -->
+        <div id="schedule-loading-state" style="padding: 40px; text-align: center; color: var(--text-muted);">
+          <p>Consultando la programación académica...</p>
+        </div>
+
+        <!-- Listado de Días y Actividades -->
+        <div class="schedule-days-container" id="schedule-days-container">
+          <!-- Inyectado por JavaScript -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Biblioteca de Conferencias Grabadas ("El conocimiento sigue abierto") -->
+    <section class="library-section" id="biblioteca" aria-labelledby="library-heading">
+      <div class="container">
+        <header class="section-editorial-header">
+          <span class="section-label">Archivo Audiovisual Permanente</span>
+          <h2 class="section-title" id="library-heading">El Conocimiento Sigue Abierto</h2>
+        </header>
+
+        <div class="library-intro-grid">
+          <div class="library-intro-text">
+            <p style="font-size: 1.125rem; line-height: 1.7; color: var(--text-secondary); margin-bottom: 20px;">
+              Los encuentros de Aulas Abiertas trascienden el horario de emisión en vivo. A través del canal oficial de <strong>Teleducación de la Facultad de Medicina</strong>, profesores, investigadores y egresados ponen a disposición de la comunidad médica global cientos de conferencias, revisiones de guías internacionales y grandes seminarios clínicos.
+            </p>
+            <div style="display: flex; gap: 14px; flex-wrap: wrap;">
+              <a href="https://www.youtube.com/@teleducacionmedicinaudea" target="_blank" rel="noopener noreferrer" class="btn-primary" id="btn-youtube-channel">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>
+                Visitar Canal Oficial de YouTube
+              </a>
+              <a href="https://extension.medicinaudea.co" target="_blank" rel="noopener noreferrer" class="btn-secondary" id="btn-extension-portal">
+                Portal Educación Continua
+              </a>
+            </div>
+          </div>
+
+          <div class="library-hero-card">
+            <div class="library-hero-image-wrap">
+              <img src="/assets/images/academic_symposium.jpg" alt="Auditorio de conferencias de la Facultad de Medicina Universidad de Antioquia" class="library-hero-img" loading="lazy">
+              <span class="library-hero-badge">Conferencia Institucional</span>
+            </div>
+            <div class="library-hero-content">
+              <h3>Facultad de Medicina UdeA • 150 años haciendo historia juntos</h3>
+              <p>Producción documental institucional sobre el impacto científico, docente y asistencial de la Facultad de Medicina en Colombia.</p>
+              <a href="https://www.youtube.com/watch?v=TD8p0-dkvzE" target="_blank" rel="noopener noreferrer" class="btn-session-link" id="link-featured-video">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="10 8 16 12 10 16 10 8"/><circle cx="12" cy="12" r="10"/></svg>
+                Ver conferencia en YouTube
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <h3 style="font-family: var(--font-serif); font-size: 1.5rem; font-weight: 700; margin-bottom: 24px; color: var(--udea-green-primary);">
+          Listas de Reproducción Oficiales por Especialidad
+        </h3>
+
+        <!-- Grid con las 12 listas oficiales verificadas -->
+        <div class="playlists-grid" id="playlists-grid-container">
+          <!-- Rellenado dinámicamente por JavaScript -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Sección Acerca de Aulas Abiertas -->
+    <section class="about-section" id="acerca" aria-labelledby="about-heading">
+      <div class="container about-grid">
+        <div class="about-text-content">
+          <span class="section-label">Misión y Vocación Institucional</span>
+          <h2 class="section-title" id="about-heading" style="margin-bottom: 20px;">
+            Ciencia abierta al servicio de la salud y la sociedad
+          </h2>
+          <p>
+            <strong>Aulas Abiertas</strong> es una iniciativa académica de la <strong>Facultad de Medicina de la Universidad de Antioquia</strong>, canalizada a través de la unidad de Teleducación y Aprendizaje a lo largo de toda la vida.
+          </p>
+          <p>
+            Su propósito es democratizar el acceso a la discusión clínica especializada: médicos especialistas, docentes universitarios, médicos residentes y estudiantes de posgrado se reúnen diariamente en grandes rondas, clubes de revistas y seminarios de actualización que se transmiten de forma abierta a cualquier profesional de la salud en Colombia y el mundo.
+          </p>
+
+          <blockquote class="quote-editorial">
+            "El conocimiento en salud no debe quedar confinado en los muros de un hospital ni en las aulas de un campus; cobra su verdadero valor cuando se pone al servicio de toda la comunidad médica."
+          </blockquote>
+        </div>
+
+        <div>
+          <h3 style="font-family: var(--font-serif); font-size: 1.35rem; font-weight: 700; margin-bottom: 16px; color: var(--udea-green-primary);">
+            Sedes y Aulas Académicas de la Facultad
+          </h3>
+          <p style="color: var(--text-muted); font-size: 0.9375rem; margin-bottom: 16px;">
+            Las actividades presenciales e híbridas se desarrollan en los espacios históricos y asistenciales de la institución:
+          </p>
+
+          <div class="venues-list">
+            <div class="venue-item">
+              <strong>Aula Gabriel Toro Villa</strong>
+              <span>Bloque 7 (Amarillo) · Hospital Universitario San Vicente Fundación</span>
+            </div>
+            <div class="venue-item">
+              <strong>Aula 349 y Salón 347</strong>
+              <span>Edificio Central · Facultad de Medicina UdeA</span>
+            </div>
+            <div class="venue-item">
+              <strong>Auditorio 108 de Morfología</strong>
+              <span>Edificio de Anatomía y Ciencias Básicas · Facultad de Medicina</span>
+            </div>
+            <div class="venue-item">
+              <strong>Salón UdeA Maxilofacial</strong>
+              <span>2° Piso de Maxilofacial, Bloque 7 · HUSVF</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Panel de Instrucciones y Descarga de Plantilla para Teleducación -->
+    <section class="sheets-guide-section" id="guia-google-sheets" aria-labelledby="sheets-heading">
+      <div class="container">
+        <div class="sheets-guide-card">
+          <div class="sheets-guide-header">
+            <div>
+              <span class="section-label">Para el Equipo de Teleducación</span>
+              <h3 style="font-family: var(--font-serif); font-size: 1.65rem; font-weight: 700; color: var(--text-primary); margin-top: 4px;" id="sheets-heading">
+                Cómo actualizar la programación desde Google Sheets
+              </h3>
+              <p style="color: var(--text-muted); font-size: 0.9375rem; margin-top: 6px; max-width: 650px;">
+                La agenda se actualiza automáticamente desde su hoja de cálculo, sin necesidad de modificar el código ni reconstruir el sitio.
+              </p>
+            </div>
+            <div>
+              <a href="/data/plantilla_aulas_abiertas.csv" download="plantilla_aulas_abiertas.csv" class="btn-primary" id="btn-download-csv-template">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Descargar Plantilla CSV
+              </a>
+            </div>
+          </div>
+
+          <div class="sheets-guide-steps">
+            <div class="step-card">
+              <div class="step-number">1</div>
+              <h4>Crear la pestaña pública</h4>
+              <p>En su hoja de cálculo de Google Sheets, cree una pestaña llamada <code>Programacion_publica</code> con las columnas recomendadas: <em>id, date, start_time, end_time, department, title, speakers, modality, location, meeting_url, recording_url, summary</em>.</p>
+            </div>
+
+            <div class="step-card">
+              <div class="step-number">2</div>
+              <h4>Publicar como CSV</h4>
+              <p>Vaya a <strong>Archivo &gt; Compartir &gt; Publicar en la web</strong>. Seleccione únicamente la pestaña <em>Programacion_publica</em> y el formato <strong>Valores separados por comas (.csv)</strong>. Haga clic en Publicar y copie el enlace generado.</p>
+            </div>
+
+            <div class="step-card">
+              <div class="step-number">3</div>
+              <h4>Configurar en el entorno</h4>
+              <p>Pegue la URL obtenida en la variable <code>VITE_PUBLIC_SCHEDULE_CSV_URL</code> de su archivo <code>.env</code> o en las variables de entorno de su proveedor de hosting.</p>
+            </div>
+
+            <div class="step-card">
+              <div class="step-number">4</div>
+              <h4>Actualizaciones instantáneas</h4>
+              <p>Cada vez que agregue, edite o retire una fila en Google Sheets, los cambios se reflejarán en la web cuando los visitantes pulsen <strong>Actualizar datos</strong> o recarguen la página.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Pie de Página Institucional (Footer) -->
+  <footer class="site-footer" id="contacto" role="contentinfo">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <h4>Aulas Abiertas</h4>
+          <p>
+            Iniciativa de Teleducación y Extensión Académica de la Facultad de Medicina de la Universidad de Antioquia.
+          </p>
+          <p style="margin-top: 12px; font-size: 0.8125rem; color: #94A3B8;">
+            Edificio Central Facultad de Medicina<br>
+            Carrera 51D No. 62 - 29, Medellín, Colombia.
+          </p>
+        </div>
+
+        <div class="footer-col">
+          <h5>Canales de Contacto</h5>
+          <ul class="footer-links">
+            <li>
+              <a href="mailto:aprendizajes.med@udea.edu.co" id="footer-link-email">
+                <strong>Correo:</strong> aprendizajes.med@udea.edu.co
+              </a>
+            </li>
+            <li>
+              <a href="tel:+576042196940" id="footer-link-tel">
+                <strong>Teléfono:</strong> (+57 604) 219 69 40
+              </a>
+            </li>
+            <li>
+              <a href="https://wa.me/573023061888" target="_blank" rel="noopener noreferrer" id="footer-link-whatsapp">
+                <strong>WhatsApp Oficial:</strong> (+57) 302 306 1888
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h5>Enlaces Oficiales</h5>
+          <ul class="footer-links">
+            <li><a href="https://www.udea.edu.co" target="_blank" rel="noopener noreferrer">Universidad de Antioquia</a></li>
+            <li><a href="https://extension.medicinaudea.co" target="_blank" rel="noopener noreferrer">Portal Educación Continua</a></li>
+            <li><a href="https://www.youtube.com/@teleducacionmedicinaudea" target="_blank" rel="noopener noreferrer">Canal de YouTube Teleducación</a></li>
+            <li><a href="https://linktr.ee/aprendizajes.med" target="_blank" rel="noopener noreferrer">Árbol de Enlaces Linktree</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h5>Navegación Rápida</h5>
+          <ul class="footer-links">
+            <li><a href="#inicio">Inicio</a></li>
+            <li><a href="#programacion">Programación Semanal</a></li>
+            <li><a href="#biblioteca">Biblioteca de Conferencias</a></li>
+            <li><a href="#acerca">Acerca del Proyecto</a></li>
+            <li><a href="#guia-google-sheets">Guía Google Sheets</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>
+          <span>© 2026 Universidad de Antioquia · Facultad de Medicina. Todos los derechos reservados.</span>
+        </div>
+        <div>
+          <span>Vigilada Mineducación · Personería Jurídica Res. 129 de 1956</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Botón flotante para invocar Asistente Académico IA -->
+  <button id="btn-open-gemini-chat" class="gemini-float-btn" aria-label="Abrir Asistente Académico con Gemini IA" aria-haspopup="dialog">
+    <span class="sparkle-icon" aria-hidden="true">✦</span>
+    <span class="gemini-btn-text">Pregúntale a la IA</span>
+    <span class="gemini-pulse-dot" aria-hidden="true"></span>
+  </button>
+
+  <!-- Drawer / Panel Lateral del Asistente Académico IA -->
+  <div id="gemini-chat-backdrop" class="gemini-drawer-backdrop" aria-hidden="true"></div>
+  <aside id="gemini-chat-drawer" class="gemini-chat-drawer" role="dialog" aria-modal="true" aria-labelledby="gemini-drawer-title" aria-hidden="true">
+    <div class="gemini-drawer-header">
+      <div class="gemini-header-info">
+        <div class="gemini-header-title-row">
+          <span class="gemini-icon-badge" aria-hidden="true">✦</span>
+          <h3 id="gemini-drawer-title">Asistente Aulas Abiertas</h3>
+        </div>
+        <div class="gemini-model-badge" id="gemini-active-model-badge">
+          <span class="dot-live"></span> Gemini 3.5 / 3.1 Flash Lite
+        </div>
+      </div>
+      <button id="btn-close-gemini-chat" class="gemini-btn-close" aria-label="Cerrar Asistente IA">✕</button>
+    </div>
+
+    <div class="gemini-drawer-body">
+      <div class="gemini-welcome-card">
+        <p>👋 Hola, soy tu guía académico. Conozco la agenda semanal, especialidades, ponentes y modalidades de conexión de la Facultad de Medicina.</p>
+        <div class="gemini-quick-prompts" aria-label="Preguntas frecuentes">
+          <button class="quick-prompt-chip" data-prompt="¿Cuáles son las conferencias virtuales de esta semana?">💻 Sesiones virtuales</button>
+          <button class="quick-prompt-chip" data-prompt="¿Qué conferencias hay sobre pediatría o cardiología?">🩺 Pediatría / Cardiología</button>
+          <button class="quick-prompt-chip" data-prompt="Resume las actividades más destacadas de la semana">📋 Resumen semanal</button>
+          <button class="quick-prompt-chip" data-prompt="¿Cuáles son los canales de contacto oficiales?">📞 Contacto oficial</button>
+        </div>
+      </div>
+
+      <div id="gemini-messages-container" class="gemini-messages-list" role="log" aria-live="polite">
+        <!-- Mensajes del chat inyectados dinámicamente -->
+      </div>
+
+      <div id="gemini-typing-indicator" class="gemini-typing" style="display: none;">
+        <span>Consultando modelo Gemini</span>
+        <span class="dots">...</span>
+      </div>
+    </div>
+
+    <footer class="gemini-drawer-footer">
+      <form id="gemini-chat-form" class="gemini-input-form">
+        <input type="text" id="gemini-user-input" class="gemini-input" placeholder="Pregunta sobre la agenda médica..." autocomplete="off" required>
+        <button type="submit" id="gemini-send-btn" class="gemini-send-btn" aria-label="Enviar mensaje">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </form>
+      <div class="gemini-footer-footnote">
+        <span>Facultad de Medicina UdeA · Respuestas generadas con Google Gemini</span>
+      </div>
+    </footer>
+  </aside>
+
+  <!-- Modal para enviar preguntas al ponente / Teleducación (Firestore) -->
+  <div id="modal-pregunta-backdrop" class="modal-backdrop" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-pregunta-title">
+      <div class="modal-header">
+        <div>
+          <span class="section-label" style="font-size: 0.75rem;">Teleducación Medicina UdeA</span>
+          <h3 id="modal-pregunta-title" style="font-size: 1.25rem; font-family: var(--font-serif); margin-top: 4px;">Enviar Pregunta para el Ponente</h3>
+        </div>
+        <button id="btn-close-modal-pregunta" class="modal-close-btn" aria-label="Cerrar ventana">✕</button>
+      </div>
+      <form id="form-pregunta-ponente" class="modal-body-form">
+        <input type="hidden" id="modal-pregunta-act-id">
+        <div class="form-group">
+          <label for="modal-pregunta-act-title-display">Actividad seleccionada</label>
+          <input type="text" id="modal-pregunta-act-title-display" readonly class="form-control-readonly">
+        </div>
+        <div class="form-group">
+          <label for="modal-pregunta-nombre">Tu nombre completo *</label>
+          <input type="text" id="modal-pregunta-nombre" required class="form-control" placeholder="Ej. Dra. María Gómez">
+        </div>
+        <div class="form-group">
+          <label for="modal-pregunta-email">Correo electrónico (opcional)</label>
+          <input type="email" id="modal-pregunta-email" class="form-control" placeholder="nombre@udea.edu.co">
+        </div>
+        <div class="form-group">
+          <label for="modal-pregunta-texto">Pregunta o inquietud clínica *</label>
+          <textarea id="modal-pregunta-texto" rows="4" required class="form-control" placeholder="Escribe tu consulta para el ponente o el comité académico..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" id="btn-cancel-modal-pregunta" class="btn-secondary">Cancelar</button>
+          <button type="submit" id="btn-submit-modal-pregunta" class="btn-primary">Enviar a Teleducación</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
