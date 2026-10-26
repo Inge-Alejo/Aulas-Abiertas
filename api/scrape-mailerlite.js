@@ -54,14 +54,17 @@ export default async function handler(req, res) {
 
         const html = await fetchRes.text();
         
-        // Limpieza básica de scripts, estilos y etiquetas excesivas para ahorrar tokens
+        // Limpieza profunda de scripts, estilos y atributos CSS redundantes para preservar todo el contenido textual y enlaces
         contentToAnalyze = html
           .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
           .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+          .replace(/<head\b[^<]*(?:(?!<\/head>)<[^<]*)*<\/head>/gi, '')
           .replace(/<!--[\s\S]*?-->/g, '')
           .replace(/<svg\b[^<]*(?:(?!<\/svg>)<[^<]*)*<\/svg>/gi, '')
-          .replace(/\s{2,}/g, ' ')
-          .slice(0, 70000); // Limitar a tamaño seguro de contexto
+          .replace(/\s*(?:style|class|id|cellpadding|cellspacing|border|width|height|bgcolor|align|valign|target|role|data-[a-z-]+|aria-[a-z-]+)="[^"]*"/gi, '')
+          .replace(/\s*(?:style|class|id|cellpadding|cellspacing|border|width|height|bgcolor|align|valign|target|role|data-[a-z-]+|aria-[a-z-]+)='[^']*'/gi, '')
+          .replace(/<(?:\/)?(?:tbody|thead|tfoot)>/gi, '')
+          .replace(/\s{2,}/g, ' ');
       } catch (err) {
         return res.status(400).json({
           error: `No fue posible descargar el contenido del enlace: ${err.message}`
@@ -74,23 +77,27 @@ export default async function handler(req, res) {
     }
 
     const systemInstruction = `Eres un extractor experto de datos estructurados para la Facultad de Medicina de la Universidad de Antioquia (UdeA) y Aulas Abiertas.
-Tu tarea es analizar el texto/HTML del boletín de MailerLite y extraer cada una de las conferencias o actividades académicas programadas para la semana.
+Tu tarea es analizar minuciosamente TODO el boletín semanal de MailerLite y extraer CADA UNA de las conferencias o actividades académicas programadas para todos los días de la semana (Lunes, Martes, Miércoles, Jueves, Viernes, Sábado/Domingo).
 
-CAMPOS A EXTRAER POR CADA ACTIVIDAD (Estrictamente en formato JSON):
+INSTRUCCIONES CLAVE DE EXTRACCIÓN:
+1. EXHAUSTIVIDAD TOTAL: El boletín contiene habitualmente entre 30 y 40 conferencias en total para toda la semana. Debes recorrer el documento de principio a fin y extraer ABSOLUTAMENTE TODAS las actividades sin omitir ninguna y sin detenerte prematuramente.
+2. FECHAS EXACTAS: El boletín agrupa las conferencias bajo encabezados de días como "Lunes 26 de octubre", "Martes 27 de octubre", "Miércoles 28 de octubre", "Jueves 29 de octubre", "Viernes 30 de octubre". Determina el año, mes y día exactos y escribe la fecha en formato ISO "AAAA-MM-DD" (por ejemplo: "2026-10-26") para cada actividad de ese día.
+3. HORA: La hora de inicio (start_time) normalizada en formato 24h "HH:mm" (ej: "07:00", "08:30", "14:00"). La hora de fin (end_time) si existe en "HH:mm", o cadena vacía "" si no se especifica.
+4. CAMPOS A EXTRAER POR CADA ACTIVIDAD (JSON):
 - id: Identificador único generado (ej: "AA-2026-001", "AA-2026-002", etc.)
-- date: Fecha en formato ISO "AAAA-MM-DD" (determina el año, mes y día a partir de los encabezados de la semana del boletín).
-- start_time: Hora de inicio normalizada en formato 24h "HH:mm" (ej: "07:00", "14:00").
-- end_time: Hora de finalización en formato 24h "HH:mm" si existe, o cadena vacía "" si no se especifica.
-- department: Departamento, servicio o especialidad médica (ej: "Urología", "Medicina Interna", "GREAPIC", "Cirugía", etc.).
-- title: Título exacto y completo de la conferencia o tema clínico.
-- speakers: Nombre del ponente o ponentes separados por punto y coma ";". Si no hay, coloca "".
-- modality: "Virtual", "Presencial", "Híbrida" o "Por confirmar".
-- location: Lugar físico o plataforma indicada (ej: "Piso 5 Bloque Médico", "Auditorio Central", "Zoom", "Teams").
-- meeting_url: URL real de conexión si aparece en el boletín, o "".
-- recording_url: URL de grabación o transmisión en YouTube si aparece, o "".
-- summary: Breve descripción o sinopsis de la sesión si existe, o "".
+- date: Fecha en formato "AAAA-MM-DD"
+- start_time: Hora de inicio en formato "HH:mm" (24h)
+- end_time: Hora de finalización "HH:mm" o ""
+- department: Especialidad, servicio o departamento médico (ej: "Urología", "Medicina Interna", "Dermatología", "Cirugía General", "GREAPIC", etc.)
+- title: Título completo y exacto de la conferencia
+- speakers: Nombre del ponente o ponentes separados por punto y coma ";". Si no hay, ""
+- modality: "Virtual", "Presencial", "Híbrida" o "Por confirmar"
+- location: Lugar físico o plataforma (ej: "Piso 5", "Auditorio", "Teams", "Zoom")
+- meeting_url: URL real de conexión (Teams, Zoom, Meet, etc.) si aparece en el boletín, o ""
+- recording_url: URL de grabación o transmisión si aparece, o ""
+- summary: Breve descripción o temática si se detalla en el texto, o ""
 
-IMPORTANTE: Devuelve ÚNICAMENTE un bloque de código JSON con un arreglo de objetos. No agregues explicaciones fuera del JSON.`;
+IMPORTANTE: Devuelve ÚNICAMENTE un bloque JSON válido con el arreglo completo de actividades sin texto adicional.`;
 
     let successfulResponse = null;
     let usedModel = null;

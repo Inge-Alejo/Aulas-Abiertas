@@ -421,7 +421,9 @@ function populateDayFilter() {
   const select = document.getElementById('filter-day');
   if (!select) return;
 
-  const weekActivities = state.allActivities.filter(a => a.weekKey === state.selectedWeekKey);
+  const weekActivities = (document.getElementById('current-week-title') && state.selectedWeekKey)
+    ? state.allActivities.filter(a => a.weekKey === state.selectedWeekKey)
+    : state.allActivities;
   const days = Array.from(new Set(weekActivities.map(a => a.date))).sort();
 
   let optionsHtml = '<option value="">Todos los días</option>';
@@ -442,8 +444,10 @@ function renderScheduleList() {
   const clearBtn = document.getElementById('btn-clear-filters');
   if (!container) return;
 
-  // Filtrar actividades de la semana seleccionada
-  const weekActivities = state.allActivities.filter(a => a.weekKey === state.selectedWeekKey);
+  // Filtrar actividades (de la semana si existe selector, o todas si se eliminó la barra)
+  const weekActivities = (document.getElementById('current-week-title') && state.selectedWeekKey)
+    ? state.allActivities.filter(a => a.weekKey === state.selectedWeekKey)
+    : state.allActivities;
   const filtered = filterActivities(weekActivities, state.filters);
 
   // Mostrar / ocultar botón de limpiar filtros
@@ -1002,11 +1006,10 @@ function setupAdminPanel() {
         return;
       }
 
-      const headers = ['Fecha', 'Hora Inicio', 'Hora Fin', 'Departamento / Especialidad', 'Título de la Conferencia', 'Ponente(s)', 'Modalidad', 'Lugar', 'Enlace de Conexión', 'Grabación'];
+      const headers = ['Fecha', 'Hora', 'Departamento / Especialidad', 'Título de la Conferencia', 'Ponente(s)', 'Modalidad', 'Lugar', 'Enlace de Conexión', 'Grabación'];
       const rows = lastScrapedActivities.map(a => [
         a.date || '',
         a.start_time || a.startTime || '',
-        a.end_time || a.endTime || '',
         a.department || '',
         a.title || '',
         a.speakers || '',
