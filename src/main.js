@@ -13,18 +13,12 @@ import {
 } from './services/scheduleService.js';
 
 import {
-  getFavoriteActivityIds,
-  toggleFavoriteActivity,
-  submitActivityQuestion,
-  getFirebaseStatus,
   loginWithEmail,
-  registerWithEmail,
   logoutUser,
   onAuthChange
 } from './services/firebaseService.js';
 
 import {
-  askGeminiAssistant,
   scrapeMailerliteWithGemini
 } from './services/geminiService.js';
 
@@ -39,9 +33,6 @@ const state = {
     department: '',
     modality: ''
   },
-  favorites: [],
-  onlyFavoritesFilter: false,
-  chatHistory: [],
   isLoading: true,
   isRefreshing: false,
   dataSourceInfo: {
@@ -145,18 +136,9 @@ const VERIFIED_PLAYLISTS = [
 document.addEventListener('DOMContentLoaded', async () => {
   setupNavigation();
   renderPlaylists();
-  
-  // Cargar favoritos guardados en Firebase / LocalStorage
-  state.favorites = await getFavoriteActivityIds();
-  updateFavoritesBadge();
-  setupFavoritesFilter();
-  
   await loadAndRenderSchedule();
   setupFilterListeners();
-  setupGeminiChat();
-  setupQuestionModal();
-  setupAuthUI();
-  setupMailerliteScraper();
+  setupAdminPanel();
 });
 
 /**
@@ -419,13 +401,7 @@ function renderScheduleList() {
   if (!container) return;
 
   // Filtrar actividades de la semana seleccionada
-  let weekActivities = state.allActivities.filter(a => a.weekKey === state.selectedWeekKey);
-
-  // Filtro de Mis Favoritos (Firebase / LocalStorage)
-  if (state.onlyFavoritesFilter) {
-    weekActivities = weekActivities.filter(a => state.favorites.includes(a.id));
-  }
-
+  const weekActivities = state.allActivities.filter(a => a.weekKey === state.selectedWeekKey);
   const filtered = filterActivities(weekActivities, state.filters);
 
   // Mostrar / ocultar botón de limpiar filtros
@@ -433,8 +409,7 @@ function renderScheduleList() {
     state.filters.search ||
     state.filters.day ||
     state.filters.department ||
-    state.filters.modality ||
-    state.onlyFavoritesFilter
+    state.filters.modality
   );
 
   if (clearBtn) {
@@ -446,14 +421,13 @@ function renderScheduleList() {
   }
 
   if (filtered.length === 0) {
-    const isFavEmpty = state.onlyFavoritesFilter && state.favorites.length === 0;
     container.innerHTML = `
       <div class="empty-results-box" role="status">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--text-muted); margin-bottom: 12px;">
           <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
-        <h3>${isFavEmpty ? 'Aún no tienes actividades favoritas' : 'No se encontraron actividades'}</h3>
-        <p>${isFavEmpty ? 'Haz clic en la estrella ★ "Guardar" de cualquier actividad para crear tu agenda personalizada.' : 'No existen sesiones académicas que coincidan con los criterios de búsqueda o filtros seleccionados.'}</p>
+        <h3>No se encontraron actividades</h3>
+        <p>No existen sesiones académicas que coincidan con los criterios de búsqueda o filtros seleccionados.</p>
         <button class="btn-secondary" id="btn-reset-filters-empty">
           Limpiar todos los filtros
         </button>
@@ -506,7 +480,6 @@ function renderScheduleList() {
 function renderActivityCard(act) {
   const hasMeeting = Boolean(act.meeting_url);
   const hasRecording = Boolean(act.recording_url);
-  const isFav = state.favorites.includes(act.id);
 
   return `
     <article class="activity-card" id="act-${act.id}" tabindex="0" aria-label="${act.title}">
@@ -554,19 +527,6 @@ function renderActivityCard(act) {
             Ver grabación
           </a>
         ` : ''}
-      </div>
-
-      <!-- Barra de interacción complementaria (Firebase Favorites + Gemini IA + Preguntas) -->
-      <div class="card-actions-row">
-        <button class="btn-card-fav ${isFav ? 'is-favorite' : ''}" data-act-id="${act.id}" title="${isFav ? 'Quitar de favoritos' : 'Guardar en mis favoritos'}">
-          <span>★</span> ${isFav ? 'En mis favoritos' : 'Guardar'}
-        </button>
-        <button class="btn-card-ask-ai" data-act-id="${act.id}" title="Consultar con el Asistente IA">
-          <span>✦</span> Preguntar a IA
-        </button>
-        <button class="btn-card-question" data-act-id="${act.id}" title="Enviar pregunta al ponente o Teleducación">
-          <span>✉</span> Preguntar al ponente
-        </button>
       </div>
     </article>
   `;
@@ -777,507 +737,161 @@ function showToast(message, type = 'info') {
   }, 3500);
 }
 
-/**
- * Actualiza el contador de favoritos en la interfaz
- */
-function updateFavoritesBadge() {
-  const badge = document.getElementById('fav-count-badge');
-  if (badge) {
-    badge.textContent = state.favorites.length;
-  }
-}
-
-/**
- * Configura el botón para alternar el filtro de solo favoritos
- */
-function setupFavoritesFilter() {
-  const favFilterBtn = document.getElementById('btn-toggle-favorites-filter');
-  if (favFilterBtn) {
-    favFilterBtn.addEventListener('click', () => {
-      state.onlyFavoritesFilter = !state.onlyFavoritesFilter;
-      favFilterBtn.classList.toggle('active', state.onlyFavoritesFilter);
-      favFilterBtn.setAttribute('aria-pressed', state.onlyFavoritesFilter);
-      renderScheduleList();
-    });
-  }
-
-  // Delegación de eventos para botones en tarjetas de actividad
-  const container = document.getElementById('schedule-days-container');
-  if (container) {
-    container.addEventListener('click', async (e) => {
-      // 1. Guardar / Quitar favorito
-      const favBtn = e.target.closest('.btn-card-fav');
-      if (favBtn) {
-        const actId = favBtn.dataset.actId;
-        const actObj = state.allActivities.find(a => a.id === actId);
-        favBtn.disabled = true;
-        try {
-          const nowFav = await toggleFavoriteActivity(actId, actObj || {});
-          if (nowFav) {
-            state.favorites.push(actId);
-            showToast('Actividad guardada en favoritos', 'success');
-          } else {
-            state.favorites = state.favorites.filter(id => id !== actId);
-            showToast('Actividad eliminada de favoritos', 'info');
-          }
-          updateFavoritesBadge();
-          renderScheduleList();
-        } catch (err) {
-          showToast('No se pudo actualizar el favorito', 'error');
-        } finally {
-          favBtn.disabled = false;
-        }
-        return;
-      }
-
-      // 2. Preguntar a la IA sobre esta actividad
-      const aiBtn = e.target.closest('.btn-card-ask-ai');
-      if (aiBtn) {
-        const actId = aiBtn.dataset.actId;
-        const act = state.allActivities.find(a => a.id === actId);
-        if (act) {
-          openGeminiDrawerWithPrompt(`Cuéntame sobre la conferencia de ${act.department}: "${act.title}" programada para el ${act.dayLabel} a las ${act.startTime} COT.`);
-        }
-        return;
-      }
-
-      // 3. Enviar pregunta al ponente
-      const qBtn = e.target.closest('.btn-card-question');
-      if (qBtn) {
-        const actId = qBtn.dataset.actId;
-        const act = state.allActivities.find(a => a.id === actId);
-        if (act) {
-          openQuestionModal(act);
-        }
-        return;
-      }
-    });
-  }
-}
-
-/**
- * Configuración del Asistente Académico IA con Google Gemini
- */
-function setupGeminiChat() {
-  const openBtn = document.getElementById('btn-open-gemini-chat');
-  const closeBtn = document.getElementById('btn-close-gemini-chat');
-  const drawer = document.getElementById('gemini-chat-drawer');
-  const backdrop = document.getElementById('gemini-chat-backdrop');
-  const form = document.getElementById('gemini-chat-form');
-  const input = document.getElementById('gemini-user-input');
-  const chipsContainer = document.querySelector('.gemini-quick-prompts');
-
-  const openDrawer = () => {
-    if (drawer && backdrop) {
-      drawer.classList.add('active');
-      backdrop.classList.add('active');
-      drawer.setAttribute('aria-hidden', 'false');
-      backdrop.setAttribute('aria-hidden', 'false');
-      setTimeout(() => input?.focus(), 250);
-    }
-  };
-
-  const closeDrawer = () => {
-    if (drawer && backdrop) {
-      drawer.classList.remove('active');
-      backdrop.classList.remove('active');
-      drawer.setAttribute('aria-hidden', 'true');
-      backdrop.setAttribute('aria-hidden', 'true');
-    }
-  };
-
-  if (openBtn) openBtn.addEventListener('click', openDrawer);
-  if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
-  if (backdrop) backdrop.addEventListener('click', closeDrawer);
-
-  // Cerrar con Escape
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && drawer?.classList.contains('active')) {
-      closeDrawer();
-    }
-  });
-
-  // Chips de preguntas rápidas
-  if (chipsContainer) {
-    chipsContainer.addEventListener('click', (e) => {
-      const chip = e.target.closest('.quick-prompt-chip');
-      if (chip && chip.dataset.prompt) {
-        sendChatMessage(chip.dataset.prompt);
-      }
-    });
-  }
-
-  // Envío del formulario
-  if (form) {
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const prompt = input.value.trim();
-      if (!prompt) return;
-      input.value = '';
-      sendChatMessage(prompt);
-    });
-  }
-}
-
-/**
- * Abre el panel de Gemini con una pregunta predefinida
- */
-function openGeminiDrawerWithPrompt(promptText) {
-  const openBtn = document.getElementById('btn-open-gemini-chat');
-  if (openBtn) openBtn.click();
-  sendChatMessage(promptText);
-}
-
-/**
- * Envía un mensaje a la API de Gemini y muestra la respuesta en el chat
- */
-async function sendChatMessage(promptText) {
-  const messagesContainer = document.getElementById('gemini-messages-container');
-  const typingIndicator = document.getElementById('gemini-typing-indicator');
-  const modelBadge = document.getElementById('gemini-active-model-badge');
-
-  if (!messagesContainer) return;
-
-  // 1. Renderizar mensaje del usuario
-  const userMsgEl = document.createElement('div');
-  userMsgEl.className = 'gemini-msg gemini-msg-user';
-  userMsgEl.textContent = promptText;
-  messagesContainer.appendChild(userMsgEl);
-  messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-  // Registrar en historial
-  state.chatHistory.push({ role: 'user', text: promptText });
-
-  // 2. Mostrar indicador de tipeo
-  if (typingIndicator) typingIndicator.style.display = 'block';
-
-  try {
-    const result = await askGeminiAssistant(promptText, state.chatHistory.slice(0, -1), state.allActivities);
-    
-    // Registrar respuesta del modelo en historial
-    state.chatHistory.push({ role: 'model', text: result.answer });
-
-    // Actualizar badge con el modelo usado
-    if (modelBadge && result.modelUsed) {
-      modelBadge.innerHTML = `<span class="dot-live"></span> ${result.modelUsed}`;
-    }
-
-    // 3. Renderizar mensaje de respuesta
-    const modelMsgEl = document.createElement('div');
-    modelMsgEl.className = 'gemini-msg gemini-msg-model';
-    
-    // Formatear texto simple con negritas y saltos de línea
-    const formatted = formatMarkdownText(result.answer);
-    modelMsgEl.innerHTML = formatted + `<span class="gemini-msg-meta">${result.modelUsed}</span>`;
-    
-    messagesContainer.appendChild(modelMsgEl);
-  } catch (err) {
-    const errorMsgEl = document.createElement('div');
-    errorMsgEl.className = 'gemini-msg gemini-msg-model';
-    errorMsgEl.style.borderColor = '#FCA5A5';
-    errorMsgEl.innerHTML = `⚠️ <strong>Aviso:</strong> ${err.message || 'No fue posible completar la consulta en este momento.'}`;
-    messagesContainer.appendChild(errorMsgEl);
-  } finally {
-    if (typingIndicator) typingIndicator.style.display = 'none';
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-  }
-}
-
-/**
- * Formatea texto de Markdown básico a HTML seguro
- */
-function formatMarkdownText(text) {
-  if (!text) return '';
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    .replace(/`(.*?)`/g, '<code>$1</code>')
-    .replace(/\n\n/g, '<br><br>')
-    .replace(/\n/g, '<br>');
-}
-
-/**
- * Modal para enviar preguntas al ponente y guardarlas en Firestore
- */
-let currentQuestionAct = null;
-
-function openQuestionModal(act) {
-  currentQuestionAct = act;
-  const modal = document.getElementById('modal-pregunta-backdrop');
-  const actTitleInput = document.getElementById('modal-pregunta-act-title-display');
-  const actIdInput = document.getElementById('modal-pregunta-act-id');
-
-  if (actTitleInput) actTitleInput.value = `${act.department}: ${act.title}`;
-  if (actIdInput) actIdInput.value = act.id;
-
-  if (modal) {
-    modal.style.display = 'flex';
-    modal.setAttribute('aria-hidden', 'false');
-    document.getElementById('modal-pregunta-nombre')?.focus();
-  }
-}
-
-function closeQuestionModal() {
-  const modal = document.getElementById('modal-pregunta-backdrop');
-  if (modal) {
-    modal.style.display = 'none';
-    modal.setAttribute('aria-hidden', 'true');
-  }
-}
-
-function setupQuestionModal() {
-  const modal = document.getElementById('modal-pregunta-backdrop');
-  const closeBtn = document.getElementById('btn-close-modal-pregunta');
-  const cancelBtn = document.getElementById('btn-cancel-modal-pregunta');
-  const form = document.getElementById('form-pregunta-ponente');
-
-  if (closeBtn) closeBtn.addEventListener('click', closeQuestionModal);
-  if (cancelBtn) cancelBtn.addEventListener('click', closeQuestionModal);
-  if (modal) {
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) closeQuestionModal();
-    });
-  }
-
-  if (form) {
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const submitBtn = document.getElementById('btn-submit-modal-pregunta');
-      const actId = document.getElementById('modal-pregunta-act-id').value;
-      const userName = document.getElementById('modal-pregunta-nombre').value.trim();
-      const userEmail = document.getElementById('modal-pregunta-email').value.trim();
-      const questionText = document.getElementById('modal-pregunta-texto').value.trim();
-
-      if (!questionText || !userName) return;
-
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Enviando...';
-      }
-
-      try {
-        await submitActivityQuestion({
-          activityId: actId,
-          activityTitle: currentQuestionAct ? currentQuestionAct.title : '',
-          activityDepartment: currentQuestionAct ? currentQuestionAct.department : '',
-          userName,
-          userEmail,
-          questionText
-        });
-
-        showToast('¡Pregunta enviada exitosamente a Teleducación!', 'success');
-        form.reset();
-        closeQuestionModal();
-      } catch (err) {
-        showToast('Error al enviar la pregunta. Por favor intenta de nuevo.', 'error');
-      } finally {
-        if (submitBtn) {
-          submitBtn.disabled = false;
-          submitBtn.textContent = 'Enviar a Teleducación';
-        }
-      }
-    });
-  }
-}
-
 /* ==========================================================================
-   AUTENTICACIÓN CON FIREBASE (LOGIN Y REGISTRO CON CORREO Y CONTRASEÑA)
-   ========================================================================== */
-
-function setupAuthUI() {
-  const loginHeaderBtn = document.getElementById('btn-auth-header');
-  const userBadge = document.getElementById('auth-user-badge');
-  const userNameText = document.getElementById('auth-user-name');
-  const logoutBtn = document.getElementById('btn-auth-logout');
-
-  const modal = document.getElementById('modal-auth-backdrop');
-  const closeBtn = document.getElementById('btn-close-modal-auth');
-  const cancelBtn = document.getElementById('btn-cancel-modal-auth');
-  const form = document.getElementById('form-auth');
-
-  const tabLogin = document.getElementById('tab-auth-login');
-  const tabRegister = document.getElementById('tab-auth-register');
-  const nameGroup = document.getElementById('group-auth-name');
-  const nameInput = document.getElementById('auth-input-name');
-  const emailInput = document.getElementById('auth-input-email');
-  const passwordInput = document.getElementById('auth-input-password');
-  const submitBtn = document.getElementById('btn-submit-modal-auth');
-  const errorAlert = document.getElementById('auth-error-alert');
-  const successAlert = document.getElementById('auth-success-alert');
-
-  let isRegisterMode = false;
-
-  const setMode = (register) => {
-    isRegisterMode = register;
-    tabLogin.classList.toggle('active', !register);
-    tabRegister.classList.toggle('active', register);
-    tabLogin.setAttribute('aria-selected', !register);
-    tabRegister.setAttribute('aria-selected', register);
-    nameGroup.style.display = register ? 'flex' : 'none';
-    submitBtn.textContent = register ? 'Crear Cuenta' : 'Iniciar Sesión';
-    if (errorAlert) errorAlert.style.display = 'none';
-    if (successAlert) successAlert.style.display = 'none';
-  };
-
-  const openAuthModal = () => {
-    if (modal) {
-      modal.style.display = 'flex';
-      modal.setAttribute('aria-hidden', 'false');
-      setMode(false);
-      emailInput?.focus();
-    }
-  };
-
-  const closeAuthModal = () => {
-    if (modal) {
-      modal.style.display = 'none';
-      modal.setAttribute('aria-hidden', 'true');
-      form.reset();
-    }
-  };
-
-  if (loginHeaderBtn) loginHeaderBtn.addEventListener('click', openAuthModal);
-  if (closeBtn) closeBtn.addEventListener('click', closeAuthModal);
-  if (cancelBtn) cancelBtn.addEventListener('click', closeAuthModal);
-  if (modal) {
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) closeAuthModal();
-    });
-  }
-
-  if (tabLogin) tabLogin.addEventListener('click', () => setMode(false));
-  if (tabRegister) tabRegister.addEventListener('click', () => setMode(true));
-
-  // Escuchar estado de autenticación en Firebase / Local
-  onAuthChange((user) => {
-    if (user) {
-      if (loginHeaderBtn) loginHeaderBtn.style.display = 'none';
-      if (userBadge) userBadge.style.display = 'inline-flex';
-      if (userNameText) {
-        userNameText.textContent = user.displayName || user.email.split('@')[0];
-      }
-    } else {
-      if (loginHeaderBtn) loginHeaderBtn.style.display = 'inline-flex';
-      if (userBadge) userBadge.style.display = 'none';
-    }
-  });
-
-  // Cerrar sesión
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', async () => {
-      await logoutUser();
-      showToast('Sesión cerrada correctamente', 'info');
-    });
-  }
-
-  // Envío del formulario de Login / Registro
-  if (form) {
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = emailInput.value.trim();
-      const password = passwordInput.value;
-      const displayName = nameInput?.value.trim() || '';
-
-      if (errorAlert) errorAlert.style.display = 'none';
-      if (successAlert) successAlert.style.display = 'none';
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Procesando...';
-
-      try {
-        if (isRegisterMode) {
-          await registerWithEmail(email, password, displayName);
-          showToast(`¡Bienvenido a Aulas Abiertas! Cuenta creada con éxito.`, 'success');
-        } else {
-          await loginWithEmail(email, password);
-          showToast(`¡Bienvenido de nuevo a Aulas Abiertas!`, 'success');
-        }
-        closeAuthModal();
-      } catch (err) {
-        if (errorAlert) {
-          errorAlert.textContent = err.message || 'Error al autenticar.';
-          errorAlert.style.display = 'block';
-        }
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = isRegisterMode ? 'Crear Cuenta' : 'Iniciar Sesión';
-      }
-    });
-  }
-}
-
-/* ==========================================================================
-   EXTRACTOR INTELIGENTE DE BOLETINES MAILERLITE CON GEMINI IA
+   PANEL ADMINISTRATIVO PRIVADO (TELEDUCACIÓN UDEA)
+   Acceso por Firebase Auth + Extractor con Gemini IA + Actualización en Vivo
    ========================================================================== */
 
 let lastScrapedActivities = [];
 let lastScrapedCsv = '';
 
-function setupMailerliteScraper() {
-  const openBtn = document.getElementById('btn-header-scraper');
-  const modal = document.getElementById('modal-scraper-backdrop');
-  const closeBtn = document.getElementById('btn-close-modal-scraper');
-  const form = document.getElementById('form-scraper-mailerlite');
-  const urlInput = document.getElementById('scraper-input-url');
-  const submitBtn = document.getElementById('btn-run-scraper');
-  const loadingEl = document.getElementById('scraper-loading');
-  const resultsEl = document.getElementById('scraper-results');
-  const countBadge = document.getElementById('scraper-count-badge');
-  const modelBadge = document.getElementById('scraper-model-badge');
-  const tbody = document.getElementById('scraper-preview-tbody');
-  const copyCsvBtn = document.getElementById('btn-scraper-copy-csv');
-  const downloadCsvBtn = document.getElementById('btn-scraper-download-csv');
+function setupAdminPanel() {
+  const adminNavBtn = document.getElementById('btn-admin-auth');
+  const modal = document.getElementById('modal-admin-backdrop');
+  const closeBtn1 = document.getElementById('btn-close-modal-admin');
+  const closeBtn2 = document.getElementById('btn-close-admin-dash');
+  const cancelBtn = document.getElementById('btn-cancel-admin-login');
 
-  const openScraperModal = () => {
+  const viewLogin = document.getElementById('admin-view-login');
+  const viewDash = document.getElementById('admin-view-dashboard');
+  const userDisplay = document.getElementById('admin-user-display');
+  const logoutBtn = document.getElementById('btn-admin-logout');
+
+  const loginForm = document.getElementById('form-admin-login');
+  const emailInput = document.getElementById('admin-input-email');
+  const passwordInput = document.getElementById('admin-input-password');
+  const loginError = document.getElementById('admin-login-error');
+  const loginSubmitBtn = document.getElementById('btn-submit-admin-login');
+
+  const scraperForm = document.getElementById('form-admin-scraper');
+  const scraperUrlInput = document.getElementById('admin-scraper-url');
+  const scraperSubmitBtn = document.getElementById('btn-admin-run-ai');
+  const scraperLoading = document.getElementById('admin-scraper-loading');
+  const scraperResults = document.getElementById('admin-scraper-results');
+  const countBadge = document.getElementById('admin-scraped-count');
+  const modelBadge = document.getElementById('admin-scraped-model');
+  const previewTbody = document.getElementById('admin-preview-tbody');
+  const applyLiveBtn = document.getElementById('btn-admin-apply-live');
+  const downloadCsvBtn = document.getElementById('btn-admin-download-csv');
+
+  let currentUser = null;
+
+  const openAdminModal = (e) => {
+    if (e) e.preventDefault();
     if (modal) {
       modal.style.display = 'flex';
       modal.setAttribute('aria-hidden', 'false');
-      urlInput?.focus();
+      if (!currentUser) {
+        emailInput?.focus();
+      }
     }
   };
 
-  const closeScraperModal = () => {
+  const closeAdminModal = () => {
     if (modal) {
       modal.style.display = 'none';
       modal.setAttribute('aria-hidden', 'true');
+      if (loginError) loginError.style.display = 'none';
     }
   };
 
-  if (openBtn) openBtn.addEventListener('click', openScraperModal);
-  if (closeBtn) closeBtn.addEventListener('click', closeScraperModal);
+  if (adminNavBtn) adminNavBtn.addEventListener('click', openAdminModal);
+  if (closeBtn1) closeBtn1.addEventListener('click', closeAdminModal);
+  if (closeBtn2) closeBtn2.addEventListener('click', closeAdminModal);
+  if (cancelBtn) cancelBtn.addEventListener('click', closeAdminModal);
   if (modal) {
     modal.addEventListener('click', (e) => {
-      if (e.target === modal) closeScraperModal();
+      if (e.target === modal) closeAdminModal();
     });
   }
 
-  // Envío de scraping con Gemini IA
-  if (form) {
-    form.addEventListener('submit', async (e) => {
+  // Estado de autenticación
+  onAuthChange((user) => {
+    currentUser = user;
+    if (user) {
+      if (adminNavBtn) {
+        adminNavBtn.textContent = '⚙ Panel';
+        adminNavBtn.style.color = 'var(--accent-lime)';
+      }
+      if (viewLogin) viewLogin.style.display = 'none';
+      if (viewDash) viewDash.style.display = 'block';
+      if (userDisplay) {
+        userDisplay.textContent = user.displayName || user.email.split('@')[0];
+      }
+    } else {
+      if (adminNavBtn) {
+        adminNavBtn.textContent = 'Acceso';
+        adminNavBtn.style.color = '';
+      }
+      if (viewLogin) viewLogin.style.display = 'block';
+      if (viewDash) viewDash.style.display = 'none';
+    }
+  });
+
+  // Login
+  if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const url = urlInput.value.trim();
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+
+      if (loginError) loginError.style.display = 'none';
+      if (loginSubmitBtn) {
+        loginSubmitBtn.disabled = true;
+        loginSubmitBtn.textContent = 'Verificando...';
+      }
+
+      try {
+        await loginWithEmail(email, password);
+        showToast('Acceso administrativo concedido', 'success');
+        loginForm.reset();
+      } catch (err) {
+        if (loginError) {
+          loginError.textContent = err.message || 'Error de credenciales.';
+          loginError.style.display = 'block';
+        }
+      } finally {
+        if (loginSubmitBtn) {
+          loginSubmitBtn.disabled = false;
+          loginSubmitBtn.textContent = 'Iniciar Sesión';
+        }
+      }
+    });
+  }
+
+  // Logout
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+      await logoutUser();
+      showToast('Sesión administrativa cerrada', 'info');
+      closeAdminModal();
+    });
+  }
+
+  // Scraper con Gemini IA
+  if (scraperForm) {
+    scraperForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const url = scraperUrlInput.value.trim();
       if (!url) return;
 
-      submitBtn.disabled = true;
-      if (loadingEl) loadingEl.style.display = 'block';
-      if (resultsEl) resultsEl.style.display = 'none';
+      if (scraperSubmitBtn) scraperSubmitBtn.disabled = true;
+      if (scraperLoading) scraperLoading.style.display = 'block';
+      if (scraperResults) scraperResults.style.display = 'none';
 
       try {
         const result = await scrapeMailerliteWithGemini(url);
         lastScrapedActivities = result.activities || [];
         lastScrapedCsv = result.csvContent || '';
 
-        if (countBadge) countBadge.textContent = `${result.count || lastScrapedActivities.length} actividades extraídas`;
-        if (modelBadge) modelBadge.textContent = result.modelUsed || 'Gemini 3.5 / 3.1 Flash Lite';
+        if (countBadge) countBadge.textContent = `${lastScrapedActivities.length} actividades extraídas`;
+        if (modelBadge) modelBadge.textContent = result.modelUsed || 'Gemini IA';
 
-        // Renderizar tabla previa
-        if (tbody) {
-          tbody.innerHTML = lastScrapedActivities.map((act) => `
+        if (previewTbody) {
+          previewTbody.innerHTML = lastScrapedActivities.map((act) => `
             <tr>
               <td><strong>${act.date}</strong></td>
-              <td>${act.start_time || act.startTime}</td>
+              <td>${act.start_time || act.startTime} COT</td>
               <td>${act.department}</td>
               <td>${act.title}</td>
               <td><span class="card-modality-badge modality-${(act.modality || '').toLowerCase()}">${act.modality || 'Virtual'}</span></td>
@@ -1285,44 +899,70 @@ function setupMailerliteScraper() {
           `).join('');
         }
 
-        if (resultsEl) resultsEl.style.display = 'block';
+        if (scraperResults) scraperResults.style.display = 'block';
         showToast(`¡Gemini IA extrajo ${lastScrapedActivities.length} conferencias con éxito!`, 'success');
       } catch (err) {
-        showToast(`Error al procesar boletín: ${err.message}`, 'error');
+        showToast(`Error: ${err.message}`, 'error');
       } finally {
-        submitBtn.disabled = false;
-        if (loadingEl) loadingEl.style.display = 'none';
+        if (scraperSubmitBtn) scraperSubmitBtn.disabled = false;
+        if (scraperLoading) scraperLoading.style.display = 'none';
       }
     });
   }
 
-  // Copiar CSV al portapapeles
-  if (copyCsvBtn) {
-    copyCsvBtn.addEventListener('click', () => {
-      if (!lastScrapedCsv) {
-        showToast('No hay datos CSV para copiar.', 'info');
+  // Actualizar página en vivo con 1 clic
+  if (applyLiveBtn) {
+    applyLiveBtn.addEventListener('click', () => {
+      if (!lastScrapedActivities || lastScrapedActivities.length === 0) {
+        showToast('No hay actividades para aplicar.', 'info');
         return;
       }
-      navigator.clipboard.writeText(lastScrapedCsv).then(() => {
-        showToast('¡CSV copiado al portapapeles! Listo para pegar en Google Sheets.', 'success');
-      }).catch(() => {
-        showToast('No se pudo copiar automáticamente. Puedes descargar el archivo .csv.', 'info');
-      });
+
+      // Normalizar estructura de actividades
+      const normalized = lastScrapedActivities.map((a, i) => ({
+        id: a.id || `SCRAP-${Date.now()}-${i}`,
+        date: a.date,
+        startTime: a.start_time || a.startTime || '07:00',
+        endTime: a.end_time || a.endTime || '',
+        department: a.department || 'Facultad de Medicina',
+        title: a.title,
+        speakers: a.speakers || '',
+        modality: a.modality || 'Virtual',
+        location: a.location || '',
+        meeting_url: a.meeting_url || a.meetingUrl || '',
+        recording_url: a.recording_url || a.recordingUrl || '',
+        summary: a.summary || '',
+        dayLabel: formatDayLabel(a.date),
+        weekKey: getWeekKeyFromDate(a.date)
+      }));
+
+      state.allActivities = normalized;
+      state.availableWeeks = getAvailableWeeks(state.allActivities);
+      if (state.availableWeeks.length > 0) {
+        state.selectedWeekKey = state.availableWeeks[0].weekKey;
+      }
+
+      renderSpotlightActivity();
+      renderWeekNavigator();
+      renderScheduleList();
+
+      showToast(`¡Página actualizada en vivo con ${normalized.length} conferencias!`, 'success');
+      closeAdminModal();
     });
   }
 
-  // Descargar archivo .csv
+  // Descargar CSV
   if (downloadCsvBtn) {
     downloadCsvBtn.addEventListener('click', () => {
       if (!lastScrapedCsv) {
-        showToast('No hay datos CSV para descargar.', 'info');
+        showToast('No hay datos CSV disponibles.', 'info');
         return;
       }
       const blob = new Blob([lastScrapedCsv], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.setAttribute('href', url);
-      link.setAttribute('download', `aulas_abiertas_programacion_${new Date().toISOString().slice(0, 10)}.csv`);
+      link.setAttribute('download', `aulas_abiertas_mailerlite_${new Date().toISOString().slice(0, 10)}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -1330,6 +970,23 @@ function setupMailerliteScraper() {
       showToast('Descargando archivo CSV...', 'success');
     });
   }
+}
+
+function getWeekKeyFromDate(dateStr) {
+  if (!dateStr) return 'sem-actual';
+  const parts = dateStr.split('-');
+  if (parts.length < 3) return 'sem-actual';
+  const year = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10) - 1;
+  const day = parseInt(parts[2], 10);
+  const d = new Date(year, month, day);
+  const dayOfWeek = (d.getDay() + 6) % 7;
+  const monday = new Date(d);
+  monday.setDate(d.getDate() - dayOfWeek);
+  const mY = monday.getFullYear();
+  const mM = String(monday.getMonth() + 1).padStart(2, '0');
+  const mD = String(monday.getDate()).padStart(2, '0');
+  return `${mY}-${mM}-${mD}`;
 }
 
 

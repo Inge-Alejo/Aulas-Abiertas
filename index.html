@@ -67,23 +67,7 @@
         <a href="#biblioteca" class="nav-link" id="nav-biblioteca">Conferencias</a>
         <a href="#acerca" class="nav-link" id="nav-acerca">Acerca de</a>
         <a href="#contacto" class="nav-link" id="nav-contacto">Contacto</a>
-
-        <button class="btn-nav-scraper" id="btn-header-scraper" title="Extraer programación automáticamente desde boletines MailerLite con Gemini">
-          <span style="color: var(--accent-lime);">✦</span> Extractor MailerLite
-        </button>
-
-        <div id="auth-header-container" class="auth-header-container">
-          <button class="btn-nav-login" id="btn-auth-header" aria-haspopup="dialog">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            <span>Iniciar Sesión</span>
-          </button>
-          <div id="auth-user-badge" class="auth-user-badge" style="display: none;">
-            <span class="user-avatar-icon">👤</span>
-            <span id="auth-user-name" class="user-name-text">Usuario</span>
-            <button id="btn-auth-logout" class="btn-logout-small" title="Cerrar sesión">Salir</button>
-          </div>
-        </div>
-
+        <a href="#admin" class="nav-link nav-admin-link" id="btn-admin-auth">Acceso</a>
         <a href="#programacion" class="btn-cta-nav" id="btn-header-agenda">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           Explorar Agenda
@@ -232,12 +216,6 @@
               <option value="Presencial">Presencial</option>
               <option value="Híbrida">Híbrida</option>
             </select>
-          </div>
-
-          <div>
-            <button id="btn-toggle-favorites-filter" class="filter-favorites-btn" aria-pressed="false" title="Mostrar únicamente actividades guardadas">
-              <span class="star-icon">★</span> Mis Favoritos <span id="fav-count-badge" class="fav-count-badge">0</span>
-            </button>
           </div>
 
           <div>
@@ -487,213 +465,125 @@
     </div>
   </footer>
 
-  <!-- Botón flotante para invocar Asistente Académico IA -->
-  <button id="btn-open-gemini-chat" class="gemini-float-btn" aria-label="Abrir Asistente Académico con Gemini IA" aria-haspopup="dialog">
-    <span class="sparkle-icon" aria-hidden="true">✦</span>
-    <span class="gemini-btn-text">Pregúntale a la IA</span>
-    <span class="gemini-pulse-dot" aria-hidden="true"></span>
-  </button>
-
-  <!-- Drawer / Panel Lateral del Asistente Académico IA -->
-  <div id="gemini-chat-backdrop" class="gemini-drawer-backdrop" aria-hidden="true"></div>
-  <aside id="gemini-chat-drawer" class="gemini-chat-drawer" role="dialog" aria-modal="true" aria-labelledby="gemini-drawer-title" aria-hidden="true">
-    <div class="gemini-drawer-header">
-      <div class="gemini-header-info">
-        <div class="gemini-header-title-row">
-          <span class="gemini-icon-badge" aria-hidden="true">✦</span>
-          <h3 id="gemini-drawer-title">Asistente Aulas Abiertas</h3>
-        </div>
-        <div class="gemini-model-badge" id="gemini-active-model-badge">
-          <span class="dot-live"></span> Gemini 3.5 / 3.1 Flash Lite
-        </div>
-      </div>
-      <button id="btn-close-gemini-chat" class="gemini-btn-close" aria-label="Cerrar Asistente IA">✕</button>
-    </div>
-
-    <div class="gemini-drawer-body">
-      <div class="gemini-welcome-card">
-        <p>👋 Hola, soy tu guía académico. Conozco la agenda semanal, especialidades, ponentes y modalidades de conexión de la Facultad de Medicina.</p>
-        <div class="gemini-quick-prompts" aria-label="Preguntas frecuentes">
-          <button class="quick-prompt-chip" data-prompt="¿Cuáles son las conferencias virtuales de esta semana?">💻 Sesiones virtuales</button>
-          <button class="quick-prompt-chip" data-prompt="¿Qué conferencias hay sobre pediatría o cardiología?">🩺 Pediatría / Cardiología</button>
-          <button class="quick-prompt-chip" data-prompt="Resume las actividades más destacadas de la semana">📋 Resumen semanal</button>
-          <button class="quick-prompt-chip" data-prompt="¿Cuáles son los canales de contacto oficiales?">📞 Contacto oficial</button>
-        </div>
-      </div>
-
-      <div id="gemini-messages-container" class="gemini-messages-list" role="log" aria-live="polite">
-        <!-- Mensajes del chat inyectados dinámicamente -->
-      </div>
-
-      <div id="gemini-typing-indicator" class="gemini-typing" style="display: none;">
-        <span>Consultando modelo Gemini</span>
-        <span class="dots">...</span>
-      </div>
-    </div>
-
-    <footer class="gemini-drawer-footer">
-      <form id="gemini-chat-form" class="gemini-input-form">
-        <input type="text" id="gemini-user-input" class="gemini-input" placeholder="Pregunta sobre la agenda médica..." autocomplete="off" required>
-        <button type="submit" id="gemini-send-btn" class="gemini-send-btn" aria-label="Enviar mensaje">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-        </button>
-      </form>
-      <div class="gemini-footer-footnote">
-        <span>Facultad de Medicina UdeA · Respuestas generadas con Google Gemini</span>
-      </div>
-    </footer>
-  </aside>
-
-  <!-- Modal para enviar preguntas al ponente / Teleducación (Firestore) -->
-  <div id="modal-pregunta-backdrop" class="modal-backdrop" aria-hidden="true" style="display: none;">
-    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-pregunta-title">
-      <div class="modal-header">
-        <div>
-          <span class="section-label" style="font-size: 0.75rem;">Teleducación Medicina UdeA</span>
-          <h3 id="modal-pregunta-title" style="font-size: 1.25rem; font-family: var(--font-serif); margin-top: 4px;">Enviar Pregunta para el Ponente</h3>
-        </div>
-        <button id="btn-close-modal-pregunta" class="modal-close-btn" aria-label="Cerrar ventana">✕</button>
-      </div>
-      <form id="form-pregunta-ponente" class="modal-body-form">
-        <input type="hidden" id="modal-pregunta-act-id">
-        <div class="form-group">
-          <label for="modal-pregunta-act-title-display">Actividad seleccionada</label>
-          <input type="text" id="modal-pregunta-act-title-display" readonly class="form-control-readonly">
-        </div>
-        <div class="form-group">
-          <label for="modal-pregunta-nombre">Tu nombre completo *</label>
-          <input type="text" id="modal-pregunta-nombre" required class="form-control" placeholder="Ej. Dra. María Gómez">
-        </div>
-        <div class="form-group">
-          <label for="modal-pregunta-email">Correo electrónico (opcional)</label>
-          <input type="email" id="modal-pregunta-email" class="form-control" placeholder="nombre@udea.edu.co">
-        </div>
-        <div class="form-group">
-          <label for="modal-pregunta-texto">Pregunta o inquietud clínica *</label>
-          <textarea id="modal-pregunta-texto" rows="4" required class="form-control" placeholder="Escribe tu consulta para el ponente o el comité académico..."></textarea>
-        </div>
-        <div class="modal-footer">
-          <button type="button" id="btn-cancel-modal-pregunta" class="btn-secondary">Cancelar</button>
-          <button type="submit" id="btn-submit-modal-pregunta" class="btn-primary">Enviar a Teleducación</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal de Autenticación Firebase (Correo y Contraseña) -->
-  <div id="modal-auth-backdrop" class="modal-backdrop" aria-hidden="true" style="display: none;">
-    <div class="modal-dialog auth-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-auth-title">
-      <div class="modal-header">
-        <div>
-          <span class="section-label" style="font-size: 0.75rem;">Facultad de Medicina UdeA</span>
-          <h3 id="modal-auth-title" style="font-size: 1.25rem; font-family: var(--font-serif); margin-top: 4px;">Acceso a Aulas Abiertas</h3>
-        </div>
-        <button id="btn-close-modal-auth" class="modal-close-btn" aria-label="Cerrar ventana">✕</button>
-      </div>
-
-      <div class="auth-tabs-row" role="tablist">
-        <button class="auth-tab-btn active" id="tab-auth-login" role="tab" aria-selected="true">Iniciar Sesión</button>
-        <button class="auth-tab-btn" id="tab-auth-register" role="tab" aria-selected="false">Crear Cuenta</button>
-      </div>
-
-      <form id="form-auth" class="modal-body-form">
-        <div id="auth-error-alert" class="auth-alert error" style="display: none;"></div>
-        <div id="auth-success-alert" class="auth-alert success" style="display: none;"></div>
-
-        <div class="form-group" id="group-auth-name" style="display: none;">
-          <label for="auth-input-name">Nombre completo</label>
-          <input type="text" id="auth-input-name" class="form-control" placeholder="Ej. Dr. Alejandro Gómez">
+  <!-- Panel Administrativo Privado de Teleducación (Solo tras iniciar sesión) -->
+  <div id="modal-admin-backdrop" class="modal-backdrop" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog admin-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-admin-title">
+      
+      <!-- VISTA 1: Iniciar Sesión Administrativa -->
+      <div id="admin-view-login">
+        <div class="modal-header">
+          <div>
+            <span class="section-label" style="font-size: 0.75rem;">Facultad de Medicina UdeA</span>
+            <h3 id="modal-admin-title" style="font-size: 1.25rem; font-family: var(--font-serif); margin-top: 4px;">Acceso Administrativo</h3>
+          </div>
+          <button id="btn-close-modal-admin" class="modal-close-btn" aria-label="Cerrar ventana">✕</button>
         </div>
 
-        <div class="form-group">
-          <label for="auth-input-email">Correo electrónico *</label>
-          <input type="email" id="auth-input-email" required class="form-control" placeholder="usuario@udea.edu.co">
-        </div>
+        <form id="form-admin-login" class="modal-body-form">
+          <p style="font-size: 0.85rem; color: var(--text-base); margin-bottom: 6px;">
+            Ingresa con tu correo institucional y contraseña de Firebase para gestionar y actualizar la programación académica.
+          </p>
 
-        <div class="form-group">
-          <label for="auth-input-password">Contraseña *</label>
-          <input type="password" id="auth-input-password" required minlength="6" class="form-control" placeholder="Mínimo 6 caracteres">
-        </div>
+          <div id="admin-login-error" class="auth-alert error" style="display: none;"></div>
 
-        <div class="modal-footer" style="margin-top: 12px;">
-          <button type="button" id="btn-cancel-modal-auth" class="btn-secondary">Cancelar</button>
-          <button type="submit" id="btn-submit-modal-auth" class="btn-primary">Ingresar</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal del Extractor Inteligente MailerLite con Gemini IA -->
-  <div id="modal-scraper-backdrop" class="modal-backdrop" aria-hidden="true" style="display: none;">
-    <div class="modal-dialog scraper-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-scraper-title">
-      <div class="modal-header">
-        <div>
-          <span class="section-label" style="font-size: 0.75rem;">Inteligencia Artificial Gemini 3.5 / 3.1 Flash Lite</span>
-          <h3 id="modal-scraper-title" style="font-size: 1.25rem; font-family: var(--font-serif); margin-top: 4px;">Extractor de Boletines MailerLite</h3>
-        </div>
-        <button id="btn-close-modal-scraper" class="modal-close-btn" aria-label="Cerrar ventana">✕</button>
-      </div>
-
-      <div class="modal-body-form">
-        <p style="font-size: 0.85rem; color: var(--text-base); margin-bottom: 8px;">
-          Ingresa el enlace público de previsualización del boletín de MailerLite donde se publica la programación. Gemini extraerá automáticamente los ponentes, horarios y enlaces en formato CSV para Google Sheets.
-        </p>
-
-        <form id="form-scraper-mailerlite">
           <div class="form-group">
-            <label for="scraper-input-url">Enlace del boletín MailerLite *</label>
-            <input type="url" id="scraper-input-url" class="form-control" value="https://preview.mailerlite.com/k8w4m4m5a6" placeholder="https://preview.mailerlite.com/..." required>
+            <label for="admin-input-email">Correo electrónico *</label>
+            <input type="email" id="admin-input-email" required class="form-control" placeholder="administrador@udea.edu.co">
           </div>
 
-          <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
-            <button type="submit" id="btn-run-scraper" class="btn-primary" style="display: inline-flex; align-items: center; gap: 8px;">
-              <span>✦</span> Extraer Programación con Gemini IA
-            </button>
+          <div class="form-group">
+            <label for="admin-input-password">Contraseña *</label>
+            <input type="password" id="admin-input-password" required minlength="6" class="form-control" placeholder="Contraseña de acceso">
+          </div>
+
+          <div class="modal-footer" style="margin-top: 10px;">
+            <button type="button" id="btn-cancel-admin-login" class="btn-secondary">Cancelar</button>
+            <button type="submit" id="btn-submit-admin-login" class="btn-primary">Iniciar Sesión</button>
           </div>
         </form>
+      </div>
 
-        <!-- Estado de carga del Scraper -->
-        <div id="scraper-loading" style="display: none; padding: 24px; text-align: center; color: var(--udea-forest);">
-          <div class="spinner-dot" aria-hidden="true"></div>
-          <p style="font-weight: 600; margin-top: 10px;">Analizando boletín y extrayendo conferencias con Gemini 3.5 / 3.1 Flash Lite...</p>
+      <!-- VISTA 2: Panel de Gestión con Gemini IA (Solo para Administradores Autenticados) -->
+      <div id="admin-view-dashboard" style="display: none;">
+        <div class="modal-header">
+          <div>
+            <span class="section-label" style="font-size: 0.75rem;">Teleducación Medicina UdeA</span>
+            <h3 style="font-size: 1.25rem; font-family: var(--font-serif); margin-top: 4px;">Gestión de Agenda con IA</h3>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span id="admin-user-display" class="admin-user-pill">Admin</span>
+            <button id="btn-admin-logout" class="btn-logout-small" title="Cerrar sesión">Salir</button>
+            <button id="btn-close-admin-dash" class="modal-close-btn" aria-label="Cerrar ventana">✕</button>
+          </div>
         </div>
 
-        <!-- Resultados de la Extracción -->
-        <div id="scraper-results" style="display: none; margin-top: 16px; border-top: 1px solid var(--border-subtle); padding-top: 16px;">
-          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
-            <div>
-              <span id="scraper-count-badge" class="results-count-badge">0 actividades extraídas</span>
-              <span id="scraper-model-badge" style="font-size: 0.75rem; color: var(--udea-green-primary); font-family: var(--font-mono); margin-left: 8px;">gemini-3.5-flash-lite</span>
-            </div>
-            <div style="display: flex; gap: 8px;">
-              <button id="btn-scraper-copy-csv" class="btn-secondary" style="font-size: 0.8rem; padding: 6px 12px;">
-                📋 Copiar CSV
-              </button>
-              <button id="btn-scraper-download-csv" class="btn-secondary" style="font-size: 0.8rem; padding: 6px 12px;">
-                💾 Descargar .csv
-              </button>
-            </div>
+        <div class="modal-body-form">
+          <div class="admin-intro-box">
+            <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--udea-forest); margin-bottom: 4px;">
+              ✦ Actualizador Inteligente con Gemini 3.5 / 3.1 Flash Lite
+            </h4>
+            <p style="font-size: 0.8125rem; color: var(--text-base); line-height: 1.45;">
+              Ingresa el enlace del boletín de MailerLite. La IA extraerá automáticamente títulos, horas, fechas, ponentes y enlaces para actualizar la web con un solo clic.
+            </p>
           </div>
 
-          <!-- Previsualización de Actividades Extraídas -->
-          <div class="scraper-preview-table-wrapper">
-            <table class="scraper-table">
-              <thead>
-                <tr>
-                  <th>Fecha</th>
-                  <th>Hora</th>
-                  <th>Departamento</th>
-                  <th>Título</th>
-                  <th>Modalidad</th>
-                </tr>
-              </thead>
-              <tbody id="scraper-preview-tbody">
-                <!-- Inyectado por JS -->
-              </tbody>
-            </table>
+          <form id="form-admin-scraper">
+            <div class="form-group">
+              <label for="admin-scraper-url">Enlace del boletín MailerLite *</label>
+              <input type="url" id="admin-scraper-url" class="form-control" value="https://preview.mailerlite.com/k8w4m4m5a6" placeholder="https://preview.mailerlite.com/..." required>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+              <button type="submit" id="btn-admin-run-ai" class="btn-primary" style="display: inline-flex; align-items: center; gap: 8px;">
+                <span>✦</span> Scrapear y Extraer con Gemini IA
+              </button>
+            </div>
+          </form>
+
+          <!-- Estado de carga del Scraper -->
+          <div id="admin-scraper-loading" style="display: none; padding: 24px; text-align: center; color: var(--udea-forest);">
+            <div class="spinner-dot" aria-hidden="true"></div>
+            <p style="font-weight: 600; margin-top: 10px;">Gemini IA está procesando el boletín y organizando las conferencias...</p>
+          </div>
+
+          <!-- Resultados y Publicación con 1 Clic -->
+          <div id="admin-scraper-results" style="display: none; margin-top: 16px; border-top: 1px solid var(--border-subtle); padding-top: 16px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
+              <div>
+                <span id="admin-scraped-count" class="results-count-badge">0 actividades extraídas</span>
+                <span id="admin-scraped-model" style="font-size: 0.75rem; color: var(--udea-green-primary); font-family: var(--font-mono); margin-left: 6px;">Gemini IA</span>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button type="button" id="btn-admin-apply-live" class="btn-primary" style="font-size: 0.8125rem; padding: 8px 14px; background: #004D25;">
+                  ⚡ Actualizar Página en Vivo
+                </button>
+                <button type="button" id="btn-admin-download-csv" class="btn-secondary" style="font-size: 0.8125rem; padding: 8px 12px;">
+                  💾 Guardar CSV
+                </button>
+              </div>
+            </div>
+
+            <!-- Tabla de Previsualización -->
+            <div class="scraper-preview-table-wrapper">
+              <table class="scraper-table">
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Hora</th>
+                    <th>Departamento</th>
+                    <th>Título</th>
+                    <th>Modalidad</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-preview-tbody">
+                  <!-- Inyectado por JS -->
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
+
     </div>
   </div>
 

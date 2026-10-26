@@ -1592,418 +1592,27 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 
 /* ==========================================================================
-   ASISTENTE ACADÉMICO GEMINI IA (Vercel Serverless + Alternancia de Modelos)
+   NAVEGACIÓN: ACCESO ADMINISTRATIVO INSTITUCIONAL
    ========================================================================== */
 
-.gemini-float-btn {
-  position: fixed;
-  bottom: 28px;
-  right: 28px;
-  z-index: 990;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  background: linear-gradient(135deg, var(--udea-green-deep) 0%, var(--udea-forest) 100%);
-  color: #FFFFFF;
-  border: 1.5px solid var(--accent-lime);
-  padding: 13px 22px;
-  border-radius: 9999px;
-  font-family: var(--font-sans);
-  font-size: 0.9375rem;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 10px 25px -5px rgba(0, 46, 22, 0.4), 0 0 15px rgba(16, 185, 129, 0.35);
-  transition: all var(--transition-bounce);
-}
-
-.gemini-float-btn:hover {
-  transform: translateY(-3px) scale(1.03);
-  box-shadow: 0 14px 30px -5px rgba(0, 46, 22, 0.5), 0 0 22px rgba(16, 185, 129, 0.5);
-  background: linear-gradient(135deg, var(--udea-green-base) 0%, var(--udea-green-deep) 100%);
-}
-
-.gemini-float-btn .sparkle-icon {
-  color: var(--accent-lime);
-  font-size: 1.15rem;
-}
-
-.gemini-pulse-dot {
-  width: 9px;
-  height: 9px;
-  background-color: var(--accent-lime);
-  border-radius: 50%;
-  animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes pulse-ring {
-  0% { transform: scale(0.95); opacity: 1; }
-  50% { transform: scale(1.4); opacity: 0.4; }
-  100% { transform: scale(0.95); opacity: 1; }
-}
-
-/* Backdrop y Drawer Lateral */
-.gemini-drawer-backdrop {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(4px);
-  z-index: 1000;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-}
-
-.gemini-drawer-backdrop.active {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.gemini-chat-drawer {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  max-width: 440px;
-  background: #FFFFFF;
-  z-index: 1001;
-  display: flex;
-  flex-direction: column;
-  box-shadow: -10px 0 35px rgba(0, 0, 0, 0.25);
-  transform: translateX(100%);
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.gemini-chat-drawer.active {
-  transform: translateX(0);
-}
-
-.gemini-drawer-header {
-  padding: 18px 22px;
-  background: var(--udea-green-deep);
-  color: #FFFFFF;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 2px solid var(--accent-lime);
-}
-
-.gemini-header-title-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.gemini-icon-badge {
-  color: var(--accent-lime);
-  font-size: 1.25rem;
-}
-
-.gemini-drawer-header h3 {
-  font-family: var(--font-serif);
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #FFFFFF;
-  margin: 0;
-}
-
-.gemini-model-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.75rem;
-  color: #A7F3D0;
-  font-family: var(--font-mono);
-  margin-top: 3px;
-}
-
-.dot-live {
-  width: 7px;
-  height: 7px;
-  background-color: var(--accent-lime);
-  border-radius: 50%;
-  display: inline-block;
-}
-
-.gemini-btn-close {
-  background: rgba(255, 255, 255, 0.12);
-  border: none;
-  color: #FFFFFF;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  font-size: 1.1rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s;
-}
-
-.gemini-btn-close:hover {
-  background: rgba(255, 255, 255, 0.25);
-}
-
-.gemini-drawer-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
-  background-color: #F8FAFC;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.gemini-welcome-card {
-  background: #FFFFFF;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  padding: 16px;
+.nav-admin-link {
+  color: var(--text-muted);
   font-size: 0.875rem;
-  color: var(--text-base);
-  box-shadow: var(--shadow-sm);
-}
-
-.gemini-quick-prompts {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.quick-prompt-chip {
-  background: #F1F5F9;
-  border: 1px solid #CBD5E1;
-  border-radius: 9999px;
+  font-weight: 500;
   padding: 6px 12px;
-  font-size: 0.775rem;
-  color: var(--text-base);
-  cursor: pointer;
-  transition: all 0.2s;
-  text-align: left;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+  border: 1px solid transparent;
 }
 
-.quick-prompt-chip:hover {
-  background: var(--udea-green-light);
-  border-color: var(--accent-lime);
-  color: var(--udea-forest);
-}
-
-.gemini-messages-list {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.gemini-msg {
-  padding: 12px 16px;
-  border-radius: var(--radius-md);
-  font-size: 0.875rem;
-  line-height: 1.5;
-  max-width: 90%;
-  word-break: break-word;
-}
-
-.gemini-msg-user {
-  align-self: flex-end;
-  background-color: var(--udea-green-deep);
-  color: #FFFFFF;
-  border-bottom-right-radius: 2px;
-}
-
-.gemini-msg-model {
-  align-self: flex-start;
-  background-color: #FFFFFF;
-  color: var(--text-dark);
-  border: 1px solid var(--border-subtle);
-  border-bottom-left-radius: 2px;
-  box-shadow: var(--shadow-sm);
-}
-
-.gemini-msg-model strong {
-  color: var(--udea-forest);
-}
-
-.gemini-msg-meta {
-  font-size: 0.7rem;
-  color: #64748B;
-  margin-top: 6px;
-  display: block;
-}
-
-.gemini-typing {
-  align-self: flex-start;
-  padding: 10px 14px;
-  background: #FFFFFF;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-subtle);
-  font-size: 0.8125rem;
-  color: var(--text-muted);
-}
-
-.gemini-drawer-footer {
-  padding: 16px 20px;
-  background: #FFFFFF;
-  border-top: 1px solid var(--border-subtle);
-}
-
-.gemini-input-form {
-  display: flex;
-  gap: 8px;
-}
-
-.gemini-input {
-  flex: 1;
-  padding: 12px 14px;
-  border: 1.5px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  font-family: var(--font-sans);
-  font-size: 0.875rem;
-  outline: none;
-  transition: border-color 0.2s;
-}
-
-.gemini-input:focus {
-  border-color: var(--accent-lime);
-}
-
-.gemini-send-btn {
-  background-color: var(--accent-lime);
-  color: var(--udea-forest);
-  border: none;
-  border-radius: var(--radius-md);
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.gemini-send-btn:hover {
-  background-color: #059669;
-  color: #FFFFFF;
-}
-
-.gemini-footer-footnote {
-  margin-top: 8px;
-  font-size: 0.7rem;
-  color: #94A3B8;
-  text-align: center;
+.nav-admin-link:hover {
+  color: var(--udea-green-primary);
+  background-color: rgba(0, 77, 37, 0.05);
+  border-color: rgba(0, 77, 37, 0.15);
 }
 
 /* ==========================================================================
-   FAVORITOS (FIREBASE + LOCALSTORAGE) Y ACCIONES DE ACTIVIDAD
-   ========================================================================== */
-
-.filter-favorites-btn {
-  background: #FFFFFF;
-  border: 1.5px solid var(--border-subtle);
-  color: var(--text-base);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  padding: 9px 14px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s;
-}
-
-.filter-favorites-btn:hover {
-  border-color: #F59E0B;
-  color: #B45309;
-}
-
-.filter-favorites-btn.active {
-  background-color: #FEF3C7;
-  border-color: #F59E0B;
-  color: #92400E;
-}
-
-.filter-favorites-btn .star-icon {
-  color: #F59E0B;
-  font-size: 0.95rem;
-}
-
-.fav-count-badge {
-  background: #F1F5F9;
-  color: #475569;
-  font-size: 0.75rem;
-  padding: 2px 6px;
-  border-radius: 9999px;
-  font-weight: 700;
-}
-
-.filter-favorites-btn.active .fav-count-badge {
-  background: #F59E0B;
-  color: #FFFFFF;
-}
-
-.card-actions-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px dashed var(--border-subtle);
-}
-
-.btn-card-fav {
-  background: transparent;
-  border: 1px solid var(--border-subtle);
-  color: var(--text-muted);
-  border-radius: var(--radius-sm);
-  padding: 6px 10px;
-  font-size: 0.775rem;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  transition: all 0.2s;
-}
-
-.btn-card-fav:hover {
-  border-color: #F59E0B;
-  color: #B45309;
-}
-
-.btn-card-fav.is-favorite {
-  background-color: #FEF3C7;
-  border-color: #F59E0B;
-  color: #B45309;
-  font-weight: 600;
-}
-
-.btn-card-ask-ai, .btn-card-question {
-  background: transparent;
-  border: 1px solid var(--border-subtle);
-  color: var(--udea-forest);
-  border-radius: var(--radius-sm);
-  padding: 6px 10px;
-  font-size: 0.775rem;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  transition: all 0.2s;
-}
-
-.btn-card-ask-ai:hover {
-  background: var(--udea-green-light);
-  border-color: var(--accent-lime);
-}
-
-.btn-card-question:hover {
-  background: #F1F5F9;
-  border-color: #94A3B8;
-}
-
-/* ==========================================================================
-   MODAL DE PREGUNTAS (FIRESTORE)
+   MODAL ADMINISTRATIVO: LOGIN & SCRAPER MAILERLITE CON GEMINI IA
    ========================================================================== */
 
 .modal-backdrop {
@@ -2011,6 +1620,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   inset: 0;
   background-color: rgba(15, 23, 42, 0.65);
   backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   z-index: 1100;
   display: flex;
   align-items: center;
@@ -2021,12 +1631,16 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .modal-dialog {
   background: #FFFFFF;
   border-radius: var(--radius-md);
-  max-width: 520px;
+  max-width: 500px;
   width: 100%;
   box-shadow: var(--shadow-lg);
   overflow: hidden;
   border: 1px solid var(--border-subtle);
   animation: modal-enter 0.25s ease-out;
+}
+
+.admin-dialog {
+  max-width: 760px;
 }
 
 @keyframes modal-enter {
@@ -2055,6 +1669,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
 }
 
 .modal-close-btn:hover {
@@ -2093,17 +1708,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 
 .form-control:focus {
-  border-color: var(--accent-lime);
-}
-
-.form-control-readonly {
-  padding: 10px 12px;
-  border: 1px solid #E2E8F0;
-  background-color: #F8FAFC;
-  border-radius: var(--radius-sm);
-  font-size: 0.8125rem;
-  color: var(--text-muted);
-  font-weight: 600;
+  border-color: var(--udea-green-primary);
 }
 
 .modal-footer {
@@ -2114,129 +1719,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   margin-top: 8px;
 }
 
-@media (max-width: 480px) {
-  .gemini-float-btn {
-    bottom: 20px;
-    right: 20px;
-    padding: 10px 16px;
-    font-size: 0.85rem;
-  }
-  .gemini-chat-drawer {
-    max-width: 100%;
-  }
-}
-
-/* ==========================================================================
-   NAVEGACIÓN: EXTRACTOR MAILITE Y LOGIN FIREBASE
-   ========================================================================== */
-
-.btn-nav-scraper {
-  background: rgba(16, 185, 129, 0.12);
-  color: var(--udea-forest);
-  border: 1px solid var(--accent-lime);
-  padding: 8px 14px;
-  border-radius: var(--radius-sm);
-  font-size: 0.8125rem;
-  font-weight: 700;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s;
-}
-
-.btn-nav-scraper:hover {
-  background: var(--accent-lime);
-  color: #002E16;
-}
-
-.auth-header-container {
-  display: inline-flex;
-  align-items: center;
-}
-
-.btn-nav-login {
-  background: transparent;
-  color: var(--text-dark);
-  border: 1.5px solid var(--border-subtle);
-  padding: 8px 14px;
-  border-radius: var(--radius-sm);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s;
-}
-
-.btn-nav-login:hover {
-  border-color: var(--udea-forest);
-  color: var(--udea-forest);
-}
-
-.auth-user-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: #F1F5F9;
-  border: 1px solid #CBD5E1;
-  padding: 4px 10px;
-  border-radius: 9999px;
-  font-size: 0.775rem;
-  color: var(--text-dark);
-  font-weight: 600;
-}
-
-.btn-logout-small {
-  background: #E2E8F0;
-  border: none;
-  color: #475569;
-  font-size: 0.7rem;
-  padding: 2px 6px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.btn-logout-small:hover {
-  background: #DC2626;
-  color: #FFFFFF;
-}
-
-/* ==========================================================================
-   MODAL DE AUTENTICACIÓN FIREBASE
-   ========================================================================== */
-
-.auth-dialog {
-  max-width: 420px;
-}
-
-.auth-tabs-row {
-  display: flex;
-  border-bottom: 1px solid var(--border-subtle);
-  background: #F8FAFC;
-}
-
-.auth-tab-btn {
-  flex: 1;
-  padding: 12px;
-  text-align: center;
-  border: none;
-  background: transparent;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: all 0.2s;
-}
-
-.auth-tab-btn.active {
-  color: var(--udea-forest);
-  border-bottom-color: var(--accent-lime);
-  background: #FFFFFF;
-}
-
+/* Alertas de autenticación */
 .auth-alert {
   padding: 10px 14px;
   border-radius: var(--radius-sm);
@@ -2256,14 +1739,57 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   color: #065F46;
 }
 
-/* ==========================================================================
-   MODAL SCRAPER DE MAILERLITE CON GEMINI IA
-   ========================================================================== */
-
-.scraper-dialog {
-  max-width: 780px;
+/* Badges y botones del panel admin */
+.admin-user-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #E2E8F0;
+  border: 1px solid #CBD5E1;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 0.775rem;
+  color: var(--text-dark);
+  font-weight: 600;
 }
 
+.btn-logout-small {
+  background: #F1F5F9;
+  border: 1px solid #CBD5E1;
+  color: #475569;
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-logout-small:hover {
+  background: #DC2626;
+  border-color: #DC2626;
+  color: #FFFFFF;
+}
+
+.admin-intro-box {
+  background: rgba(0, 77, 37, 0.04);
+  border: 1px solid rgba(0, 77, 37, 0.15);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+}
+
+.results-count-badge {
+  background: #DCFCE7;
+  color: #166534;
+  border: 1px solid #86EFAC;
+  font-size: 0.775rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Tabla de Previsualización de Scraper */
 .scraper-preview-table-wrapper {
   max-height: 280px;
   overflow-y: auto;
@@ -2287,6 +1813,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   position: sticky;
   top: 0;
   border-bottom: 1px solid #CBD5E1;
+  z-index: 2;
 }
 
 .scraper-table td {
@@ -2304,7 +1831,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   height: 36px;
   margin: 0 auto;
   border: 3px solid rgba(0, 77, 37, 0.2);
-  border-top-color: var(--accent-lime);
+  border-top-color: var(--udea-green-primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
