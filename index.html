@@ -538,12 +538,15 @@
                 <span id="admin-scraped-count" class="results-count-badge">0 actividades extraídas</span>
                 <span id="admin-scraped-model" style="font-size: 0.75rem; color: var(--udea-green-primary); font-family: var(--font-mono); margin-left: 6px;">Gemini IA</span>
               </div>
-              <div style="display: flex; gap: 8px;">
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                 <button type="button" id="btn-admin-apply-live" class="btn-primary" style="font-size: 0.8125rem; padding: 8px 14px; background: #004D25;">
                   ⚡ Actualizar Página en Vivo
                 </button>
-                <button type="button" id="btn-admin-download-csv" class="btn-secondary" style="font-size: 0.8125rem; padding: 8px 12px;">
-                  💾 Guardar CSV
+                <button type="button" id="btn-admin-copy-table" class="btn-secondary" style="font-size: 0.8125rem; padding: 8px 12px;" title="Copiar datos tabulares para pegar directamente en Excel o Google Sheets">
+                  📋 Copiar Tabla
+                </button>
+                <button type="button" id="btn-admin-download-xlsx" class="btn-secondary" style="font-size: 0.8125rem; padding: 8px 12px;" title="Descargar archivo Excel (.xlsx)">
+                  📊 Descargar XLSX
                 </button>
               </div>
             </div>

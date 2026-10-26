@@ -798,7 +798,8 @@ function setupAdminPanel() {
   const modelBadge = document.getElementById('admin-scraped-model');
   const previewTbody = document.getElementById('admin-preview-tbody');
   const applyLiveBtn = document.getElementById('btn-admin-apply-live');
-  const downloadCsvBtn = document.getElementById('btn-admin-download-csv');
+  const copyTableBtn = document.getElementById('btn-admin-copy-table');
+  const downloadXlsxBtn = document.getElementById('btn-admin-download-xlsx');
 
   let currentUser = null;
 
@@ -977,23 +978,108 @@ function setupAdminPanel() {
     });
   }
 
-  // Descargar CSV
-  if (downloadCsvBtn) {
-    downloadCsvBtn.addEventListener('click', () => {
-      if (!lastScrapedCsv) {
-        showToast('No hay datos CSV disponibles.', 'info');
+  // Copiar tabla al portapapeles (formato TSV para Excel / Google Sheets)
+  if (copyTableBtn) {
+    copyTableBtn.addEventListener('click', async () => {
+      if (!lastScrapedActivities || lastScrapedActivities.length === 0) {
+        showToast('No hay datos en la tabla para copiar.', 'info');
         return;
       }
-      const blob = new Blob([lastScrapedCsv], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.setAttribute('href', url);
-      link.setAttribute('download', `aulas_abiertas_mailerlite_${new Date().toISOString().slice(0, 10)}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      showToast('Descargando archivo CSV...', 'success');
+
+      const headers = ['Fecha', 'Hora Inicio', 'Hora Fin', 'Departamento / Especialidad', 'Título de la Conferencia', 'Ponente(s)', 'Modalidad', 'Lugar', 'Enlace de Conexión', 'Grabación'];
+      const rows = lastScrapedActivities.map(a => [
+        a.date || '',
+        a.start_time || a.startTime || '',
+        a.end_time || a.endTime || '',
+        a.department || '',
+        a.title || '',
+        a.speakers || '',
+        a.modality || 'Virtual',
+        a.location || '',
+        a.meeting_url || a.meetingUrl || '',
+        a.recording_url || a.recordingUrl || ''
+      ]);
+
+      const tsvContent = [
+        headers.join('\t'),
+        ...rows.map(r => r.join('\t'))
+      ].join('\n');
+
+      try {
+        await navigator.clipboard.writeText(tsvContent);
+        showToast(`¡Tabla de ${lastScrapedActivities.length} actividades copiada! Lista para pegar en Excel o Google Sheets.`, 'success');
+      } catch {
+        const textarea = document.createElement('textarea');
+        textarea.value = tsvContent;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        showToast(`¡Tabla copiada al portapapeles!`, 'success');
+      }
+    });
+  }
+
+  // Descargar archivo Excel (.xlsx) nativo
+  if (downloadXlsxBtn) {
+    downloadXlsxBtn.addEventListener('click', async () => {
+      if (!lastScrapedActivities || lastScrapedActivities.length === 0) {
+        showToast('No hay conferencias para exportar.', 'info');
+        return;
+      }
+
+      try {
+        downloadXlsxBtn.disabled = true;
+        downloadXlsxBtn.textContent = 'Generando...';
+
+        // Carga dinámica de la biblioteca xlsx
+        const XLSX = await import('xlsx');
+
+        const rows = lastScrapedActivities.map(a => ({
+          'Fecha': a.date || '',
+          'Hora Inicio': a.start_time || a.startTime || '07:00',
+          'Hora Fin': a.end_time || a.endTime || '',
+          'Departamento / Especialidad': a.department || '',
+          'Título de la Conferencia': a.title || '',
+          'Ponente(s)': a.speakers || '',
+          'Modalidad': a.modality || 'Virtual',
+          'Lugar': a.location || '',
+          'Enlace de Conexión': a.meeting_url || a.meetingUrl || '',
+          'Enlace de Grabación': a.recording_url || a.recordingUrl || '',
+          'Resumen': a.summary || ''
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(rows);
+
+        // Anchos de columna optimizados para lectura
+        worksheet['!cols'] = [
+          { wch: 12 }, // Fecha
+          { wch: 12 }, // Hora Inicio
+          { wch: 10 }, // Hora Fin
+          { wch: 25 }, // Departamento
+          { wch: 45 }, // Título
+          { wch: 25 }, // Ponente
+          { wch: 12 }, // Modalidad
+          { wch: 20 }, // Lugar
+          { wch: 35 }, // Enlace
+          { wch: 35 }, // Grabación
+          { wch: 40 }  // Resumen
+        ];
+
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Aulas Abiertas');
+
+        const fileName = `aulas_abiertas_programacion_${new Date().toISOString().slice(0, 10)}.xlsx`;
+        XLSX.writeFile(workbook, fileName);
+
+        showToast('¡Archivo Excel (.xlsx) descargado con éxito!', 'success');
+      } catch (err) {
+        console.error('Error al generar XLSX:', err);
+        showToast(`No se pudo generar el archivo Excel: ${err.message}`, 'error');
+      } finally {
+        downloadXlsxBtn.disabled = false;
+        downloadXlsxBtn.innerHTML = '📊 Descargar XLSX';
+      }
     });
   }
 }
