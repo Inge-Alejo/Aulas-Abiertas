@@ -1,8 +1,12 @@
 # Aulas Abiertas — Facultad de Medicina, Universidad de Antioquia (UdeA)
 
-Plataforma web editorial institucional y visualizador interactivo de programación académica para la iniciativa **Aulas Abiertas**, liderada por la **Facultad de Medicina de la Universidad de Antioquia** y el equipo de **Teleducación**.
+Plataforma web editorial institucional, visualizador interactivo de programación académica y asistente inteligente para la iniciativa **Aulas Abiertas**, liderada por la **Facultad de Medicina de la Universidad de Antioquia** y el equipo de **Teleducación**.
 
-El proyecto combina una narrativa visual científica de alto nivel con una agenda académica dinámica alimentada en tiempo real desde **Google Sheets**, eliminando por completo la necesidad de modificar código fuente o redesplegar la aplicación cada semana.
+El proyecto combina una narrativa visual científica de alto nivel con:
+1. **Agenda Académica Dinámica:** Alimentada en tiempo real desde **Google Sheets (CSV)** sin modificar código.
+2. **Asistente Académico IA:** Impulsado por **Google Gemini API** con alternancia/fallback de modelos (**Gemini 3.5 Flash Lite** / **Gemini 3.1 Flash Lite** / **2.5 Flash Lite**) y contexto en vivo de la agenda médica.
+3. **Persistencia en la Nube con Firebase:** Base de datos **Firestore** para favoritos personalizados y preguntas enviadas a los ponentes/Teleducación.
+4. **Despliegue Serverless en Vercel:** Configuración lista para producción con funciones serverless seguras en `/api/gemini.js`.
 
 ---
 
@@ -16,13 +20,16 @@ Diseñado bajo principios editoriales contemporáneos inspirados en publicacione
 
 ## 🚀 Tecnologías y Skills Utilizadas
 
-- **Framework & Bundler:** [Vite](https://vite.dev/) (HTML5 semántico, Vanilla CSS estructurado en variables de diseño, JavaScript moderno ES Modules).
+- **Frontend Core:** [Vite](https://vite.dev/) (HTML5 semántico, Vanilla CSS estructurado en variables de diseño, JavaScript moderno ES Modules).
 - **Procesamiento de Datos:** [PapaParse](https://www.papaparse.com/) para parseo seguro de CSV (soporte nativo de comillas, saltos de línea, tildes y caracteres especiales en español).
+- **Inteligencia Artificial:** [Google Generative Language API (Gemini)](https://ai.google.dev/) con alternancia y degradación suave (`gemini-3.5-flash-lite` -> `gemini-3.1-flash-lite` -> `gemini-2.5-flash-lite` -> `gemini-1.5-flash`).
+- **Base de Datos:** [Firebase SDK](https://firebase.google.com/) (Cloud Firestore) con respaldo transparente en LocalStorage cuando no hay credenciales configuradas.
+- **Despliegue Serverless:** [Vercel](https://vercel.com/) con enrutamiento de API serverless y optimización de activos estáticos.
 - **Control de Tiempo y Zona Horaria:** Motor de cálculo en zona horaria `America/Bogota` (UTC-5), normalización automática de horas 12h/24h, validación de fechas ISO `AAAA-MM-DD` y cálculo estricto de semanas Lunes–Domingo.
 - **Skills de Diseño Instaladas:**
-  1. `design-taste-frontend` (`.agents/skills/design-taste-frontend/`): Principios de composición editorial asimétrica, jerarquía tipográfica, ritmo visual y contrastes deliberados.
-  2. `web-design-guidelines` (`.agents/skills/web-design-guidelines/`): Pautas de accesibilidad WCAG 2.1 AA, navegación 100% por teclado, foco visible, contraste de color, `prefers-reduced-motion` y rendimiento web.
-  3. `editorial` (`.agents/skills/editorial/`): Sistema tipográfico y espaciado proporcional para contenido académico y científico denso.
+  1. `design-taste-frontend` (`.agents/skills/design-taste-frontend/`): Composición editorial asimétrica, jerarquía tipográfica y ritmo visual.
+  2. `web-design-guidelines` (`.agents/skills/web-design-guidelines/`): Pautas de accesibilidad WCAG 2.1 AA, navegación 100% por teclado, foco visible y rendimiento web.
+  3. `editorial` (`.agents/skills/editorial/`): Sistema tipográfico y espaciado proporcional para contenido académico denso.
 
 ---
 
@@ -30,7 +37,8 @@ Diseñado bajo principios editoriales contemporáneos inspirados en publicacione
 
 ```text
 aulas-abiertas/
-├── .agents/skills/          # Skills de diseño y accesibilidad instaladas
+├── api/
+│   └── gemini.js            # Función Serverless para Vercel (Gemini API con fallback)
 ├── assets/images/           # Logotipos institucionales y fotografía editorial
 ├── public/
 │   └── data/
@@ -39,120 +47,110 @@ aulas-abiertas/
 ├── screenshots/             # Evidencias de auditoría visual en 5 resoluciones
 ├── src/
 │   ├── services/
+│   │   ├── firebaseService.js   # Integración con Firestore (Favoritos y preguntas)
+│   │   ├── geminiService.js     # Cliente del Asistente IA y formateo de contexto
 │   │   └── scheduleService.js   # Motor de ingesta CSV, normalización, validación y filtros
 │   ├── styles/
 │   │   └── main.css             # Sistema de diseño, tokens CSS, componentes y responsive
-│   └── main.js                  # Control reactivo, navegación de semanas, modales y renderizado
+│   └── main.js                  # Control reactivo, navegación de semanas, chat IA y modales
 ├── tests/
 │   └── schedule-parser.test.js  # Suite de pruebas unitarias automatizadas
+├── vercel.json              # Configuración de compilación y rutas de Vercel
 ├── index.html               # Documento semántico, metadatos SEO y accesibilidad
 ├── .env.example             # Ejemplo documentado de configuración de entorno
-└── package.json             # Scripts de ejecución, construcción y pruebas
+└── package.json             # Scripts de ejecución, dependencias y pruebas
 ```
 
 ---
 
 ## 🛠️ Comandos de Instalación y Ejecución
 
-### 1. Requisitos Previos
-- Node.js LTS (v18 o superior).
-
-### 2. Instalación de dependencias
 ```bash
+# 1. Instalar dependencias
 npm install
-```
 
-### 3. Modo Desarrollo
-Inicia el servidor local de desarrollo con recarga en caliente:
-```bash
+# 2. Iniciar servidor local de desarrollo
 npm run dev
-```
-La aplicación estará disponible de inmediato en: `http://localhost:5173/`.
 
-### 4. Ejecución de Pruebas Unitarias
-Ejecuta la suite de pruebas del motor de datos (normalización de fechas, horas, formatos 12h/24h, filtros y cálculo de semanas):
-```bash
+# 3. Ejecutar pruebas unitarias automatizadas
 npm test
-```
 
-### 5. Compilación para Producción
-Genera el paquete optimizado y minificado en la carpeta `dist/`:
-```bash
+# 4. Compilar paquete para producción
 npm run build
 ```
 
 ---
 
-## 📊 Integración con Google Sheets (Guía para el Equipo de Teleducación)
+## 🌐 Despliegue en Vercel
 
-La aplicación está diseñada para que el equipo de **Teleducación** administre y actualice las actividades semanales directamente desde **Google Sheets**, sin necesidad de editar código fuente ni realizar despliegues técnicos.
+El repositorio está 100% preparado para desplegarse en **Vercel** en menos de 2 minutos:
 
-### Paso 1: Crear o preparar la hoja en Google Sheets
-1. Descargue la plantilla oficial incluida en el proyecto: `public/data/plantilla_aulas_abiertas.csv` (o use el botón **"Descargar plantilla CSV"** en la sección "Acerca de" de la web).
-2. Cree una hoja de cálculo en su Google Drive institucional.
-3. Nombre la pestaña activa exactamente como: `Programacion_publica`.
-4. Mantenga inalterada la primera fila con los nombres de las columnas:
-
-| Columna | Nombre de Cabecera | Formato Esperado | Descripción y Ejemplo |
-| :--- | :--- | :--- | :--- |
-| **A** | `id` | Texto | Identificador único (`AA-2026-001`, `URO-1026`) |
-| **B** | `date` | `AAAA-MM-DD` | Fecha exacta en formato ISO (`2026-10-28`) |
-| **C** | `start_time` | `HH:mm` o `hh:mm am/pm` | Hora de inicio (`07:00`, `02:00 pm`, etc.) |
-| **D** | `end_time` | `HH:mm` (Opcional) | Hora de finalización (`08:30`) |
-| **E** | `department` | Texto | Departamento o Especialidad (`Urología`, `GREAPIC`) |
-| **F** | `title` | Texto | Título oficial de la conferencia académica |
-| **G** | `speakers` | Texto | Ponentes separados por punto y coma (`;`) |
-| **H** | `modality` | Categoría | `Virtual`, `Presencial`, `Híbrida` o `Por confirmar` |
-| **I** | `location` | Texto (Opcional) | Auditorio, piso, aula o enlace general |
-| **J** | `meeting_url` | URL (Opcional) | Enlace seguro a Zoom, Teams, Meet o YouTube Live |
-| **K** | `recording_url` | URL (Opcional) | Enlace a la grabación oficial en YouTube |
-| **L** | `summary` | Texto (Opcional) | Breve sinopsis académica o notas de la sesión |
-
-> **Nota de Seguridad y Buenas Prácticas:** La pestaña `Programacion_publica` solo debe contener actividades aprobadas y aptas para el público general. No incluya notas internas, datos confidenciales de pacientes o enlaces a reuniones privadas.
-
-### Paso 2: Publicar la pestaña como CSV
-1. En Google Sheets, vaya al menú superior: **Archivo > Compartir > Publicar en la web**.
-2. En la ventana emergente, en lugar de *"Todo el documento"*, seleccione la pestaña **`Programacion_publica`**.
-3. En el formato de salida, en lugar de *"Página web"*, elija **Valores separados por comas (.csv)**.
-4. Haga clic en el botón **Publicar** y confirme.
-5. Copie el enlace generado (tendrá una estructura similar a: `https://docs.google.com/spreadsheets/d/e/2PACX-.../pub?gid=0&single=true&output=csv`).
-
-### Paso 3: Configurar la URL en la aplicación
-1. En la raíz del proyecto, abra o cree el archivo `.env`:
-   ```bash
-   VITE_PUBLIC_SCHEDULE_CSV_URL="https://docs.google.com/spreadsheets/d/e/TU_IDENTIFICADOR/pub?gid=0&single=true&output=csv"
-   ```
-2. Si la aplicación está desplegada en servicios en la nube (Vercel, Netlify, Cloudflare Pages o servidor institucional), agregue la variable de entorno `VITE_PUBLIC_SCHEDULE_CSV_URL` en el panel de configuración de dicho proveedor.
-
-### Paso 4: ¿Qué ocurre si no hay una hoja configurada aún?
-Si la variable está vacía o pendiente, la web activa automáticamente una **fuente de contingencia verificada** con las 34 actividades reales del boletín oficial (Semana del 26 al 30 de octubre de 2026). La aplicación nunca se romperá ni mostrará pantallas en blanco.
+1. Ve a tu panel de [Vercel](https://vercel.com/) y haz clic en **"Add New... > Project"**.
+2. Conecta tu cuenta de GitHub y selecciona el repositorio: **`Inge-Alejo/Aulas-Abiertas`**.
+3. Vercel detectará automáticamente el framework **Vite**.
+   - **Build Command:** `npm run build`
+   - **Output Directory:** `dist`
+4. En la sección **Environment Variables**, agrega las variables (ver sección siguiente).
+5. Haz clic en **Deploy**. ¡Tu landing page quedará en línea con SSL y CDN global!
 
 ---
 
-## 🧪 Validación y Pruebas Realizadas
+## 🔑 Variables de Entorno (Environment Variables)
 
-### 1. Auditoría de Visualización Responsive
-Se verificó el renderizado visual completo mediante capturas de pantalla en Microsoft Edge headless en las siguientes 5 resoluciones mínimas exigidas:
-- **320 px (Mobile Ultra-Compacto):** Menú móvil colapsable accesible, tipografía con escalado fluido (`clamp`), padding ajustado (sin scroll horizontal involuntario), tarjetas de actividad legibles en una columna.
-- **390 px (Mobile Estándar - iPhone/Android):** Jerarquía visual clara, botones táctiles con tamaño mínimo de interacción (44px), filtros desplegables fluidos.
-- **768 px (Tabletas Verticales):** Composición equilibrada, buscador y filtros en grilla responsiva, navegación semanal clara.
-- **1024 px (Tabletas Horizontales / Laptops):** Distribución editorial asimétrica en el Hero, badges institucionales alineados.
-- **1440 px (Monitores de Escritorio):** Ancho máximo controlado (`1360px`), espacios en blanco intencionales, excelente legibilidad y contraste.
+Configura estas variables en Vercel (*Project Settings > Environment Variables*) o en tu archivo `.env` local:
 
-### 2. Auditoría de Accesibilidad y Calidad Web
-- Enlace directo de accesibilidad *"Saltar al contenido principal"* (`#main-content`).
-- Navegación por teclado completa (tecla `Tab`, `Enter`, `Escape` para cerrar menús y modales).
-- Foco visible estilizado (`outline: 3px solid #10B981; outline-offset: 3px`).
-- Estados de carga animados (`aria-live="polite"`), alertas flotantes (toasts) no intrusivas y estados vacíos amigables cuando los filtros no arrojan resultados.
-- Marcado semántico HTML5 (`header`, `nav`, `main`, `section`, `article`, `footer`, `time`).
+| Variable | Descripción | ¿Dónde obtenerla? |
+| :--- | :--- | :--- |
+| `VITE_PUBLIC_SCHEDULE_CSV_URL` | Enlace público CSV de Google Sheets | Pestaña `Programacion_publica` publicada como CSV |
+| `GEMINI_API_KEY` | Clave de API de Google Gemini | [Google AI Studio](https://aistudio.google.com/) |
+| `VITE_GEMINI_API_KEY` | Clave cliente para desarrollo local (opcional) | [Google AI Studio](https://aistudio.google.com/) |
+| `VITE_FIREBASE_API_KEY` | Firebase API Key | Consola de Firebase > Configuración del proyecto |
+| `VITE_FIREBASE_AUTH_DOMAIN` | Firebase Auth Domain | Consola de Firebase > Configuración del proyecto |
+| `VITE_FIREBASE_PROJECT_ID` | Firebase Project ID | Consola de Firebase > Configuración del proyecto |
+| `VITE_FIREBASE_STORAGE_BUCKET` | Firebase Storage Bucket | Consola de Firebase > Configuración del proyecto |
+| `VITE_FIREBASE_MESSAGING_SENDER_ID` | Firebase Messaging Sender ID | Consola de Firebase > Configuración del proyecto |
+| `VITE_FIREBASE_APP_ID` | Firebase App ID | Consola de Firebase > Configuración del proyecto |
+
+> **Nota:** Si no configuras Firebase de inmediato, la aplicación utiliza automáticamente `localStorage` como respaldo. Si no configuras Gemini de inmediato, el asistente muestra un mensaje cordial invitando a ingresar la clave.
 
 ---
 
-## 📋 Lista de Configuraciones Pendientes para el Cliente (Teleducación)
+## 🔥 Configuración de Firebase (Paso a Paso)
 
-Para la puesta en marcha definitiva en producción, el equipo de Teleducación solo debe suministrar:
-1. **La URL pública del Google Sheets publicado como CSV**, generada siguiendo la guía anterior.
-2. (Opcional) Asignación del dominio institucional deseado (por ejemplo, `aulasabiertas.medicina.udea.edu.co`).
+1. Ingresa a la [Consola de Firebase](https://console.firebase.google.com/) con tu cuenta de Google.
+2. Haz clic en **"Crear un proyecto"** (ejemplo: `aulas-abiertas-udea`).
+3. En el menú lateral, ve a **Compilación > Firestore Database** y haz clic en **Crear base de datos**.
+   - Selecciona el modo de inicio (en pruebas o con reglas de lectura/escritura).
+   - Ubicación: selecciona una región cercana (ej. `us-central1` o `southamerica-east1`).
+4. Ve a la **Configuración del Proyecto** (ícono de engranaje) y en la sección *Tus apps*, haz clic en el ícono de Web `</>`.
+5. Copia los valores del objeto `firebaseConfig` y pégalos en las variables de entorno `VITE_FIREBASE_*`.
+
+### Colecciones utilizadas en Firestore:
+- **`favoritos_usuario`**: Actividades marcadas con estrella por los usuarios.
+- **`preguntas_actividades`**: Consultas clínicas e inquietudes enviadas a través del modal para los ponentes y Teleducación.
+
+---
+
+## 🤖 Asistente Académico IA (Google Gemini)
+
+La aplicación cuenta con un botón flotante **✦ Pregúntale a la IA** y botones en cada tarjeta de actividad.
+
+### Alternancia y Resiliencia de Modelos:
+El motor en `api/gemini.js` y `src/services/geminiService.js` implementa un sistema de cascada automática:
+1. **Prioridad 1:** Intenta generar respuesta con `gemini-3.5-flash-lite`.
+2. **Prioridad 2 (Alternancia):** Si no está disponible o arroja error, conmuta automáticamente a `gemini-3.1-flash-lite`.
+3. **Respaldo Resiliente:** Si ninguna versión de preview responde, se degrada limpiamente a `gemini-2.5-flash-lite` / `gemini-1.5-flash`.
+4. **Contexto Clínico:** La IA recibe en su *system prompt* la totalidad de actividades académicas reales cargadas en la semana, respondiendo con datos verídicos de ponentes, horarios y enlaces.
+
+---
+
+## 📊 Integración con Google Sheets (Teleducación)
+
+Para actualizar la agenda semanal sin tocar código:
+1. Abrir la hoja de Google Sheets y usar la pestaña `Programacion_publica`.
+2. Ir a **Archivo > Compartir > Publicar en la web** > Pestaña `Programacion_publica` > Formato **Valores separados por comas (.csv)** > Publicar.
+3. Copiar la URL generada y asignarla a la variable `VITE_PUBLIC_SCHEDULE_CSV_URL`.
+4. Al hacer clic en **"Actualizar datos"** en la web, la nueva programación se refleja de inmediato.
 
 ---
 
@@ -160,6 +158,6 @@ Para la puesta en marcha definitiva en producción, el equipo de Teleducación s
 
 - **Institución:** Facultad de Medicina, Universidad de Antioquia (UdeA).
 - **Dirección:** Carrera 51D # 62 - 29, Medellín, Colombia.
-- **Atención al Usuario / WhatsApp:** [+57 302 306 1888](https://wa.me/573023061888)
+- **WhatsApp Oficial:** [+57 302 306 1888](https://wa.me/573023061888)
 - **Correo Electrónico:** [aprendizajes.med@udea.edu.co](mailto:aprendizajes.med@udea.edu.co)
 - **Canal Oficial de YouTube:** [@teleducacionmedicinaudea](https://www.youtube.com/@teleducacionmedicinaudea)
