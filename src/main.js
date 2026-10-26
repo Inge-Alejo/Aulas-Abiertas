@@ -8,6 +8,7 @@ import {
   getAvailableWeeks,
   getActivitiesGroupedByDay,
   getUpcomingActivity,
+  getUpcomingActivityInfo,
   filterActivities,
   formatDayLabel
 } from './services/scheduleService.js';
@@ -175,6 +176,15 @@ async function loadAndRenderSchedule(forceRefresh = false) {
     populateDayFilter();
     renderScheduleList();
 
+    // Actualización reactiva periódica en tiempo real (cada 15 segundos)
+    if (!window._spotlightInterval) {
+      window._spotlightInterval = setInterval(() => {
+        if (state.allActivities && state.allActivities.length > 0) {
+          renderSpotlightActivity();
+        }
+      }, 15000);
+    }
+
     if (forceRefresh) {
       showToast('Programación actualizada correctamente', 'success');
     }
@@ -209,14 +219,14 @@ function updateDataStatusUI() {
 }
 
 /**
- * Renderiza la próxima actividad destacada
+ * Renderiza la reunión académica destacada en tiempo real (en vivo o próxima)
  */
 function renderSpotlightActivity() {
   const container = document.getElementById('spotlight-container');
   if (!container) return;
 
-  const upcoming = getUpcomingActivity(state.allActivities);
-  if (!upcoming) {
+  const info = getUpcomingActivityInfo(state.allActivities);
+  if (!info || !info.activity) {
     container.innerHTML = `
       <div class="spotlight-card">
         <div class="spotlight-header">
@@ -236,11 +246,21 @@ function renderSpotlightActivity() {
     return;
   }
 
+  const upcoming = info.activity;
+  const isLive = info.isLiveNow;
   const hasMeeting = Boolean(upcoming.meeting_url);
+
+  const badgeClass = isLive 
+    ? 'spotlight-badge spotlight-badge-live' 
+    : (info.isToday ? 'spotlight-badge spotlight-badge-today' : 'spotlight-badge');
+
+  const dotClass = isLive ? 'spotlight-pulse-dot dot-live-red' : 'spotlight-pulse-dot';
+  const cardClass = isLive ? 'spotlight-card is-live-meeting' : 'spotlight-card';
+
   const actionButton = hasMeeting ? `
-    <a href="${upcoming.meeting_url}" target="_blank" rel="noopener noreferrer" class="btn-spotlight-access" id="btn-spotlight-join">
+    <a href="${upcoming.meeting_url}" target="_blank" rel="noopener noreferrer" class="btn-spotlight-access ${isLive ? 'btn-spotlight-live' : ''}" id="btn-spotlight-join">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
-      Conectarse a la Sesión en Vivo
+      ${isLive ? '⚡ Unirse a la Sesión en Directo' : 'Conectarse a la Sesión en Vivo'}
     </a>
   ` : `
     <a href="#programacion" class="btn-spotlight-access">
@@ -250,13 +270,19 @@ function renderSpotlightActivity() {
   `;
 
   container.innerHTML = `
-    <div class="spotlight-card" id="spotlight-card-${upcoming.id}">
+    <div class="${cardClass}" id="spotlight-card-${upcoming.id}">
       <div class="spotlight-header">
-        <span class="spotlight-badge">
-          <span class="spotlight-pulse-dot" aria-hidden="true"></span>
-          Próxima Sesión Académica
+        <span class="${badgeClass}">
+          <span class="${dotClass}" aria-hidden="true"></span>
+          ${info.badgeLabel}
         </span>
-        <span class="spotlight-dept">${upcoming.department}</span>
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <span class="spotlight-dept">${upcoming.department}</span>
+          <span class="spotlight-realtime-indicator" title="Sincronizado en tiempo real con hora legal colombiana COT">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            En tiempo real
+          </span>
+        </div>
       </div>
       <h3 class="spotlight-title">${upcoming.title}</h3>
       
@@ -270,7 +296,7 @@ function renderSpotlightActivity() {
           <strong>${upcoming.startTime} COT</strong> ${upcoming.endTime ? `a ${upcoming.endTime} COT` : ''}
         </span>
         <span class="spotlight-meta-item">
-          <span class="card-modality-badge modality-${upcoming.modality.toLowerCase()}">${upcoming.modality}</span>
+          <span class="card-modality-badge modality-${(upcoming.modality || 'virtual').toLowerCase()}">${upcoming.modality || 'Virtual'}</span>
         </span>
         ${upcoming.location ? `
         <span class="spotlight-meta-item">
@@ -295,7 +321,7 @@ function renderSpotlightActivity() {
 
       <div class="spotlight-footer">
         <div>
-          <span style="font-size: 0.8125rem; color: #94A3B8;">Organiza: Facultad de Medicina UdeA</span>
+          <span style="font-size: 0.8125rem; color: #94A3B8;">${info.statusMessage || 'Organiza: Facultad de Medicina UdeA'}</span>
         </div>
         <div>
           ${actionButton}

@@ -499,13 +499,62 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   height: 8px;
   background-color: #10B981;
   border-radius: 50%;
-  animation: pulseAnimation 2s infinite;
+  animation: pulseGreenDot 2s infinite;
 }
 
-@keyframes pulseAnimation {
+@keyframes pulseGreenDot {
   0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
   70% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
   100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.spotlight-card.is-live-meeting {
+  border: 1.5px solid #EF4444;
+  box-shadow: 0 0 25px rgba(239, 68, 68, 0.25), var(--shadow-editorial);
+  background: linear-gradient(135deg, #1C0505 0%, #001F0E 60%, #022C14 100%);
+}
+
+.spotlight-badge-live {
+  background: rgba(239, 68, 68, 0.2) !important;
+  color: #FCA5A5 !important;
+  border-color: #EF4444 !important;
+}
+
+.spotlight-badge-today {
+  background: rgba(245, 158, 11, 0.2) !important;
+  color: #FCD34D !important;
+  border-color: #F59E0B !important;
+}
+
+.dot-live-red {
+  background-color: #EF4444 !important;
+  animation: pulseLiveRed 1.5s infinite !important;
+}
+
+@keyframes pulseLiveRed {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8); }
+  70% { transform: scale(1.15); box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.btn-spotlight-live {
+  background-color: #EF4444 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+}
+
+.btn-spotlight-live:hover {
+  background-color: #DC2626 !important;
+  transform: translateY(-2px);
+}
+
+.spotlight-realtime-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: #94A3B8;
+  font-family: var(--font-mono);
 }
 
 .spotlight-dept {

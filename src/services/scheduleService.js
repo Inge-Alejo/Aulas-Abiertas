@@ -319,15 +319,15 @@ export function getActivitiesGroupedByDay(activities, weekKey) {
 }
 
 /**
- * Obtiene la próxima actividad o sesión actual según la hora local de Colombia (America/Bogota)
+ * Obtiene información detallada y estado en tiempo real de la actividad actual (en vivo) o próxima sesión
  * @param {Array} activities
  * @param {Date} [referenceTime]
- * @returns {Object|null}
+ * @returns {{ activity: Object, isLiveNow: boolean, isToday: boolean, badgeLabel: string, statusMessage: string, currentTimeStr: string }|null}
  */
-export function getUpcomingActivity(activities, referenceTime = new Date()) {
+export function getUpcomingActivityInfo(activities, referenceTime = new Date()) {
   if (!activities || activities.length === 0) return null;
 
-  // Obtener fecha y hora en formato ISO para America/Bogota
+  // Formatear fecha y hora en formato ISO para America/Bogota (COT / UTC-5)
   const bogotaFormatter = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'America/Bogota',
     year: 'numeric',
@@ -338,34 +338,92 @@ export function getUpcomingActivity(activities, referenceTime = new Date()) {
     hour12: false
   });
 
-  // parts: year, month, day, hour, minute
   const parts = bogotaFormatter.formatToParts(referenceTime);
   const partMap = {};
   parts.forEach(p => { partMap[p.type] = p.value; });
-  
+
   const currentDate = `${partMap.year}-${partMap.month}-${partMap.day}`;
   const currentTime = `${partMap.hour}:${partMap.minute}`;
 
-  // 1. Buscar la primera actividad futura o en curso hoy
-  for (const act of activities) {
-    if (act.date > currentDate) {
-      return act;
-    }
+  // Ordenar cronológicamente
+  const sorted = [...activities].sort((a, b) => {
+    if (a.date !== b.date) return a.date.localeCompare(b.date);
+    return (a.startTime || '').localeCompare(b.startTime || '');
+  });
+
+  // 1. REUNIÓN EN VIVO AHORA: Revisar si hay alguna actividad que esté ocurriendo en este instante
+  for (const act of sorted) {
     if (act.date === currentDate) {
-      // Si tiene end_time, revisar si sigue activa; si no, hasta 2h después
       const finishTime = act.endTime || (() => {
-        const [h, m] = act.startTime.split(':').map(Number);
+        const [h, m] = (act.startTime || '07:00').split(':').map(Number);
         return `${String(Math.min(23, h + 2)).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
       })();
 
-      if (currentTime <= finishTime) {
-        return act;
+      if (currentTime >= act.startTime && currentTime <= finishTime) {
+        return {
+          activity: act,
+          isLiveNow: true,
+          isToday: true,
+          badgeLabel: '🔴 EN VIVO AHORA MISMO',
+          statusMessage: `Sesión académica transmitiéndose en directo (finaliza aprox. ${finishTime} COT)`,
+          currentTimeStr: currentTime
+        };
       }
     }
   }
 
-  // 2. Si todas ya pasaron, retornar la última actividad disponible para archivo/consulta
-  return activities[activities.length - 1] || null;
+  // 2. PRÓXIMA REUNIÓN HOY: Misma fecha, hora futura
+  for (const act of sorted) {
+    if (act.date === currentDate && act.startTime > currentTime) {
+      return {
+        activity: act,
+        isLiveNow: false,
+        isToday: true,
+        badgeLabel: `⏱️ Próxima Sesión Hoy a las ${act.startTime} COT`,
+        statusMessage: `Comienza hoy a las ${act.startTime} COT`,
+        currentTimeStr: currentTime
+      };
+    }
+  }
+
+  // 3. PRÓXIMA REUNIÓN EN DÍAS FUTUROS
+  for (const act of sorted) {
+    if (act.date > currentDate) {
+      return {
+        activity: act,
+        isLiveNow: false,
+        isToday: false,
+        badgeLabel: '📅 Próxima Sesión Académica',
+        statusMessage: `Programada para el ${act.dayLabel || act.date} a las ${act.startTime} COT`,
+        currentTimeStr: currentTime
+      };
+    }
+  }
+
+  // 4. Si todas las actividades ya concluyeron, retornar la última para consulta de grabaciones
+  const fallback = sorted[sorted.length - 1] || null;
+  if (!fallback) return null;
+
+  return {
+    activity: fallback,
+    isLiveNow: false,
+    isToday: false,
+    badgeLabel: 'Sesión Académica Reciente',
+    statusMessage: `Última sesión realizada el ${fallback.dayLabel || fallback.date}`,
+    currentTimeStr: currentTime
+  };
+}
+
+/**
+ * Obtiene la próxima actividad o sesión actual según la hora local de Colombia (America/Bogota)
+ * Mantiene compatibilidad hacia atrás con pruebas y llamadas directas.
+ * @param {Array} activities
+ * @param {Date} [referenceTime]
+ * @returns {Object|null}
+ */
+export function getUpcomingActivity(activities, referenceTime = new Date()) {
+  const info = getUpcomingActivityInfo(activities, referenceTime);
+  return info ? info.activity : null;
 }
 
 /**
