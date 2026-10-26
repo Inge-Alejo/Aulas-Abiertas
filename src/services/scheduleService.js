@@ -319,15 +319,23 @@ export function getActivitiesGroupedByDay(activities, weekKey) {
 }
 
 /**
- * Obtiene información detallada y estado en tiempo real de la actividad actual (en vivo) o próxima sesión
+ * Obtiene el grupo de sesiones en vivo en este momento o las próximas sesiones a realizar
  * @param {Array} activities
  * @param {Date} [referenceTime]
- * @returns {{ activity: Object, isLiveNow: boolean, isToday: boolean, badgeLabel: string, statusMessage: string, currentTimeStr: string }|null}
+ * @returns {{
+ *   type: 'live' | 'upcoming_today' | 'upcoming_future' | 'past',
+ *   isLiveNow: boolean,
+ *   badgeLabel: string,
+ *   sectionTitle: string,
+ *   statusMessage: string,
+ *   activities: Array,
+ *   currentTimeStr: string,
+ *   currentDate: string
+ * }|null}
  */
-export function getUpcomingActivityInfo(activities, referenceTime = new Date()) {
+export function getActiveOrUpcomingSessions(activities, referenceTime = new Date()) {
   if (!activities || activities.length === 0) return null;
 
-  // Formatear fecha y hora en formato ISO para America/Bogota (COT / UTC-5)
   const bogotaFormatter = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'America/Bogota',
     year: 'numeric',
@@ -351,72 +359,102 @@ export function getUpcomingActivityInfo(activities, referenceTime = new Date()) 
     return (a.startTime || '').localeCompare(b.startTime || '');
   });
 
-  // 1. REUNIÓN EN VIVO AHORA: Revisar si hay alguna actividad que esté ocurriendo en este instante
-  for (const act of sorted) {
-    if (act.date === currentDate) {
-      const finishTime = act.endTime || (() => {
-        const [h, m] = (act.startTime || '07:00').split(':').map(Number);
-        return `${String(Math.min(23, h + 2)).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-      })();
+  // 1. SESIONES EN VIVO AHORA: Revisar todas las que estén transcurriendo en este instante
+  const liveActivities = sorted.filter(act => {
+    if (act.date !== currentDate) return false;
+    const finishTime = act.endTime || (() => {
+      const [h, m] = (act.startTime || '07:00').split(':').map(Number);
+      return `${String(Math.min(23, h + 2)).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    })();
+    return currentTime >= act.startTime && currentTime <= finishTime;
+  });
 
-      if (currentTime >= act.startTime && currentTime <= finishTime) {
-        return {
-          activity: act,
-          isLiveNow: true,
-          isToday: true,
-          badgeLabel: '🔴 EN VIVO AHORA MISMO',
-          statusMessage: `Sesión académica transmitiéndose en directo (finaliza aprox. ${finishTime} COT)`,
-          currentTimeStr: currentTime
-        };
-      }
-    }
+  if (liveActivities.length > 0) {
+    return {
+      type: 'live',
+      isLiveNow: true,
+      badgeLabel: 'EN VIVO AHORA',
+      sectionTitle: liveActivities.length === 1 
+        ? 'Sesión en Vivo en Este Momento' 
+        : 'Sesiones en Vivo en Este Momento',
+      statusMessage: 'Transmitiéndose en directo en este momento',
+      activities: liveActivities,
+      currentTimeStr: currentTime,
+      currentDate
+    };
   }
 
-  // 2. PRÓXIMA REUNIÓN HOY: Misma fecha, hora futura
-  for (const act of sorted) {
-    if (act.date === currentDate && act.startTime > currentTime) {
-      return {
-        activity: act,
-        isLiveNow: false,
-        isToday: true,
-        badgeLabel: `⏱️ Próxima Sesión Hoy a las ${act.startTime} COT`,
-        statusMessage: `Comienza hoy a las ${act.startTime} COT`,
-        currentTimeStr: currentTime
-      };
-    }
+  // 2. PRÓXIMAS SESIONES HOY: Si la sesión anterior ya pasó, mostrar las próximas del día de hoy
+  const todayUpcoming = sorted.filter(act => act.date === currentDate && act.startTime > currentTime);
+  if (todayUpcoming.length > 0) {
+    const nextSlot = todayUpcoming[0].startTime;
+    const nextSessions = todayUpcoming.filter(a => a.startTime === nextSlot);
+    const chosen = nextSessions.length > 1 ? nextSessions : todayUpcoming.slice(0, 3);
+    return {
+      type: 'upcoming_today',
+      isLiveNow: false,
+      badgeLabel: `PRÓXIMAS SESIONES HOY (${nextSlot} COT)`,
+      sectionTitle: 'Próximas Sesiones de Hoy',
+      statusMessage: `Inician hoy a partir de las ${nextSlot} COT`,
+      activities: chosen,
+      currentTimeStr: currentTime,
+      currentDate
+    };
   }
 
-  // 3. PRÓXIMA REUNIÓN EN DÍAS FUTUROS
-  for (const act of sorted) {
-    if (act.date > currentDate) {
-      return {
-        activity: act,
-        isLiveNow: false,
-        isToday: false,
-        badgeLabel: '📅 Próxima Sesión Académica',
-        statusMessage: `Programada para el ${act.dayLabel || act.date} a las ${act.startTime} COT`,
-        currentTimeStr: currentTime
-      };
-    }
+  // 3. PRÓXIMAS SESIONES EN FECHAS FUTURAS: Si las de hoy ya concluyeron, mostrar las próximas de la semana
+  const futureActivities = sorted.filter(act => act.date > currentDate);
+  if (futureActivities.length > 0) {
+    const nextDate = futureActivities[0].date;
+    const nextDayActivities = futureActivities.filter(a => a.date === nextDate);
+    const dayName = nextDayActivities[0].dayLabel || nextDate;
+    return {
+      type: 'upcoming_future',
+      isLiveNow: false,
+      badgeLabel: 'PRÓXIMA SESIÓN ACADÉMICA',
+      sectionTitle: `Próximas Sesiones Académicas (${dayName})`,
+      statusMessage: `Programadas para el ${dayName}`,
+      activities: nextDayActivities.slice(0, 3),
+      currentTimeStr: currentTime,
+      currentDate
+    };
   }
 
-  // 4. Si todas las actividades ya concluyeron, retornar la última para consulta de grabaciones
-  const fallback = sorted[sorted.length - 1] || null;
-  if (!fallback) return null;
-
+  // 4. Si todas las actividades del registro concluyeron, mostrar las más recientes
+  const recent = sorted.slice(-3).reverse();
   return {
-    activity: fallback,
+    type: 'past',
     isLiveNow: false,
-    isToday: false,
-    badgeLabel: 'Sesión Académica Reciente',
-    statusMessage: `Última sesión realizada el ${fallback.dayLabel || fallback.date}`,
-    currentTimeStr: currentTime
+    badgeLabel: 'SESIÓN ACADÉMICA RECIENTE',
+    sectionTitle: 'Últimas Sesiones Académicas Realizadas',
+    statusMessage: 'Archivo de sesiones recientes',
+    activities: recent,
+    currentTimeStr: currentTime,
+    currentDate
+  };
+}
+
+/**
+ * Obtiene información detallada de la primera actividad en vivo o próxima sesión
+ * @param {Array} activities
+ * @param {Date} [referenceTime]
+ * @returns {Object|null}
+ */
+export function getUpcomingActivityInfo(activities, referenceTime = new Date()) {
+  const group = getActiveOrUpcomingSessions(activities, referenceTime);
+  if (!group || !group.activities || group.activities.length === 0) return null;
+  return {
+    activity: group.activities[0],
+    isLiveNow: group.isLiveNow,
+    isToday: group.type === 'upcoming_today' || group.type === 'live',
+    badgeLabel: group.badgeLabel,
+    statusMessage: group.statusMessage,
+    currentTimeStr: group.currentTimeStr
   };
 }
 
 /**
  * Obtiene la próxima actividad o sesión actual según la hora local de Colombia (America/Bogota)
- * Mantiene compatibilidad hacia atrás con pruebas y llamadas directas.
  * @param {Array} activities
  * @param {Date} [referenceTime]
  * @returns {Object|null}

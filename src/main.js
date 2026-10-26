@@ -9,6 +9,7 @@ import {
   getActivitiesGroupedByDay,
   getUpcomingActivity,
   getUpcomingActivityInfo,
+  getActiveOrUpcomingSessions,
   filterActivities,
   formatDayLabel
 } from './services/scheduleService.js';
@@ -219,21 +220,23 @@ function updateDataStatusUI() {
 }
 
 /**
- * Renderiza la reunión académica destacada en tiempo real (en vivo o próxima)
+ * Renderiza el grupo de reuniones académicas destacadas en tiempo real (en vivo o próximas)
+ * Muestra múltiples recuadros responsive con el diseño de la programación adaptado al tema institucional.
  */
 function renderSpotlightActivity() {
   const container = document.getElementById('spotlight-container');
   if (!container) return;
 
-  const info = getUpcomingActivityInfo(state.allActivities);
-  if (!info || !info.activity) {
+  const data = getActiveOrUpcomingSessions(state.allActivities);
+  if (!data || !data.activities || data.activities.length === 0) {
     container.innerHTML = `
-      <div class="spotlight-card">
-        <div class="spotlight-header">
-          <span class="spotlight-badge">Agenda de la Facultad</span>
-          <span class="spotlight-dept">Teleducación Medicina UdeA</span>
+      <div class="spotlight-wrapper">
+        <div class="spotlight-header-row">
+          <div>
+            <span class="spotlight-badge">AGENDA DE LA FACULTAD</span>
+            <h3 class="spotlight-main-heading">No hay actividades programadas para este momento</h3>
+          </div>
         </div>
-        <h3 class="spotlight-title">No hay actividades programadas para este momento</h3>
         <p style="color: #CBD5E1; margin-bottom: 20px;">
           Consulte la programación semanal completa a continuación o explore el archivo de conferencias grabadas en nuestro canal oficial.
         </p>
@@ -246,88 +249,101 @@ function renderSpotlightActivity() {
     return;
   }
 
-  const upcoming = info.activity;
-  const isLive = info.isLiveNow;
-  const hasMeeting = Boolean(upcoming.meeting_url);
-
+  const isLive = data.isLiveNow;
   const badgeClass = isLive 
     ? 'spotlight-badge spotlight-badge-live' 
-    : (info.isToday ? 'spotlight-badge spotlight-badge-today' : 'spotlight-badge');
+    : (data.type === 'upcoming_today' ? 'spotlight-badge spotlight-badge-today' : 'spotlight-badge');
 
   const dotClass = isLive ? 'spotlight-pulse-dot dot-live-red' : 'spotlight-pulse-dot';
-  const cardClass = isLive ? 'spotlight-card is-live-meeting' : 'spotlight-card';
-
-  const actionButton = hasMeeting ? `
-    <a href="${upcoming.meeting_url}" target="_blank" rel="noopener noreferrer" class="btn-spotlight-access ${isLive ? 'btn-spotlight-live' : ''}" id="btn-spotlight-join">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
-      ${isLive ? '⚡ Unirse a la Sesión en Directo' : 'Conectarse a la Sesión en Vivo'}
-    </a>
-  ` : `
-    <a href="#programacion" class="btn-spotlight-access">
-      Ver Detalles en Programación
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-    </a>
-  `;
 
   container.innerHTML = `
-    <div class="${cardClass}" id="spotlight-card-${upcoming.id}">
-      <div class="spotlight-header">
-        <span class="${badgeClass}">
-          <span class="${dotClass}" aria-hidden="true"></span>
-          ${info.badgeLabel}
-        </span>
-        <div style="display: flex; align-items: center; gap: 14px;">
-          <span class="spotlight-dept">${upcoming.department}</span>
-          <span class="spotlight-realtime-indicator" title="Sincronizado en tiempo real con hora legal colombiana COT">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            En tiempo real
+    <div class="spotlight-wrapper ${isLive ? 'is-live-mode' : ''}">
+      <div class="spotlight-header-row">
+        <div>
+          <span class="${badgeClass}">
+            <span class="${dotClass}" aria-hidden="true"></span>
+            ${data.badgeLabel}
           </span>
+          <h3 class="spotlight-main-heading">${data.sectionTitle}</h3>
+        </div>
+        <div class="spotlight-meta-right">
+          <span class="spotlight-realtime-indicator" title="Sincronizado en tiempo real con hora legal colombiana COT">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            En tiempo real · COT
+          </span>
+          <span class="spotlight-sessions-counter">${data.activities.length} ${data.activities.length === 1 ? 'sesión' : 'sesiones'}</span>
         </div>
       </div>
-      <h3 class="spotlight-title">${upcoming.title}</h3>
-      
-      <div class="spotlight-details">
-        <span class="spotlight-meta-item">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          <strong>${upcoming.dayLabel}</strong>
-        </span>
-        <span class="spotlight-meta-item">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          <strong>${upcoming.startTime} COT</strong> ${upcoming.endTime ? `a ${upcoming.endTime} COT` : ''}
-        </span>
-        <span class="spotlight-meta-item">
-          <span class="card-modality-badge modality-${(upcoming.modality || 'virtual').toLowerCase()}">${upcoming.modality || 'Virtual'}</span>
-        </span>
-        ${upcoming.location ? `
-        <span class="spotlight-meta-item">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          ${upcoming.location}
-        </span>
+
+      <div class="spotlight-grid">
+        ${data.activities.map(act => renderSpotlightItemCard(act, isLive)).join('')}
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Renderiza la tarjeta de una sesión dentro de la cuadrícula destacada
+ */
+function renderSpotlightItemCard(act, isLive) {
+  const hasMeeting = Boolean(act.meeting_url);
+  const hasRecording = Boolean(act.recording_url);
+
+  return `
+    <article class="spotlight-item-card ${isLive ? 'is-live' : ''}" id="spotlight-item-${act.id}" tabindex="0">
+      <div>
+        <div class="spotlight-item-top">
+          <span class="spotlight-item-time">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            ${act.startTime} COT ${act.endTime ? `– ${act.endTime}` : ''}
+          </span>
+          <span class="card-modality-badge modality-${(act.modality || 'virtual').toLowerCase()}">${act.modality || 'Virtual'}</span>
+        </div>
+
+        <div class="spotlight-item-dept">${act.department || 'Facultad de Medicina'}</div>
+        <h4 class="spotlight-item-title">${act.title}</h4>
+
+        ${act.speakers ? `
+        <div class="spotlight-item-speakers">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span><strong>Presenta:</strong> ${act.speakers}</span>
+        </div>
+        ` : ''}
+
+        ${act.location ? `
+        <div class="spotlight-item-location">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span>${act.location}</span>
+        </div>
+        ` : ''}
+
+        ${act.summary ? `
+        <div class="spotlight-item-summary">
+          ${act.summary}
+        </div>
         ` : ''}
       </div>
 
-      ${upcoming.speakers ? `
-      <div class="spotlight-speakers">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <span>Presenta: <strong>${upcoming.speakers}</strong></span>
-      </div>
-      ` : ''}
+      <div class="spotlight-item-actions">
+        ${hasMeeting ? `
+          <a href="${act.meeting_url}" target="_blank" rel="noopener noreferrer" class="btn-spotlight-access ${isLive ? 'btn-spotlight-live' : ''}" style="width: 100%; justify-content: center; font-size: 0.875rem; padding: 10px 16px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+            ${isLive ? 'Conectarse a la Sesión en Vivo' : 'Ingresar a la Sesión'}
+          </a>
+        ` : `
+          <a href="#programacion" class="btn-secondary" style="width: 100%; justify-content: center; font-size: 0.8125rem; padding: 8px 12px; background: rgba(255,255,255,0.08); color: #FFFFFF; border-color: rgba(255,255,255,0.2);">
+            Ver en Programación
+          </a>
+        `}
 
-      ${upcoming.summary ? `
-      <p style="color: #CBD5E1; font-size: 0.9375rem; line-height: 1.5; margin-bottom: 20px;">
-        ${upcoming.summary}
-      </p>
-      ` : ''}
-
-      <div class="spotlight-footer">
-        <div>
-          <span style="font-size: 0.8125rem; color: #94A3B8;">${info.statusMessage || 'Organiza: Facultad de Medicina UdeA'}</span>
-        </div>
-        <div>
-          ${actionButton}
-        </div>
+        ${hasRecording ? `
+          <a href="${act.recording_url}" target="_blank" rel="noopener noreferrer" class="btn-recording-link" style="width: 100%; justify-content: center; font-size: 0.8125rem; padding: 8px 12px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+            Ver grabación
+          </a>
+        ` : ''}
       </div>
-    </div>
+    </article>
   `;
 }
 
