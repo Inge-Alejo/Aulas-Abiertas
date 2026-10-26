@@ -295,56 +295,6 @@
       </div>
     </section>
 
-    <!-- Panel de Instrucciones y Descarga de Plantilla para Teleducación -->
-    <section class="sheets-guide-section" id="guia-google-sheets" aria-labelledby="sheets-heading">
-      <div class="container">
-        <div class="sheets-guide-card">
-          <div class="sheets-guide-header">
-            <div>
-              <span class="section-label">Para el Equipo de Teleducación</span>
-              <h3 style="font-family: var(--font-serif); font-size: 1.65rem; font-weight: 700; color: var(--text-primary); margin-top: 4px;" id="sheets-heading">
-                Cómo actualizar la programación desde Google Sheets
-              </h3>
-              <p style="color: var(--text-muted); font-size: 0.9375rem; margin-top: 6px; max-width: 650px;">
-                La agenda se actualiza automáticamente desde su hoja de cálculo, sin necesidad de modificar el código ni reconstruir el sitio.
-              </p>
-            </div>
-            <div>
-              <a href="/data/plantilla_aulas_abiertas.csv" download="plantilla_aulas_abiertas.csv" class="btn-primary" id="btn-download-csv-template">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                Descargar Plantilla CSV
-              </a>
-            </div>
-          </div>
-
-          <div class="sheets-guide-steps">
-            <div class="step-card">
-              <div class="step-number">1</div>
-              <h4>Crear la pestaña pública</h4>
-              <p>En su hoja de cálculo de Google Sheets, cree una pestaña llamada <code>Programacion_publica</code> con las columnas recomendadas: <em>id, date, start_time, end_time, department, title, speakers, modality, location, meeting_url, recording_url, summary</em>.</p>
-            </div>
-
-            <div class="step-card">
-              <div class="step-number">2</div>
-              <h4>Publicar como CSV</h4>
-              <p>Vaya a <strong>Archivo &gt; Compartir &gt; Publicar en la web</strong>. Seleccione únicamente la pestaña <em>Programacion_publica</em> y el formato <strong>Valores separados por comas (.csv)</strong>. Haga clic en Publicar y copie el enlace generado.</p>
-            </div>
-
-            <div class="step-card">
-              <div class="step-number">3</div>
-              <h4>Configurar en el entorno</h4>
-              <p>Pegue la URL obtenida en la variable <code>VITE_PUBLIC_SCHEDULE_CSV_URL</code> de su archivo <code>.env</code> o en las variables de entorno de su proveedor de hosting.</p>
-            </div>
-
-            <div class="step-card">
-              <div class="step-number">4</div>
-              <h4>Actualizaciones instantáneas</h4>
-              <p>Cada vez que agregue, edite o retire una fila en Google Sheets, los cambios se reflejarán en la web cuando los visitantes pulsen <strong>Actualizar datos</strong> o recarguen la página.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
   </main>
 
   <!-- Pie de Página Institucional (Footer) -->
@@ -366,8 +316,8 @@
           <h5>Canales de Contacto</h5>
           <ul class="footer-links">
             <li>
-              <a href="mailto:aprendizajes.med@udea.edu.co" id="footer-link-email">
-                <strong>Correo:</strong> aprendizajes.med@udea.edu.co
+              <a href="mailto:teleducacion.med@udea.edu.co" id="footer-link-email">
+                <strong>Correo:</strong> teleducacion.med@udea.edu.co
               </a>
             </li>
             <li>
@@ -400,7 +350,6 @@
             <li><a href="#programacion">Programación Semanal</a></li>
             <li><a href="#biblioteca">Biblioteca de Conferencias</a></li>
             <li><a href="#acerca">Acerca del Proyecto</a></li>
-            <li><a href="#guia-google-sheets">Guía Google Sheets</a></li>
           </ul>
         </div>
       </div>
