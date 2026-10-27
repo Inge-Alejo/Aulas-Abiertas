@@ -5,12 +5,172 @@
  */
 
 const CANDIDATE_MODELS = [
-  'gemini-3.5-flash-lite',
-  'gemini-3.1-flash-lite',
-  'gemini-2.5-flash-lite',
+  'gemini-2.5-flash',
   'gemini-2.0-flash',
-  'gemini-1.5-flash'
+  'gemini-1.5-flash',
+  'gemini-1.5-flash-8b',
+  'gemini-2.5-pro'
 ];
+
+/**
+ * Inspecciona un objeto parseado para encontrar la propiedad que contiene el arreglo de actividades
+ */
+function resolveArrayFromParsed(data) {
+  if (Array.isArray(data)) return data;
+  if (!data || typeof data !== 'object') return [];
+
+  const candidateKeys = ['activities', 'conferencias', 'events', 'eventos', 'programacion', 'data', 'items', 'list'];
+  for (const key of candidateKeys) {
+    if (Array.isArray(data[key])) return data[key];
+  }
+
+  for (const key of Object.keys(data)) {
+    if (Array.isArray(data[key])) return data[key];
+  }
+
+  return [];
+}
+
+/**
+ * Parsea un bloque de actividad individual, con soporte regex ante comillas rotas
+ */
+function parseSingleActivityBlock(blockStr) {
+  try {
+    const cleaned = blockStr.replace(/,\s*([\]}])/g, '$1');
+    return JSON.parse(cleaned);
+  } catch (e) {
+    const getField = (field) => {
+      const regex = new RegExp(`"${field}"\\s*:\\s*"([\\s\\S]*?)"(?=\\s*,\\s*"[a-zA-Z0-9_]+"|\\s*})`, 'i');
+      const match = blockStr.match(regex);
+      return match ? match[1].replace(/\\"/g, '"').trim() : '';
+    };
+
+    const title = getField('title');
+    const department = getField('department');
+    if (!title && !department) return null;
+
+    return {
+      id: getField('id') || `AA-${Date.now()}`,
+      date: getField('date'),
+      start_time: getField('start_time'),
+      end_time: getField('end_time'),
+      department: department,
+      title: title,
+      speakers: getField('speakers'),
+      modality: getField('modality') || 'Virtual',
+      location: getField('location'),
+      meeting_url: getField('meeting_url'),
+      recording_url: getField('recording_url'),
+      summary: getField('summary')
+    };
+  }
+}
+
+/**
+ * Parser de rescate token a token para aislar cada objeto { ... } individualmente
+ */
+function extractActivitiesByBlocks(text) {
+  const activities = [];
+  let depth = 0;
+  let startIdx = -1;
+  let inString = false;
+  let escaped = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    if (char === '\\') {
+      escaped = true;
+      continue;
+    }
+    if (char === '"') {
+      inString = !inString;
+      continue;
+    }
+    if (!inString) {
+      if (char === '{') {
+        if (depth === 0) startIdx = i;
+        depth++;
+      } else if (char === '}') {
+        depth--;
+        if (depth === 0 && startIdx !== -1) {
+          const rawBlock = text.substring(startIdx, i + 1);
+          const act = parseSingleActivityBlock(rawBlock);
+          if (act && (act.title || act.department || act.id)) {
+            activities.push(act);
+          }
+          startIdx = -1;
+        }
+      }
+    }
+  }
+  return activities;
+}
+
+/**
+ * Extrae y repara de forma ultra-resiliente el listado de actividades de la respuesta de Gemini.
+ * Soporta arrays directos, objetos contenedores ({ activities, conferencias, data, etc. }),
+ * respuestas truncadas sin cerrar corchetes, comillas sin escapar y extracción por bloques regex.
+ */
+function parseActivitiesFromAi(rawText) {
+  if (!rawText || typeof rawText !== 'string') return [];
+
+  let cleaned = rawText.trim();
+  cleaned = cleaned.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+
+  // Intento 1: Parseo JSON directo
+  try {
+    const directParsed = JSON.parse(cleaned);
+    const resolved = resolveArrayFromParsed(directParsed);
+    if (resolved.length > 0) return resolved;
+  } catch (e) {}
+
+  // Intento 2: Buscar límites de corchetes [ ... ]
+  const firstBracket = cleaned.indexOf('[');
+  const lastBracket = cleaned.lastIndexOf(']');
+  if (firstBracket !== -1 && lastBracket > firstBracket) {
+    const arraySlice = cleaned.substring(firstBracket, lastBracket + 1);
+    try {
+      const sanitized = arraySlice.replace(/,\s*([\]}])/g, '$1');
+      const parsedSlice = JSON.parse(sanitized);
+      if (Array.isArray(parsedSlice) && parsedSlice.length > 0) return parsedSlice;
+    } catch (e) {}
+  }
+
+  // Intento 3: Buscar objeto contenedor { ... }
+  const firstBrace = cleaned.indexOf('{');
+  const lastBrace = cleaned.lastIndexOf('}');
+  if (firstBrace !== -1 && lastBrace > firstBrace) {
+    const objSlice = cleaned.substring(firstBrace, lastBrace + 1);
+    try {
+      const sanitized = objSlice.replace(/,\s*([\]}])/g, '$1');
+      const parsedObj = JSON.parse(sanitized);
+      const resolved = resolveArrayFromParsed(parsedObj);
+      if (resolved.length > 0) return resolved;
+    } catch (e) {}
+  }
+
+  // Intento 4: Truncado antes del último ']'
+  if (firstBracket !== -1 && lastBrace > firstBracket) {
+    const truncatedRepaired = cleaned.substring(firstBracket, lastBrace + 1) + '\n]';
+    try {
+      const sanitized = truncatedRepaired.replace(/,\s*([\]}])/g, '$1');
+      const parsedTrunc = JSON.parse(sanitized);
+      if (Array.isArray(parsedTrunc) && parsedTrunc.length > 0) return parsedTrunc;
+    } catch (e) {}
+  }
+
+  // Intento 5: Extracción de bloques individuales
+  const extractedList = extractActivitiesByBlocks(cleaned);
+  if (extractedList.length > 0) {
+    return extractedList;
+  }
+
+  throw new Error('No se pudo extraer ninguna actividad válida de la respuesta del modelo.');
+}
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -108,7 +268,10 @@ INSTRUCCIONES CLAVE DE EXTRACCIÓN:
 - recording_url: URL de grabación o transmisión si aparece, o ""
 - summary: Breve descripción o temática si se detalla en el texto, o ""
 
-IMPORTANTE: Devuelve ÚNICAMENTE un bloque JSON válido con el arreglo completo de actividades sin texto adicional.`;
+REGLAS CRÍTICAS DE SALIDA:
+- Devuelve ÚNICAMENTE un arreglo JSON plano: [ { ... }, { ... } ].
+- NUNCA agregues claves contenedoras (como {"activities": [...]}), texto introductorio ni explicaciones.
+- NUNCA uses comillas dobles sin escapar dentro de los textos de 'title' o 'summary'. Si hay comillas en el boletín, usa comillas simples ' o angulares « ».`;
 
     let successfulResponse = null;
     let usedModel = null;
@@ -160,29 +323,37 @@ IMPORTANTE: Devuelve ÚNICAMENTE un bloque JSON válido con el arreglo completo 
       });
     }
 
-    // Parsear el JSON devuelto por Gemini
+    // Parsear el JSON devuelto por Gemini de manera ultra-resiliente
     let activities = [];
     try {
-      const cleanJson = successfulResponse.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim();
-      activities = JSON.parse(cleanJson);
-      if (!Array.isArray(activities) && activities.activities) {
-        activities = activities.activities;
-      }
+      const parsedItems = parseActivitiesFromAi(successfulResponse);
 
-      // Sanitizar campos: remover cualquier URL que apunte al propio MailerLite
-      activities = activities.map((act) => {
+      // Sanitizar campos garantizando formato y removiendo enlaces de MailerLite
+      activities = parsedItems.map((act, idx) => {
         let mUrl = act.meeting_url ? String(act.meeting_url).trim() : '';
         if (mUrl.includes('mailerlite.com') || !mUrl.startsWith('http')) {
           mUrl = '';
         }
         return {
-          ...act,
-          meeting_url: mUrl
+          id: act.id ? String(act.id).trim() : `AA-${idx + 1}`,
+          date: act.date ? String(act.date).trim() : '',
+          start_time: act.start_time ? String(act.start_time).trim() : '',
+          end_time: act.end_time ? String(act.end_time).trim() : '',
+          department: act.department ? String(act.department).trim() : '',
+          title: act.title ? String(act.title).trim() : '',
+          speakers: act.speakers ? String(act.speakers).trim() : '',
+          modality: act.modality ? String(act.modality).trim() : 'Virtual',
+          location: act.location ? String(act.location).trim() : '',
+          meeting_url: mUrl,
+          recording_url: act.recording_url ? String(act.recording_url).trim() : '',
+          summary: act.summary ? String(act.summary).trim() : ''
         };
       });
     } catch (parseErr) {
+      console.error('[MailerLite Scraper Parse Error]:', parseErr.message, successfulResponse);
       return res.status(500).json({
         error: 'La respuesta de la IA no pudo ser parseada como JSON válido.',
+        details: parseErr.message,
         rawText: successfulResponse
       });
     }
