@@ -977,7 +977,7 @@ function setupAdminPanel() {
         speakers: a.speakers || '',
         modality: a.modality || 'Virtual',
         location: a.location || '',
-        meeting_url: a.meeting_url || a.meetingUrl || '',
+        meeting_url: (a.meeting_url && !a.meeting_url.includes('mailerlite.com')) ? a.meeting_url : '',
         recording_url: a.recording_url || a.recordingUrl || '',
         summary: a.summary || '',
         dayLabel: formatDayLabel(a.date),

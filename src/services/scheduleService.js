@@ -242,9 +242,9 @@ export function parseScheduleCsv(csvText) {
     const modality = normalizeModality(row.modality);
     const location = row.location ? String(row.location).trim() : '';
     
-    // Validación de URLs
+    // Validación de URLs (descartar enlaces genéricos al visor de MailerLite)
     const rawMeeting = row.meeting_url ? String(row.meeting_url).trim() : '';
-    const meeting_url = isValidUrl(rawMeeting) ? rawMeeting : '';
+    const meeting_url = (isValidUrl(rawMeeting) && !rawMeeting.includes('mailerlite.com')) ? rawMeeting : '';
     
     const rawRecording = row.recording_url ? String(row.recording_url).trim() : '';
     const recording_url = isValidUrl(rawRecording) ? rawRecording : '';

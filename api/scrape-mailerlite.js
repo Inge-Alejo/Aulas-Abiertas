@@ -54,8 +54,14 @@ export default async function handler(req, res) {
 
         const html = await fetchRes.text();
         
+        // Reemplazar enlaces <a> con indicador explícito [ENLACE_REUNION_VIRTUAL: URL] para que la IA extraiga los enlaces directos de Teams/Meet
+        let preprocessed = html.replace(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi, (m, href, text) => {
+          const cleanText = text.replace(/<[^>]+>/g, '').trim();
+          return ` [ENLACE_REUNION_VIRTUAL: ${href.trim()} (Texto: ${cleanText})] `;
+        });
+
         // Limpieza profunda de scripts, estilos y atributos CSS redundantes para preservar todo el contenido textual y enlaces
-        contentToAnalyze = html
+        contentToAnalyze = preprocessed
           .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
           .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
           .replace(/<head\b[^<]*(?:(?!<\/head>)<[^<]*)*<\/head>/gi, '')
@@ -83,7 +89,12 @@ INSTRUCCIONES CLAVE DE EXTRACCIÓN:
 1. EXHAUSTIVIDAD TOTAL: El boletín contiene habitualmente entre 30 y 40 conferencias en total para toda la semana. Debes recorrer el documento de principio a fin y extraer ABSOLUTAMENTE TODAS las actividades sin omitir ninguna y sin detenerte prematuramente.
 2. FECHAS EXACTAS: El boletín agrupa las conferencias bajo encabezados de días como "Lunes 26 de octubre", "Martes 27 de octubre", "Miércoles 28 de octubre", "Jueves 29 de octubre", "Viernes 30 de octubre". Determina el año, mes y día exactos y escribe la fecha en formato ISO "AAAA-MM-DD" (por ejemplo: "2026-10-26") para cada actividad de ese día.
 3. HORA: La hora de inicio (start_time) normalizada en formato 24h "HH:mm" (ej: "07:00", "08:30", "14:00"). La hora de fin (end_time) si existe en "HH:mm", o cadena vacía "" si no se especifica.
-4. CAMPOS A EXTRAER POR CADA ACTIVIDAD (JSON):
+4. ENLACE DE CONEXIÓN A REUNIÓN (meeting_url):
+- MUY IMPORTANTE: En el texto de cada conferencia aparece su enlace de reunión virtual indicado explícitamente en [ENLACE_REUNION_VIRTUAL: URL]. Puede ser de Microsoft Teams (https://teams.microsoft.com/...), Google Meet (http://meet.google.com/ o https://meet.google.com/...), Zoom o YouTube.
+- DEBES COPIAR ESE ENLACE EXACTO de Teams/Meet/Zoom en el campo meeting_url de esa conferencia.
+- ESTÁ TOTALMENTE PROHIBIDO colocar la URL del boletín de MailerLite (como preview.mailerlite.com) en meeting_url.
+- Si una actividad es presencial y no incluye enlace virtual, deja meeting_url como cadena vacía "".
+5. CAMPOS A EXTRAER POR CADA ACTIVIDAD (JSON):
 - id: Identificador único generado (ej: "AA-2026-001", "AA-2026-002", etc.)
 - date: Fecha en formato "AAAA-MM-DD"
 - start_time: Hora de inicio en formato "HH:mm" (24h)
@@ -92,8 +103,8 @@ INSTRUCCIONES CLAVE DE EXTRACCIÓN:
 - title: Título completo y exacto de la conferencia
 - speakers: Nombre del ponente o ponentes separados por punto y coma ";". Si no hay, ""
 - modality: "Virtual", "Presencial", "Híbrida" o "Por confirmar"
-- location: Lugar físico o plataforma (ej: "Piso 5", "Auditorio", "Teams", "Zoom")
-- meeting_url: URL real de conexión (Teams, Zoom, Meet, etc.) si aparece en el boletín, o ""
+- location: Lugar físico o plataforma (ej: "Piso 5", "Auditorio", "Teams", "Google Meet")
+- meeting_url: URL real de videollamada (Teams, Google Meet, Zoom) si aparece en [ENLACE_REUNION_VIRTUAL: URL], o ""
 - recording_url: URL de grabación o transmisión si aparece, o ""
 - summary: Breve descripción o temática si se detalla en el texto, o ""
 
@@ -157,6 +168,18 @@ IMPORTANTE: Devuelve ÚNICAMENTE un bloque JSON válido con el arreglo completo 
       if (!Array.isArray(activities) && activities.activities) {
         activities = activities.activities;
       }
+
+      // Sanitizar campos: remover cualquier URL que apunte al propio MailerLite
+      activities = activities.map((act) => {
+        let mUrl = act.meeting_url ? String(act.meeting_url).trim() : '';
+        if (mUrl.includes('mailerlite.com') || !mUrl.startsWith('http')) {
+          mUrl = '';
+        }
+        return {
+          ...act,
+          meeting_url: mUrl
+        };
+      });
     } catch (parseErr) {
       return res.status(500).json({
         error: 'La respuesta de la IA no pudo ser parseada como JSON válido.',
