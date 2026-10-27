@@ -132,6 +132,7 @@ Responde en español con rigor, calidez y brevedad.`;
  */
 export async function scrapeMailerliteWithGemini(url, rawContent = '') {
   // 1. Probar primero vía Serverless (/api/scrape-mailerlite)
+  let serverError = null;
   try {
     const res = await fetch('/api/scrape-mailerlite', {
       method: 'POST',
@@ -145,14 +146,16 @@ export async function scrapeMailerliteWithGemini(url, rawContent = '') {
     }
 
     const errData = await res.json().catch(() => ({}));
-    if (res.status === 400 || res.status === 500) {
-      if (errData.error) throw new Error(errData.error);
-    }
+    serverError = errData.error || errData.details || `Error del servidor (${res.status}): ${res.statusText || 'No se pudo procesar la solicitud'}`;
   } catch (err) {
-    if (err.message && !err.message.includes('fetch')) {
-      throw err;
-    }
-    console.info('[MailerLite Scraper Client] Endpoint serverless no disponible, probando fallback...', err.message);
+    // Si la llamada fetch falló totalmente (ej: CORS o servidor local apagado)
+    console.warn('[MailerLite Scraper Client] Endpoint serverless no alcanzable:', err.message);
+    serverError = `Error de conexión con el servicio: ${err.message}`;
+  }
+
+  // Si el servidor respondió con un error o no se pudo completar la llamada serverless
+  if (serverError) {
+    throw new Error(serverError);
   }
 
   // 2. Si no hay serverless activo (desarrollo puramente local)
@@ -163,4 +166,5 @@ export async function scrapeMailerliteWithGemini(url, rawContent = '') {
 
   throw new Error('En desarrollo local, para extraer URLs externas se recomienda usar el endpoint en Vercel o pegar el texto del boletín.');
 }
+
 

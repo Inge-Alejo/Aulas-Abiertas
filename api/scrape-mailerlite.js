@@ -5,11 +5,10 @@
  */
 
 const CANDIDATE_MODELS = [
-  'gemini-2.5-flash',
   'gemini-2.0-flash',
   'gemini-1.5-flash',
   'gemini-1.5-flash-8b',
-  'gemini-2.5-pro'
+  'gemini-1.5-pro'
 ];
 
 /**
@@ -186,11 +185,11 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Método no permitido. Utiliza POST.' });
   }
 
-  const apiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
+  const apiKey = (process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || process.env.gemini_api_key || '').trim();
   if (!apiKey) {
     return res.status(500).json({
-      error: 'La variable de entorno GEMINI_API_KEY no está configurada.',
-      setupHelp: 'Configura GEMINI_API_KEY en Vercel o en tu archivo .env local.'
+      error: 'La variable de entorno GEMINI_API_KEY no está activa en este despliegue de Vercel.',
+      setupHelp: 'Si acabas de agregar la variable en Vercel (Project Settings > Environment Variables), debes ir a Deployments y hacer clic en los tres puntos (...) > Redeploy para que el servidor la cargue.'
     });
   }
 
