@@ -1496,7 +1496,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   display: grid;
   grid-template-columns: 1.5fr 1fr 1fr 1fr;
   gap: 40px;
-  margin-bottom: 48px;
+  margin-bottom: 36px;
 }
 
 .footer-brand h4 {
@@ -1540,8 +1540,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 
 .footer-bottom {
-  padding-top: 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 20px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.08);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1955,11 +1955,12 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
    CUMPLIMIENTO LEGAL, PRIVACIDAD Y BANNER DE ALMACENAMIENTO/COOKIES
    ============================================================================== */
 
-/* Barra de enlaces legales en el Footer */
+/* Barra de enlaces legales en el Footer (ubicada en la parte media del footer) */
 .footer-legal-bar {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px dashed rgba(255, 255, 255, 0.1);
+  margin-top: 0;
+  margin-bottom: 24px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2065,10 +2066,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 
 .legal-notice-box {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 14px 16px;
+  display: block;
+  padding: 14px 18px;
   border-radius: var(--radius-sm);
   margin-bottom: 18px;
   font-size: 0.84rem;
