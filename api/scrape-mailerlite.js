@@ -5,10 +5,11 @@
  */
 
 const CANDIDATE_MODELS = [
+  'gemini-3.5-flash-lite',
+  'gemini-3.1-flash-lite',
+  'gemini-2.5-flash-lite',
   'gemini-2.0-flash',
-  'gemini-1.5-flash',
-  'gemini-1.5-flash-8b',
-  'gemini-1.5-pro'
+  'gemini-1.5-flash'
 ];
 
 /**
@@ -304,8 +305,7 @@ REGLAS CRÍTICAS DE SALIDA:
             ],
             generationConfig: {
               temperature: 0.1,
-              maxOutputTokens: 8192,
-              responseMimeType: 'application/json'
+              maxOutputTokens: 8192
             }
           })
         });
