@@ -427,6 +427,17 @@
           <span>Vigilada Mineducación · Personería Jurídica Res. 129 de 1956</span>
         </div>
       </div>
+
+      <!-- Barra de Cumplimiento Legal, Privacidad y Descargo Sanitario -->
+      <nav class="footer-legal-bar" aria-label="Información legal y regulatoria">
+        <button type="button" class="footer-legal-link" data-legal-tab="disclaimer">Descargo Médico</button>
+        <span class="legal-separator" aria-hidden="true">·</span>
+        <button type="button" class="footer-legal-link" data-legal-tab="privacy">Tratamiento de Datos y Habeas Data</button>
+        <span class="legal-separator" aria-hidden="true">·</span>
+        <button type="button" class="footer-legal-link" data-legal-tab="cookies">Almacenamiento y Cookies</button>
+        <span class="legal-separator" aria-hidden="true">·</span>
+        <button type="button" class="footer-legal-link" data-legal-tab="terms">Términos y Propiedad Intelectual</button>
+      </nav>
     </div>
   </footer>
 
@@ -573,6 +584,157 @@
 
     </div>
   </div>
+
+  <!-- Modal Unificado de Cumplimiento Legal e Información Institucional -->
+  <div id="modal-legal-backdrop" class="modal-backdrop" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog legal-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-legal-title">
+      <div class="modal-header">
+        <div>
+          <span class="section-label" style="font-size: 0.75rem;">Marco Institucional y Regulatorio</span>
+          <h3 id="modal-legal-title" style="font-size: 1.25rem; font-family: var(--font-serif); margin-top: 4px; color: var(--udea-forest);">
+            Información Legal y Privacidad
+          </h3>
+        </div>
+        <button id="btn-close-modal-legal" class="modal-close-btn" aria-label="Cerrar información legal">✕</button>
+      </div>
+
+      <!-- Pestañas de Navegación Legal -->
+      <div class="legal-tabs-bar" role="tablist" aria-label="Pestañas de información legal">
+        <button type="button" class="legal-tab-btn active" role="tab" id="tab-btn-disclaimer" aria-selected="true" aria-controls="legal-tab-disclaimer" data-tab="disclaimer">
+          Descargo Médico
+        </button>
+        <button type="button" class="legal-tab-btn" role="tab" id="tab-btn-privacy" aria-selected="false" aria-controls="legal-tab-privacy" data-tab="privacy">
+          Datos Personales
+        </button>
+        <button type="button" class="legal-tab-btn" role="tab" id="tab-btn-cookies" aria-selected="false" aria-controls="legal-tab-cookies" data-tab="cookies">
+          Cookies y Almacenamiento
+        </button>
+        <button type="button" class="legal-tab-btn" role="tab" id="tab-btn-terms" aria-selected="false" aria-controls="legal-tab-terms" data-tab="terms">
+          Términos y Propiedad
+        </button>
+      </div>
+
+      <!-- Contenidos de las Pestañas -->
+      <div class="legal-modal-body">
+        <!-- 1. Descargo Médico -->
+        <div id="legal-tab-disclaimer" class="legal-tab-pane active" role="tabpanel" aria-labelledby="tab-btn-disclaimer">
+          <div class="legal-notice-box alert-box-warning">
+            <span class="legal-notice-icon" aria-hidden="true">⚕️</span>
+            <div>
+              <strong>Aviso de Carácter Estrictamente Académico y Formativo</strong>
+              <p>El contenido publicado no constituye consulta médica, diagnóstico, prescripción ni asesoría sanitaria individualizada.</p>
+            </div>
+          </div>
+          <h4>1. Finalidad Exclusivamente Educativa</h4>
+          <p>
+            El portal <strong>Aulas Abiertas</strong> es un canal de extensión académica y educación continua promovido por la <strong>Facultad de Medicina de la Universidad de Antioquia (UdeA)</strong> y el equipo de Teleducación. Su objetivo es difundir la programación académica, conferencias clínicas y actividades docentes orientadas a profesionales de la salud, médicos especialistas, residentes, internos y estudiantes de áreas afines.
+          </p>
+          <h4>2. Inexistencia de Relación Médico-Paciente</h4>
+          <p>
+            La visualización de las conferencias, la lectura de temáticas clínicas o el acceso a los enlaces virtuales de conexión en ningún caso genera una relación médico-paciente entre los conferencistas, la Universidad de Antioquia y los usuarios del sitio.
+          </p>
+          <h4>3. Recomendación a Pacientes y Público General</h4>
+          <p>
+            Si usted es un paciente, familiar o particular que presenta síntomas, dudas sobre su tratamiento o una emergencia médica, <strong>debe consultar directamente a su médico tratante o acudir a un centro hospitalario habilitado</strong>. Nunca suspenda, inicie ni modifique un tratamiento médico con base en el contenido de estas conferencias académicas.
+          </p>
+        </div>
+
+        <!-- 2. Protección de Datos y Habeas Data -->
+        <div id="legal-tab-privacy" class="legal-tab-pane" role="tabpanel" aria-labelledby="tab-btn-privacy" style="display: none;">
+          <div class="legal-notice-box alert-box-info">
+            <span class="legal-notice-icon" aria-hidden="true">🏛️</span>
+            <div>
+              <strong>Cumplimiento de la Ley 1581 de 2012 y Decreto 1377 de 2013</strong>
+              <p>Régimen General de Protección de Datos Personales en la República de Colombia.</p>
+            </div>
+          </div>
+          <h4>1. Responsable del Tratamiento de Datos</h4>
+          <p>
+            La <strong>Universidad de Antioquia</strong> (Institución de Educación Superior Pública con Personería Jurídica otorgada mediante Resolución 129 de 1956 del MEN, NIT: 890.980.040-8) y su <strong>Facultad de Medicina</strong>, con sede en la Carrera 51D #62-29 (Medellín, Colombia), son responsables del tratamiento de los datos que pudiesen generarse en esta plataforma.
+          </p>
+          <h4>2. Tratamiento y Finalidad</h4>
+          <p>
+            El acceso y consulta pública de la programación semanal es abierto y no requiere registro ni recolección de datos sensibles de la ciudadanía. Para el personal administrativo o docente que accede a la gestión de agenda, las credenciales institucionales son procesadas exclusivamente para autenticación de seguridad.
+          </p>
+          <h4>3. Derechos de los Titulares (Habeas Data)</h4>
+          <p>
+            De conformidad con la legislación colombiana, todo titular tiene derecho a conocer, actualizar, rectificar y suprimir sus datos personales. Para ejercer estos derechos o consultar la <strong>Política Institucional de Tratamiento de Información y Datos Personales de la UdeA</strong>, puede ingresar a <a href="https://www.udea.edu.co" target="_blank" rel="noopener noreferrer">www.udea.edu.co</a> o contactar formalmente a la dependencia de Teleducación al correo: <a href="mailto:teleducacion.med@udea.edu.co">teleducacion.med@udea.edu.co</a>.
+          </p>
+        </div>
+
+        <!-- 3. Cookies y Almacenamiento Local -->
+        <div id="legal-tab-cookies" class="legal-tab-pane" role="tabpanel" aria-labelledby="tab-btn-cookies" style="display: none;">
+          <div class="legal-notice-box alert-box-success">
+            <span class="legal-notice-icon" aria-hidden="true">🍪</span>
+            <div>
+              <strong>Almacenamiento Técnico y Libre de Rastreo Publicitario</strong>
+              <p>No recopilamos perfiles de usuario ni comercializamos datos con anunciantes.</p>
+            </div>
+          </div>
+          <h4>1. ¿Qué información almacena Aulas Abiertas en tu navegador?</h4>
+          <p>
+            Esta web utiliza la tecnología estándar de <strong>Almacenamiento Local (localStorage)</strong> de tu propio navegador web exclusivamente para fines técnicos de usabilidad:
+          </p>
+          <ul class="legal-bullet-list">
+            <li><strong>Conferencias Favoritas:</strong> Permite que cuando marques una actividad con estrella (⭐), esta se guarde en tu dispositivo para que no la pierdas al refrescar la página.</li>
+            <li><strong>Filtros y Búsqueda:</strong> Recuerda temporalmente tus opciones de visualización para una navegación más cómoda.</li>
+            <li><strong>Consentimiento de Notificación:</strong> Guarda un indicador para no volverte a mostrar el banner de información sobre cookies una vez aceptado.</li>
+          </ul>
+          <h4>2. Enlaces y Servicios de Terceros</h4>
+          <p>
+            Al pulsar en los enlaces de reunión virtual (Microsoft Teams, Google Meet, Zoom) o al reproducir videos en YouTube, el usuario es dirigido o interactúa con plataformas externas de videoconferencia sujetas a sus propias políticas de privacidad y cookies.
+          </p>
+        </div>
+
+        <!-- 4. Términos y Propiedad Intelectual -->
+        <div id="legal-tab-terms" class="legal-tab-pane" role="tabpanel" aria-labelledby="tab-btn-terms" style="display: none;">
+          <div class="legal-notice-box alert-box-info">
+            <span class="legal-notice-icon" aria-hidden="true">⚖️</span>
+            <div>
+              <strong>Propiedad Intelectual y Derechos de Autor (Ley 23 de 1982)</strong>
+              <p>Facultad de Medicina — Universidad de Antioquia.</p>
+            </div>
+          </div>
+          <h4>1. Derechos de Autor sobre Ponencias y Contenidos</h4>
+          <p>
+            Todas las conferencias, presentaciones académicas, material clínico, material audiovisual y marcas institucionales ("Universidad de Antioquia", "Facultad de Medicina", "Aulas Abiertas") son propiedad de la Universidad de Antioquia y/o de sus respectivos docentes y conferencistas.
+          </p>
+          <h4>2. Condiciones de Uso</h4>
+          <p>
+            Se autoriza el acceso libre, visualización y participación académica en las sesiones en vivo y grabaciones públicas con fines exclusivos de estudio, investigación y formación médica continua. Queda expresamente prohibida la grabación no autorizada, retransmisión con fines de lucro, alteración o explotación comercial total o parcial de los contenidos sin el consentimiento previo y por escrito de la Universidad de Antioquia.
+          </p>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="padding: 14px 24px; background: var(--paper-warm); border-top: 1px solid var(--border-subtle); display: flex; justify-content: flex-end;">
+        <button type="button" id="btn-legal-modal-ok" class="btn-primary" style="padding: 8px 20px; font-size: 0.875rem;">
+          Entendido
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Banner Discreto de Consentimiento de Almacenamiento Local -->
+  <aside id="cookie-consent-banner" class="cookie-banner" role="region" aria-label="Aviso de almacenamiento y cookies" style="display: none;">
+    <div class="cookie-banner-container">
+      <div class="cookie-banner-content">
+        <span class="cookie-banner-icon" aria-hidden="true">🍪</span>
+        <div class="cookie-banner-text">
+          <p>
+            <strong>Almacenamiento y Privacidad:</strong> En Aulas Abiertas utilizamos almacenamiento técnico en tu navegador (<code>localStorage</code>) para recordar tus conferencias favoritas y preferencias de filtro. No usamos cookies de rastreo comercial ni vendemos datos personales.
+          </p>
+        </div>
+      </div>
+      <div class="cookie-banner-actions">
+        <button type="button" id="btn-cookie-details" class="btn-cookie-link">
+          Ver detalles legales
+        </button>
+        <button type="button" id="btn-cookie-accept" class="btn-cookie-action">
+          Entendido
+        </button>
+      </div>
+    </div>
+  </aside>
 
   <script type="module" src="/src/main.js"></script>
 </body>

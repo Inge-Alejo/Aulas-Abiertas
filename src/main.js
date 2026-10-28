@@ -142,6 +142,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadAndRenderSchedule();
   setupFilterListeners();
   setupAdminPanel();
+  setupLegalSystem();
 });
 
 /**
@@ -1120,5 +1121,124 @@ function getWeekKeyFromDate(dateStr) {
   const mD = String(monday.getDate()).padStart(2, '0');
   return `${mY}-${mM}-${mD}`;
 }
+
+/**
+ * Inicializa el sistema de cumplimiento legal:
+ * - Banner discreto de almacenamiento local / cookies
+ * - Modal unificado legal con pestañas navegables
+ */
+function setupLegalSystem() {
+  const cookieBanner = document.getElementById('cookie-consent-banner');
+  const btnCookieAccept = document.getElementById('btn-cookie-accept');
+  const btnCookieDetails = document.getElementById('btn-cookie-details');
+
+  const legalModal = document.getElementById('modal-legal-backdrop');
+  const btnCloseLegal = document.getElementById('btn-close-modal-legal');
+  const btnLegalOk = document.getElementById('btn-legal-modal-ok');
+  const legalTabBtns = document.querySelectorAll('.legal-tab-btn');
+  const legalTabPanes = document.querySelectorAll('.legal-tab-pane');
+  const footerLegalLinks = document.querySelectorAll('.footer-legal-link');
+
+  const STORAGE_KEY = 'aa_storage_consent';
+
+  // 1. Mostrar banner si el usuario no ha aceptado previamente
+  if (cookieBanner) {
+    const isAccepted = localStorage.getItem(STORAGE_KEY) === 'accepted';
+    if (!isAccepted) {
+      setTimeout(() => {
+        cookieBanner.style.display = 'block';
+      }, 800);
+    }
+
+    if (btnCookieAccept) {
+      btnCookieAccept.addEventListener('click', () => {
+        localStorage.setItem(STORAGE_KEY, 'accepted');
+        cookieBanner.style.animation = 'none';
+        cookieBanner.style.opacity = '0';
+        cookieBanner.style.transform = 'translateY(100%)';
+        cookieBanner.style.transition = 'all 0.25s ease-out';
+        setTimeout(() => {
+          cookieBanner.style.display = 'none';
+        }, 250);
+      });
+    }
+
+    if (btnCookieDetails) {
+      btnCookieDetails.addEventListener('click', () => {
+        openLegalModal('cookies');
+      });
+    }
+  }
+
+  // 2. Control de pestañas del modal legal
+  function switchLegalTab(tabId) {
+    legalTabBtns.forEach(btn => {
+      const isTarget = btn.getAttribute('data-tab') === tabId;
+      btn.classList.toggle('active', isTarget);
+      btn.setAttribute('aria-selected', isTarget ? 'true' : 'false');
+    });
+
+    legalTabPanes.forEach(pane => {
+      const isTarget = pane.id === `legal-tab-${tabId}`;
+      pane.classList.toggle('active', isTarget);
+      pane.style.display = isTarget ? 'block' : 'none';
+    });
+  }
+
+  legalTabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tabId = btn.getAttribute('data-tab');
+      if (tabId) switchLegalTab(tabId);
+    });
+  });
+
+  // 3. Abrir modal legal
+  function openLegalModal(initialTab = 'disclaimer') {
+    if (!legalModal) return;
+    switchLegalTab(initialTab);
+    legalModal.style.display = 'flex';
+    legalModal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLegalModal() {
+    if (!legalModal) return;
+    legalModal.style.display = 'none';
+    legalModal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  // 4. Enlaces del pie de página
+  footerLegalLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const targetTab = link.getAttribute('data-legal-tab') || 'disclaimer';
+      openLegalModal(targetTab);
+    });
+  });
+
+  if (btnCloseLegal) {
+    btnCloseLegal.addEventListener('click', closeLegalModal);
+  }
+
+  if (btnLegalOk) {
+    btnLegalOk.addEventListener('click', closeLegalModal);
+  }
+
+  if (legalModal) {
+    legalModal.addEventListener('click', (e) => {
+      if (e.target === legalModal) {
+        closeLegalModal();
+      }
+    });
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && legalModal && legalModal.style.display === 'flex') {
+      closeLegalModal();
+    }
+  });
+}
+
 
 
