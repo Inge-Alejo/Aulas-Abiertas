@@ -5,8 +5,8 @@
  */
 
 const CANDIDATE_MODELS = [
-  'gemini-1.5-flash',
   'gemini-2.0-flash',
+  'gemini-1.5-flash',
   'gemini-1.5-flash-8b',
   'gemini-1.5-pro'
 ];
@@ -306,13 +306,7 @@ REGLAS CRÍTICAS DE SALIDA:
               temperature: 0.1,
               maxOutputTokens: 8192,
               responseMimeType: 'application/json'
-            },
-            safetySettings: [
-              { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
-              { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
-              { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
-              { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }
-            ]
+            }
           })
         });
 
