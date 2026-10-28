@@ -5,8 +5,8 @@
  */
 
 const CANDIDATE_MODELS = [
-  'gemini-2.0-flash',
   'gemini-1.5-flash',
+  'gemini-2.0-flash',
   'gemini-1.5-flash-8b',
   'gemini-1.5-pro'
 ];
@@ -219,7 +219,7 @@ export default async function handler(req, res) {
           return ` [ENLACE_REUNION_VIRTUAL: ${href.trim()} (Texto: ${cleanText})] `;
         });
 
-        // Limpieza profunda de scripts, estilos y atributos CSS redundantes para preservar todo el contenido textual y enlaces
+        // Limpieza profunda de scripts, estilos y atributos redundantes, y conversión a texto limpio con saltos de línea
         contentToAnalyze = preprocessed
           .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
           .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
@@ -229,7 +229,19 @@ export default async function handler(req, res) {
           .replace(/\s*(?:style|class|id|cellpadding|cellspacing|border|width|height|bgcolor|align|valign|target|role|data-[a-z-]+|aria-[a-z-]+)="[^"]*"/gi, '')
           .replace(/\s*(?:style|class|id|cellpadding|cellspacing|border|width|height|bgcolor|align|valign|target|role|data-[a-z-]+|aria-[a-z-]+)='[^']*'/gi, '')
           .replace(/<(?:\/)?(?:tbody|thead|tfoot)>/gi, '')
-          .replace(/\s{2,}/g, ' ');
+          .replace(/<br\s*[\/]?>/gi, '\n')
+          .replace(/<\/p>/gi, '\n')
+          .replace(/<\/tr>/gi, '\n')
+          .replace(/<\/td>/gi, ' | ')
+          .replace(/<[^>]+>/g, ' ')
+          .replace(/&nbsp;/g, ' ')
+          .replace(/&amp;/g, '&')
+          .replace(/&quot;/g, '"')
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/[ \t]+/g, ' ')
+          .replace(/\n\s*\n+/g, '\n')
+          .trim();
       } catch (err) {
         return res.status(400).json({
           error: `No fue posible descargar el contenido del enlace: ${err.message}`
@@ -294,30 +306,48 @@ REGLAS CRÍTICAS DE SALIDA:
               temperature: 0.1,
               maxOutputTokens: 8192,
               responseMimeType: 'application/json'
-            }
+            },
+            safetySettings: [
+              { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
+              { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
+              { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+              { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }
+            ]
           })
         });
 
         if (response.ok) {
           const data = await response.json();
-          const candidateText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          const candidate = data.candidates?.[0];
+          const candidateText = candidate?.content?.parts?.[0]?.text;
           if (candidateText) {
             successfulResponse = candidateText;
             usedModel = model;
             break;
+          } else {
+            const finishReason = candidate?.finishReason || 'SIN_TEXTO';
+            lastError = { model, finishReason, promptFeedback: data.promptFeedback };
+            console.warn(`[MailerLite Scraper] Modelo ${model} respondió sin texto (finishReason: ${finishReason})`);
           }
         } else {
-          lastError = { model, status: response.status };
-          console.warn(`[MailerLite Scraper] Fallo con ${model} (${response.status}), probando alternativa...`);
+          const errData = await response.json().catch(() => null) || await response.text().catch(() => '');
+          const errorMsg = errData?.error?.message || (typeof errData === 'string' ? errData : JSON.stringify(errData));
+          lastError = { model, status: response.status, message: errorMsg };
+          console.warn(`[MailerLite Scraper] Fallo con ${model} (${response.status}):`, errorMsg);
         }
       } catch (err) {
         lastError = { model, error: err.message };
+        console.warn(`[MailerLite Scraper] Excepción de red con ${model}:`, err.message);
       }
     }
 
     if (!successfulResponse) {
+      const detailedMsg = lastError?.message 
+        || (lastError?.finishReason ? `El modelo no generó texto (Motivo: ${lastError.finishReason})` : '')
+        || (lastError?.status ? `Error HTTP ${lastError.status}` : 'Sin respuesta de los modelos de Gemini');
+
       return res.status(502).json({
-        error: 'No se pudo procesar el boletín con los modelos de Gemini disponibles.',
+        error: `No se pudo procesar el boletín con los modelos de Gemini: ${detailedMsg}`,
         lastError
       });
     }
