@@ -241,7 +241,8 @@ export default async function handler(req, res) {
           .replace(/&lt;/g, '<')
           .replace(/&gt;/g, '>')
           .replace(/[ \t]+/g, ' ')
-          .replace(/\n\s*\n+/g, '\n')
+          .replace(/[|\s]*\n[|\s]*/g, '\n')
+          .replace(/\n{2,}/g, '\n')
           .trim();
       } catch (err) {
         return res.status(400).json({
