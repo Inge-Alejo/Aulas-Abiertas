@@ -7,15 +7,14 @@
 import crypto from 'node:crypto';
 
 // Clave secreta para firmar tokens de sesión
-const SESSION_SECRET =
+const getSessionSecret = () =>
   process.env.ADMIN_SESSION_SECRET ||
   process.env.SESSION_SECRET ||
   'udea-teleducacion-aulas-abiertas-jwt-token-2026-secret-key';
 
-// Credenciales administrativas configurables en Vercel
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Teleducacion2026*';
-const ALTERNATE_PASSWORDS = ['UdeAMedicina2026!', 'AulasAbiertas2026*'];
-const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'aprendizajes.med@udea.edu.co').toLowerCase();
+// Credenciales administrativas obtenidas estrictamente de las variables de entorno de Vercel (sin contraseñas por defecto en código)
+const getAdminPassword = () => process.env.ADMIN_PASSWORD;
+const getAdminEmail = () => (process.env.ADMIN_EMAIL || 'aprendizajes.med@udea.edu.co').toLowerCase();
 
 /**
  * Codifica una cadena o buffer a Base64URL
@@ -46,7 +45,7 @@ function signToken(payload) {
   const payloadStr = JSON.stringify(payload);
   const encodedPayload = base64UrlEncode(payloadStr);
   const signature = crypto
-    .createHmac('sha256', SESSION_SECRET)
+    .createHmac('sha256', getSessionSecret())
     .update(encodedPayload)
     .digest('base64url');
   return `${encodedPayload}.${signature}`;
@@ -62,7 +61,7 @@ export function verifyToken(token) {
 
   const [encodedPayload, signature] = parts;
   const expectedSignature = crypto
-    .createHmac('sha256', SESSION_SECRET)
+    .createHmac('sha256', getSessionSecret())
     .update(encodedPayload)
     .digest('base64url');
 
@@ -139,13 +138,21 @@ export default async function handler(req, res) {
       });
     }
 
+    const adminPassword = getAdminPassword();
+    const adminEmail = getAdminEmail();
+
+    if (!adminPassword) {
+      console.error('[Auth] La variable de entorno ADMIN_PASSWORD no está configurada en Vercel.');
+      return res.status(500).json({
+        error: 'El servicio de autenticación no está configurado. Define ADMIN_PASSWORD en las variables de entorno de Vercel.'
+      });
+    }
+
     // Validación de credenciales
-    const isMasterPassword =
-      cleanPass === ADMIN_PASSWORD ||
-      ALTERNATE_PASSWORDS.includes(cleanPass);
+    const isMasterPassword = cleanPass === adminPassword;
 
     const isAuthorizedEmail =
-      cleanEmail === ADMIN_EMAIL ||
+      cleanEmail === adminEmail ||
       cleanEmail.endsWith('@udea.edu.co') ||
       cleanEmail.includes('teleducacion') ||
       cleanEmail.includes('aprendizajes');
@@ -191,3 +198,4 @@ export default async function handler(req, res) {
 
   return res.status(400).json({ error: `Acción no reconocida: ${action}` });
 }
+

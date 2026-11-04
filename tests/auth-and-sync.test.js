@@ -40,6 +40,10 @@ function createMockReqRes(options = {}) {
 }
 
 async function runTests() {
+  const TEST_PASSWORD = 'ClaveDePruebaSegura2026*';
+  process.env.ADMIN_PASSWORD = TEST_PASSWORD;
+  process.env.ADMIN_EMAIL = 'aprendizajes.med@udea.edu.co';
+
   // 1. Login con credenciales válidas
   console.log('1. Autenticación con Vercel Serverless API (/api/auth):');
   {
@@ -48,7 +52,7 @@ async function runTests() {
       body: {
         action: 'login',
         email: 'aprendizajes.med@udea.edu.co',
-        password: 'Teleducacion2026*'
+        password: TEST_PASSWORD
       }
     });
 
@@ -167,6 +171,24 @@ async function runTests() {
     console.log('  ✓ Rechazo seguro de publicación de agenda sin token de Vercel (HTTP 401).');
   }
 
+  // 8. Rechazo si ADMIN_PASSWORD no está configurada en el entorno
+  {
+    delete process.env.ADMIN_PASSWORD;
+    const { req, res } = createMockReqRes({
+      method: 'POST',
+      body: {
+        action: 'login',
+        email: 'aprendizajes.med@udea.edu.co',
+        password: 'CualquierPassword'
+      }
+    });
+
+    await authHandler(req, res);
+    assert.strictEqual(res._getStatusCode(), 500);
+    assert.ok(res._getData().error.includes('ADMIN_PASSWORD'));
+    console.log('  ✓ Protección activa: No permite inicio de sesión si ADMIN_PASSWORD no está definida (HTTP 500).');
+  }
+
   console.log('\n🎉 ¡TODAS LAS PRUEBAS DE VERCEL AUTH Y SYNC PASARON EXITOSAMENTE (100% OK)!');
 }
 
@@ -174,3 +196,4 @@ runTests().catch(err => {
   console.error('❌ Error en pruebas:', err);
   process.exit(1);
 });
+

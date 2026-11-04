@@ -101,9 +101,9 @@ Configura estas variables en Vercel (*Project Settings > Environment Variables*)
 
 | Variable | Descripción | ¿Dónde obtenerla? |
 | :--- | :--- | :--- |
-| `ADMIN_PASSWORD` | Contraseña administrativa para Vercel Auth (Default: `Teleducacion2026*`) | Configurada en Vercel Dashboard |
+| `ADMIN_PASSWORD` | Contraseña administrativa para Vercel Auth (estricta, sin default en código) | Definida de forma privada en Vercel Dashboard |
 | `ADMIN_EMAIL` | Correo del administrador de Teleducación UdeA | Correo institucional UdeA |
-| `ADMIN_SESSION_SECRET` | Clave secreta para firmar tokens JWT de sesión | Generada o configurada en Vercel |
+| `ADMIN_SESSION_SECRET` | Clave secreta criptográfica (HMAC-SHA256) para firmar tokens de sesión | Cualquier cadena larga y segura en Vercel |
 | `VITE_PUBLIC_SCHEDULE_CSV_URL` | Enlace público CSV de Google Sheets | Pestaña `Programacion_publica` publicada como CSV |
 | `GEMINI_API_KEY` | Clave de API de Google Gemini | [Google AI Studio](https://aistudio.google.com/) |
 | `VITE_GEMINI_API_KEY` | Clave cliente para desarrollo local (opcional) | [Google AI Studio](https://aistudio.google.com/) |
