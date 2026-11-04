@@ -189,6 +189,26 @@ async function runTests() {
     console.log('  ✓ Protección activa: No permite inicio de sesión si ADMIN_PASSWORD no está definida (HTTP 500).');
   }
 
+  // 9. Permitir cualquier correo válido si ADMIN_EMAIL no está configurada
+  {
+    process.env.ADMIN_PASSWORD = TEST_PASSWORD;
+    delete process.env.ADMIN_EMAIL; // Sin restricción de correo
+    const { req, res } = createMockReqRes({
+      method: 'POST',
+      body: {
+        action: 'login',
+        email: 'medico.docente@gmail.com',
+        password: TEST_PASSWORD
+      }
+    });
+
+    await authHandler(req, res);
+    assert.strictEqual(res._getStatusCode(), 200);
+    assert.strictEqual(res._getData().success, true);
+    assert.strictEqual(res._getData().user.email, 'medico.docente@gmail.com');
+    console.log('  ✓ Flexibilidad de acceso: Permite cualquier correo si ADMIN_EMAIL no está fijado.');
+  }
+
   console.log('\n🎉 ¡TODAS LAS PRUEBAS DE VERCEL AUTH Y SYNC PASARON EXITOSAMENTE (100% OK)!');
 }
 

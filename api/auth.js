@@ -1,20 +1,30 @@
 /**
  * Serverless API para Vercel: Autenticación Administrativa Directa
  * Permite iniciar sesión, verificar sesión activa y cerrar sesión para el equipo de Teleducación UdeA,
- * sin depender de Firebase Authentication ni de configuración externa de proveedores.
+ * validando contra las variables de entorno de Vercel.
  */
 
 import crypto from 'node:crypto';
 
 // Clave secreta para firmar tokens de sesión
-const getSessionSecret = () =>
-  process.env.ADMIN_SESSION_SECRET ||
-  process.env.SESSION_SECRET ||
-  'udea-teleducacion-aulas-abiertas-jwt-token-2026-secret-key';
+const getSessionSecret = () => {
+  const secret = process.env.ADMIN_SESSION_SECRET || process.env.SESSION_SECRET;
+  return secret
+    ? String(secret).trim().replace(/^["']|["']$/g, '')
+    : 'udea-teleducacion-aulas-abiertas-jwt-token-2026-secret-key';
+};
 
-// Credenciales administrativas obtenidas estrictamente de las variables de entorno de Vercel (sin contraseñas por defecto en código)
-const getAdminPassword = () => process.env.ADMIN_PASSWORD;
-const getAdminEmail = () => (process.env.ADMIN_EMAIL || 'aprendizajes.med@udea.edu.co').toLowerCase();
+// Obtiene y sanitiza la contraseña administrativa configurada en Vercel
+const getAdminPassword = () => {
+  const raw = process.env.ADMIN_PASSWORD;
+  return raw ? String(raw).trim().replace(/^["']|["']$/g, '') : '';
+};
+
+// Obtiene y sanitiza el correo administrativo configurado en Vercel (opcional)
+const getConfiguredAdminEmail = () => {
+  const raw = process.env.ADMIN_EMAIL;
+  return raw ? String(raw).trim().toLowerCase().replace(/^["']|["']$/g, '') : '';
+};
 
 /**
  * Codifica una cadena o buffer a Base64URL
@@ -97,14 +107,25 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  const action = req.query.action || req.body?.action || (req.method === 'GET' ? 'verify' : 'login');
+  // Parsear body de forma resiliente (objeto o JSON string)
+  let body = req.body;
+  if (typeof body === 'string') {
+    try {
+      body = JSON.parse(body);
+    } catch {
+      body = {};
+    }
+  }
+  body = body || {};
+
+  const action = req.query?.action || body?.action || (req.method === 'GET' ? 'verify' : 'login');
 
   // 1. VERIFICAR SESIÓN
   if (action === 'verify' || req.method === 'GET') {
     const authHeader = req.headers.authorization || '';
     const token = authHeader.startsWith('Bearer ')
       ? authHeader.slice(7).trim()
-      : req.body?.token || req.query.token;
+      : body?.token || req.query?.token;
 
     if (!token) {
       return res.status(401).json({ valid: false, error: 'No se suministró token de sesión.' });
@@ -128,44 +149,54 @@ export default async function handler(req, res) {
 
   // 2. INICIAR SESIÓN (LOGIN)
   if (action === 'login' && req.method === 'POST') {
-    const { email = '', password = '' } = req.body || {};
-    const cleanEmail = String(email).trim().toLowerCase();
-    const cleanPass = String(password);
+    const rawEmail = body.email || req.query?.email || '';
+    const rawPassword = body.password || req.query?.password || '';
+
+    const cleanEmail = String(rawEmail).trim().toLowerCase();
+    const cleanPass = String(rawPassword).trim();
 
     if (!cleanEmail || !cleanPass) {
       return res.status(400).json({
-        error: 'Por favor ingresa correo electrónico y contraseña.'
+        error: 'Por favor ingresa correo electrónico y contraseña de acceso.'
       });
     }
 
     const adminPassword = getAdminPassword();
-    const adminEmail = getAdminEmail();
+    const configuredAdminEmail = getConfiguredAdminEmail();
 
+    // 1. Comprobar si ADMIN_PASSWORD está configurada en Vercel
     if (!adminPassword) {
-      console.error('[Auth] La variable de entorno ADMIN_PASSWORD no está configurada en Vercel.');
+      console.error('[Auth] La variable de entorno ADMIN_PASSWORD no está configurada.');
       return res.status(500).json({
-        error: 'El servicio de autenticación no está configurado. Define ADMIN_PASSWORD en las variables de entorno de Vercel.'
+        error: 'La variable ADMIN_PASSWORD no está disponible en Vercel. Asegúrate de guardarla en Settings > Environment Variables y hacer Redeploy.'
       });
     }
 
-    // Validación de credenciales
-    const isMasterPassword = cleanPass === adminPassword;
-
-    const isAuthorizedEmail =
-      cleanEmail === adminEmail ||
-      cleanEmail.endsWith('@udea.edu.co') ||
-      cleanEmail.includes('teleducacion') ||
-      cleanEmail.includes('aprendizajes');
-
-    if (!isMasterPassword || !isAuthorizedEmail) {
+    // 2. Comprobar contraseña
+    if (cleanPass !== adminPassword) {
       return res.status(401).json({
-        error: 'Credenciales no autorizadas. Verifica tu correo institucional y contraseña de acceso.'
+        error: 'Contraseña incorrecta. Verifica la contraseña definida en Vercel.'
       });
+    }
+
+    // 3. Comprobar correo si se especificó ADMIN_EMAIL en Vercel
+    if (configuredAdminEmail) {
+      const isEmailAllowed =
+        cleanEmail === configuredAdminEmail ||
+        cleanEmail.endsWith('@udea.edu.co') ||
+        cleanEmail.includes('teleducacion') ||
+        cleanEmail.includes('aprendizajes');
+
+      if (!isEmailAllowed) {
+        return res.status(401).json({
+          error: `Correo no autorizado. Debe coincidir con ${configuredAdminEmail} o pertenecer al dominio @udea.edu.co.`
+        });
+      }
     }
 
     // Token con vigencia de 7 días
     const expTime = Date.now() + 7 * 24 * 60 * 60 * 1000;
-    const displayName = cleanEmail.split('@')[0];
+    const displayName = cleanEmail.split('@')[0] || 'Administrador';
 
     const token = signToken({
       email: cleanEmail,
@@ -198,4 +229,3 @@ export default async function handler(req, res) {
 
   return res.status(400).json({ error: `Acción no reconocida: ${action}` });
 }
-
