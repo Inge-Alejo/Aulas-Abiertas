@@ -466,15 +466,15 @@
           <div id="admin-login-error" class="auth-alert error" style="display: none;"></div>
 
           <div class="form-group">
-            <label for="admin-input-email">Correo institucional *</label>
+            <label for="admin-input-email">Correo de administrador o institucional *</label>
             <input type="email" id="admin-input-email" required class="form-control"
-              placeholder="aprendizajes.med@udea.edu.co">
+              autocomplete="username" placeholder="aprendizajes.med@udea.edu.co">
           </div>
 
           <div class="form-group">
             <label for="admin-input-password">Contraseña *</label>
-            <input type="password" id="admin-input-password" required minlength="6" class="form-control"
-              placeholder="Contraseña de acceso">
+            <input type="password" id="admin-input-password" required class="form-control"
+              autocomplete="current-password" placeholder="Contraseña configurada en Vercel">
           </div>
 
           <div class="modal-footer" style="margin-top: 10px;">

@@ -174,8 +174,13 @@ export default async function handler(req, res) {
 
     // 2. Comprobar contraseña
     if (cleanPass !== adminPassword) {
+      if (cleanPass.toLowerCase() === adminPassword.toLowerCase()) {
+        return res.status(401).json({
+          error: 'Contraseña incorrecta: verifica mayúsculas y minúsculas (la clave distingue entre mayúsculas y minúsculas).'
+        });
+      }
       return res.status(401).json({
-        error: 'Contraseña incorrecta. Verifica la contraseña definida en Vercel.'
+        error: 'Contraseña incorrecta. Verifica la clave definida en las variables de entorno de Vercel.'
       });
     }
 
