@@ -12,13 +12,27 @@ import {
   getActiveOrUpcomingSessions,
   filterActivities,
   formatDayLabel,
-  formatTime12h
+  formatTime12h,
+  getMondayOfWeek,
+  getSundayOfWeek
 } from './services/scheduleService.js';
 
 import {
-  loginWithEmail,
-  logoutUser,
-  onAuthChange
+  loginAdmin,
+  logoutAdmin,
+  onAdminAuthChange,
+  verifyAdminSession,
+  getAdminUser
+} from './services/authService.js';
+
+import {
+  saveLiveScheduleToFirebase,
+  getLiveScheduleFromFirebase,
+  subscribeToLiveSchedule,
+  getFavoriteActivityIds,
+  toggleFavoriteActivity,
+  submitActivityQuestion,
+  getFirebaseStatus
 } from './services/firebaseService.js';
 
 import {
@@ -143,7 +157,55 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupFilterListeners();
   setupAdminPanel();
   setupLegalSystem();
+  initRealtimeSync();
 });
+
+/**
+ * Suscripción reactiva en tiempo real con Firebase Firestore.
+ * Sincroniza cualquier dispositivo en cuanto se publica una actualización en la nube.
+ */
+function initRealtimeSync() {
+  subscribeToLiveSchedule((liveData) => {
+    if (!liveData || !Array.isArray(liveData.activities) || liveData.activities.length === 0) return;
+
+    // Si ya tenemos exactamente las mismas actividades, omitir re-renderizado
+    if (
+      state.allActivities &&
+      state.allActivities.length === liveData.activities.length &&
+      state.allActivities[0]?.id === liveData.activities[0]?.id &&
+      state.allActivities[state.allActivities.length - 1]?.id === liveData.activities[liveData.activities.length - 1]?.id
+    ) {
+      return;
+    }
+
+    console.info(`[Sincronización en Vivo] Actualizando interfaz con ${liveData.activities.length} actividades...`);
+    state.allActivities = liveData.activities;
+    state.dataSourceInfo = {
+      source: liveData.source || 'Firebase Firestore (En tiempo real)',
+      lastUpdated: liveData.updatedAt || new Date().toLocaleTimeString('es-CO'),
+      isLive: true
+    };
+
+    state.availableWeeks = getAvailableWeeks(state.allActivities);
+    if (
+      state.availableWeeks.length > 0 &&
+      (!state.selectedWeekKey || !state.availableWeeks.some((w) => w.weekKey === state.selectedWeekKey))
+    ) {
+      state.selectedWeekKey = state.availableWeeks[0].weekKey;
+    }
+
+    updateDataStatusUI();
+    renderSpotlightActivity();
+    renderWeekNavigator();
+    populateDepartmentFilter();
+    populateDayFilter();
+    renderScheduleList();
+
+    if (liveData.fromRealtime) {
+      showToast('✦ Programación sincronizada en tiempo real desde la nube', 'success');
+    }
+  });
+}
 
 /**
  * Carga de datos y renderizado
@@ -159,12 +221,41 @@ async function loadAndRenderSchedule(forceRefresh = false) {
   }
 
   try {
-    const data = await loadScheduleData({ forceRefresh });
-    state.allActivities = data.activities;
+    let activities = null;
+    let source = '';
+    let lastUpdated = '';
+    let isLive = false;
+
+    // 1. Primero intentar cargar la agenda en tiempo real desde Firebase Firestore / Vercel Cloud
+    if (!forceRefresh) {
+      try {
+        const live = await getLiveScheduleFromFirebase();
+        if (live && Array.isArray(live.activities) && live.activities.length > 0) {
+          activities = live.activities;
+          source = live.source || 'Firebase Firestore (En tiempo real)';
+          lastUpdated = live.updatedAt || new Date().toLocaleTimeString('es-CO');
+          isLive = true;
+          console.info(`[Aulas Abiertas] Agenda en tiempo real cargada (${activities.length} actividades).`);
+        }
+      } catch (err) {
+        console.warn('Fallo al obtener agenda en tiempo real, usando CSV:', err);
+      }
+    }
+
+    // 2. Si no hay agenda en Firebase aún o se forzó refresco de Google Sheets:
+    if (!activities) {
+      const data = await loadScheduleData({ forceRefresh });
+      activities = data.activities;
+      source = data.source;
+      lastUpdated = data.lastUpdated;
+      isLive = data.isLive;
+    }
+
+    state.allActivities = activities;
     state.dataSourceInfo = {
-      source: data.source,
-      lastUpdated: data.lastUpdated,
-      isLive: data.isLive
+      source,
+      lastUpdated,
+      isLive
     };
 
     state.availableWeeks = getAvailableWeeks(state.allActivities);
@@ -854,8 +945,8 @@ function setupAdminPanel() {
     });
   }
 
-  // Estado de autenticación
-  onAuthChange((user) => {
+  // Estado de autenticación administrativa (Validada directamente por Vercel)
+  onAdminAuthChange((user) => {
     currentUser = user;
     if (user) {
       if (adminNavBtn) {
@@ -877,7 +968,10 @@ function setupAdminPanel() {
     }
   });
 
-  // Login
+  // Verificar si hay sesión administrativa activa en Vercel
+  verifyAdminSession();
+
+  // Iniciar sesión (Vercel Serverless Auth)
   if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -887,12 +981,12 @@ function setupAdminPanel() {
       if (loginError) loginError.style.display = 'none';
       if (loginSubmitBtn) {
         loginSubmitBtn.disabled = true;
-        loginSubmitBtn.textContent = 'Verificando...';
+        loginSubmitBtn.textContent = 'Verificando con Vercel...';
       }
 
       try {
-        await loginWithEmail(email, password);
-        showToast('Acceso administrativo concedido', 'success');
+        await loginAdmin(email, password);
+        showToast('Acceso administrativo concedido (Vercel Auth)', 'success');
         loginForm.reset();
       } catch (err) {
         if (loginError) {
@@ -902,16 +996,16 @@ function setupAdminPanel() {
       } finally {
         if (loginSubmitBtn) {
           loginSubmitBtn.disabled = false;
-          loginSubmitBtn.textContent = 'Iniciar Sesión';
+          loginSubmitBtn.textContent = 'Iniciar Sesión con Vercel';
         }
       }
     });
   }
 
-  // Logout
+  // Cerrar sesión
   if (logoutBtn) {
     logoutBtn.addEventListener('click', async () => {
-      await logoutUser();
+      await logoutAdmin();
       showToast('Sesión administrativa cerrada', 'info');
       closeAdminModal();
     });
@@ -959,44 +1053,79 @@ function setupAdminPanel() {
     });
   }
 
-  // Actualizar página en vivo con 1 clic
+  // Publicar en vivo y sincronizar en Firebase Firestore para todos los dispositivos
   if (applyLiveBtn) {
-    applyLiveBtn.addEventListener('click', () => {
+    applyLiveBtn.addEventListener('click', async () => {
       if (!lastScrapedActivities || lastScrapedActivities.length === 0) {
         showToast('No hay actividades para aplicar.', 'info');
         return;
       }
 
-      // Normalizar estructura de actividades
-      const normalized = lastScrapedActivities.map((a, i) => ({
-        id: a.id || `SCRAP-${Date.now()}-${i}`,
-        date: a.date,
-        startTime: a.start_time || a.startTime || '07:00',
-        endTime: a.end_time || a.endTime || '',
-        department: a.department || 'Facultad de Medicina',
-        title: a.title,
-        speakers: a.speakers || '',
-        modality: a.modality || 'Virtual',
-        location: a.location || '',
-        meeting_url: (a.meeting_url && !a.meeting_url.includes('mailerlite.com')) ? a.meeting_url : '',
-        recording_url: a.recording_url || a.recordingUrl || '',
-        summary: a.summary || '',
-        dayLabel: formatDayLabel(a.date),
-        weekKey: getWeekKeyFromDate(a.date)
-      }));
+      applyLiveBtn.disabled = true;
+      const originalText = applyLiveBtn.textContent;
+      applyLiveBtn.textContent = 'Guardando en Firebase...';
 
-      state.allActivities = normalized;
-      state.availableWeeks = getAvailableWeeks(state.allActivities);
-      if (state.availableWeeks.length > 0) {
-        state.selectedWeekKey = state.availableWeeks[0].weekKey;
+      try {
+        // Normalizar estructura de actividades con cálculo exacto de semana (Lunes a Domingo)
+        const normalized = lastScrapedActivities.map((a, i) => {
+          const rawDate = a.date;
+          const monday = getMondayOfWeek(rawDate);
+          const sunday = getSundayOfWeek(monday);
+          return {
+            id: a.id || `AA-${rawDate}-${(a.start_time || a.startTime || '0700').replace(':', '')}-${i}`,
+            date: rawDate,
+            startTime: a.start_time || a.startTime || '07:00',
+            endTime: a.end_time || a.endTime || '',
+            department: a.department || 'Facultad de Medicina',
+            title: a.title,
+            speakers: a.speakers || '',
+            modality: a.modality || 'Virtual',
+            location: a.location || '',
+            meeting_url: (a.meeting_url && !a.meeting_url.includes('mailerlite.com')) ? a.meeting_url : '',
+            recording_url: a.recording_url || a.recordingUrl || '',
+            summary: a.summary || '',
+            dayLabel: formatDayLabel(rawDate),
+            weekKey: monday,
+            weekMonday: monday,
+            weekSunday: sunday
+          };
+        });
+
+        // 1. Persistir en Firebase Firestore (y respaldo Vercel API) para que cualquier dispositivo lo vea
+        const admin = getAdminUser();
+        await saveLiveScheduleToFirebase(normalized, {
+          user: admin?.email || 'teleducacion@udea.edu.co',
+          source: 'Boletín MailerLite / Scraper Gemini IA'
+        });
+
+        // 2. Actualizar estado local inmediatamente
+        state.allActivities = normalized;
+        state.dataSourceInfo = {
+          source: 'Firebase Firestore (En tiempo real)',
+          lastUpdated: new Date().toLocaleTimeString('es-CO'),
+          isLive: true
+        };
+        state.availableWeeks = getAvailableWeeks(state.allActivities);
+        if (state.availableWeeks.length > 0) {
+          state.selectedWeekKey = state.availableWeeks[0].weekKey;
+        }
+
+        updateDataStatusUI();
+        renderSpotlightActivity();
+        renderWeekNavigator();
+        populateDepartmentFilter();
+        populateDayFilter();
+        renderScheduleList();
+
+        showToast(`¡Programación de ${normalized.length} conferencias guardada en Firebase y visible en todos los dispositivos!`, 'success');
+        closeAdminModal();
+      } catch (err) {
+        console.error('Error al sincronizar programación:', err);
+        showToast(`Error al guardar en Firebase: ${err.message}`, 'error');
+      } finally {
+        applyLiveBtn.disabled = false;
+        applyLiveBtn.textContent = originalText;
       }
-
-      renderSpotlightActivity();
-      renderWeekNavigator();
-      renderScheduleList();
-
-      showToast(`¡Página actualizada en vivo con ${normalized.length} conferencias!`, 'success');
-      closeAdminModal();
     });
   }
 

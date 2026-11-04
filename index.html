@@ -423,7 +423,8 @@
       <nav class="footer-legal-bar" aria-label="Información legal y regulatoria">
         <button type="button" class="footer-legal-link" data-legal-tab="disclaimer">Descargo Médico</button>
         <span class="legal-separator" aria-hidden="true">·</span>
-        <button type="button" class="footer-legal-link" data-legal-tab="privacy">Tratamiento de Datos y Habeas Data</button>
+        <button type="button" class="footer-legal-link" data-legal-tab="privacy">Tratamiento de Datos y Habeas
+          Data</button>
         <span class="legal-separator" aria-hidden="true">·</span>
         <button type="button" class="footer-legal-link" data-legal-tab="cookies">Almacenamiento y Cookies</button>
         <span class="legal-separator" aria-hidden="true">·</span>
@@ -450,7 +451,7 @@
       <div id="admin-view-login">
         <div class="modal-header">
           <div>
-            <span class="section-label" style="font-size: 0.75rem;">Facultad de Medicina UdeA</span>
+            <span class="section-label" style="font-size: 0.75rem;">Teleducación Médica UdeA</span>
             <h3 id="modal-admin-title" style="font-size: 1.25rem; font-family: var(--font-serif); margin-top: 4px;">
               Acceso Administrativo</h3>
           </div>
@@ -458,17 +459,16 @@
         </div>
 
         <form id="form-admin-login" class="modal-body-form">
-          <p style="font-size: 0.85rem; color: var(--text-base); margin-bottom: 6px;">
-            Ingresa con tu correo institucional y contraseña de Firebase para gestionar y actualizar la programación
-            académica.
-          </p>
+          <div style="background: rgba(0, 77, 37, 0.05); border: 1px solid rgba(0, 77, 37, 0.15); border-radius: 6px; padding: 10px 12px; margin-bottom: 12px; font-size: 0.8125rem; color: var(--udea-forest); line-height: 1.45;">
+            <strong>✦ Autenticación directa por Vercel:</strong> Ingresa con tus credenciales de Teleducación UdeA. La agenda y actualizaciones se sincronizan en la nube con <strong>Firebase Firestore</strong> en tiempo real para todos los dispositivos.
+          </div>
 
           <div id="admin-login-error" class="auth-alert error" style="display: none;"></div>
 
           <div class="form-group">
-            <label for="admin-input-email">Correo electrónico *</label>
+            <label for="admin-input-email">Correo institucional *</label>
             <input type="email" id="admin-input-email" required class="form-control"
-              placeholder="administrador@udea.edu.co">
+              placeholder="aprendizajes.med@udea.edu.co">
           </div>
 
           <div class="form-group">
@@ -479,7 +479,7 @@
 
           <div class="modal-footer" style="margin-top: 10px;">
             <button type="button" id="btn-cancel-admin-login" class="btn-secondary">Cancelar</button>
-            <button type="submit" id="btn-submit-admin-login" class="btn-primary">Iniciar Sesión</button>
+            <button type="submit" id="btn-submit-admin-login" class="btn-primary">Iniciar Sesión con Vercel</button>
           </div>
         </form>
       </div>
@@ -547,8 +547,9 @@
               </div>
               <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                 <button type="button" id="btn-admin-apply-live" class="btn-primary"
-                  style="font-size: 0.8125rem; padding: 8px 14px; background: #004D25;">
-                  ⚡ Actualizar Página en Vivo
+                  style="font-size: 0.8125rem; padding: 8px 14px; background: #004D25;"
+                  title="Guarda la agenda en Firebase Firestore y sincroniza en tiempo real todos los dispositivos">
+                  ⚡ Publicar en Vivo (Firebase)
                 </button>
                 <button type="button" id="btn-admin-copy-table" class="btn-secondary"
                   style="font-size: 0.8125rem; padding: 8px 12px;"
@@ -592,7 +593,8 @@
       <div class="modal-header">
         <div>
           <span class="section-label" style="font-size: 0.75rem;">Marco Institucional y Regulatorio</span>
-          <h3 id="modal-legal-title" style="font-size: 1.25rem; font-family: var(--font-serif); margin-top: 4px; color: var(--udea-forest);">
+          <h3 id="modal-legal-title"
+            style="font-size: 1.25rem; font-family: var(--font-serif); margin-top: 4px; color: var(--udea-forest);">
             Información Legal y Privacidad
           </h3>
         </div>
@@ -601,16 +603,20 @@
 
       <!-- Pestañas de Navegación Legal -->
       <div class="legal-tabs-bar" role="tablist" aria-label="Pestañas de información legal">
-        <button type="button" class="legal-tab-btn active" role="tab" id="tab-btn-disclaimer" aria-selected="true" aria-controls="legal-tab-disclaimer" data-tab="disclaimer">
+        <button type="button" class="legal-tab-btn active" role="tab" id="tab-btn-disclaimer" aria-selected="true"
+          aria-controls="legal-tab-disclaimer" data-tab="disclaimer">
           Descargo Médico
         </button>
-        <button type="button" class="legal-tab-btn" role="tab" id="tab-btn-privacy" aria-selected="false" aria-controls="legal-tab-privacy" data-tab="privacy">
+        <button type="button" class="legal-tab-btn" role="tab" id="tab-btn-privacy" aria-selected="false"
+          aria-controls="legal-tab-privacy" data-tab="privacy">
           Datos Personales
         </button>
-        <button type="button" class="legal-tab-btn" role="tab" id="tab-btn-cookies" aria-selected="false" aria-controls="legal-tab-cookies" data-tab="cookies">
+        <button type="button" class="legal-tab-btn" role="tab" id="tab-btn-cookies" aria-selected="false"
+          aria-controls="legal-tab-cookies" data-tab="cookies">
           Cookies y Almacenamiento
         </button>
-        <button type="button" class="legal-tab-btn" role="tab" id="tab-btn-terms" aria-selected="false" aria-controls="legal-tab-terms" data-tab="terms">
+        <button type="button" class="legal-tab-btn" role="tab" id="tab-btn-terms" aria-selected="false"
+          aria-controls="legal-tab-terms" data-tab="terms">
           Términos y Propiedad
         </button>
       </div>
@@ -618,29 +624,41 @@
       <!-- Contenidos de las Pestañas -->
       <div class="legal-modal-body">
         <!-- 1. Descargo Médico -->
-        <div id="legal-tab-disclaimer" class="legal-tab-pane active" role="tabpanel" aria-labelledby="tab-btn-disclaimer">
+        <div id="legal-tab-disclaimer" class="legal-tab-pane active" role="tabpanel"
+          aria-labelledby="tab-btn-disclaimer">
           <div class="legal-notice-box alert-box-warning">
             <div>
               <strong>Aviso de Carácter Estrictamente Académico y Formativo</strong>
-              <p>El contenido publicado no constituye consulta médica, diagnóstico, prescripción ni asesoría sanitaria individualizada.</p>
+              <p>El contenido publicado no constituye consulta médica, diagnóstico, prescripción ni asesoría sanitaria
+                individualizada.</p>
             </div>
           </div>
           <h4>1. Finalidad Exclusivamente Educativa</h4>
           <p>
-            El portal <strong>Aulas Abiertas</strong> es un canal de extensión académica y educación continua promovido por la <strong>Facultad de Medicina de la Universidad de Antioquia (UdeA)</strong> y el equipo de Teleducación. Su objetivo es difundir la programación académica, conferencias clínicas y actividades docentes orientadas a profesionales de la salud, médicos especialistas, residentes, internos y estudiantes de áreas afines.
+            El portal <strong>Aulas Abiertas</strong> es un canal de extensión académica y educación continua promovido
+            por la <strong>Facultad de Medicina de la Universidad de Antioquia (UdeA)</strong> y el equipo de
+            Teleducación. Su objetivo es difundir la programación académica, conferencias clínicas y actividades
+            docentes orientadas a profesionales de la salud, médicos especialistas, residentes, internos y estudiantes
+            de áreas afines.
           </p>
           <h4>2. Inexistencia de Relación Médico-Paciente</h4>
           <p>
-            La visualización de las conferencias, la lectura de temáticas clínicas o el acceso a los enlaces virtuales de conexión en ningún caso genera una relación médico-paciente entre los conferencistas, la Universidad de Antioquia y los usuarios del sitio.
+            La visualización de las conferencias, la lectura de temáticas clínicas o el acceso a los enlaces virtuales
+            de conexión en ningún caso genera una relación médico-paciente entre los conferencistas, la Universidad de
+            Antioquia y los usuarios del sitio.
           </p>
           <h4>3. Recomendación a Pacientes y Público General</h4>
           <p>
-            Si usted es un paciente, familiar o particular que presenta síntomas, dudas sobre su tratamiento o una emergencia médica, <strong>debe consultar directamente a su médico tratante o acudir a un centro hospitalario habilitado</strong>. Nunca suspenda, inicie ni modifique un tratamiento médico con base en el contenido de estas conferencias académicas.
+            Si usted es un paciente, familiar o particular que presenta síntomas, dudas sobre su tratamiento o una
+            emergencia médica, <strong>debe consultar directamente a su médico tratante o acudir a un centro
+              hospitalario habilitado</strong>. Nunca suspenda, inicie ni modifique un tratamiento médico con base en el
+            contenido de estas conferencias académicas.
           </p>
         </div>
 
         <!-- 2. Protección de Datos y Habeas Data -->
-        <div id="legal-tab-privacy" class="legal-tab-pane" role="tabpanel" aria-labelledby="tab-btn-privacy" style="display: none;">
+        <div id="legal-tab-privacy" class="legal-tab-pane" role="tabpanel" aria-labelledby="tab-btn-privacy"
+          style="display: none;">
           <div class="legal-notice-box alert-box-info">
             <div>
               <strong>Cumplimiento de la Ley 1581 de 2012 y Decreto 1377 de 2013</strong>
@@ -649,20 +667,31 @@
           </div>
           <h4>1. Responsable del Tratamiento de Datos</h4>
           <p>
-            La <strong>Universidad de Antioquia</strong> (Institución de Educación Superior Pública con Personería Jurídica otorgada mediante Resolución 129 de 1956 del MEN, NIT: 890.980.040-8) y su <strong>Facultad de Medicina</strong>, con sede en la Carrera 51D #62-29 (Medellín, Colombia), son responsables del tratamiento de los datos que pudiesen generarse en esta plataforma.
+            La <strong>Universidad de Antioquia</strong> (Institución de Educación Superior Pública con Personería
+            Jurídica otorgada mediante Resolución 129 de 1956 del MEN, NIT: 890.980.040-8) y su <strong>Facultad de
+              Medicina</strong>, con sede en la Carrera 51D #62-29 (Medellín, Colombia), son responsables del
+            tratamiento de los datos que pudiesen generarse en esta plataforma.
           </p>
           <h4>2. Tratamiento y Finalidad</h4>
           <p>
-            El acceso y consulta pública de la programación semanal es abierto y no requiere registro ni recolección de datos sensibles de la ciudadanía. Para el personal administrativo o docente que accede a la gestión de agenda, las credenciales institucionales son procesadas exclusivamente para autenticación de seguridad.
+            El acceso y consulta pública de la programación semanal es abierto y no requiere registro ni recolección de
+            datos sensibles de la ciudadanía. Para el personal administrativo o docente que accede a la gestión de
+            agenda, las credenciales institucionales son procesadas exclusivamente para autenticación de seguridad.
           </p>
           <h4>3. Derechos de los Titulares (Habeas Data)</h4>
           <p>
-            De conformidad con la legislación colombiana, todo titular tiene derecho a conocer, actualizar, rectificar y suprimir sus datos personales. Para ejercer estos derechos o consultar la <strong>Política Institucional de Tratamiento de Información y Datos Personales de la UdeA</strong>, puede ingresar a <a href="https://www.udea.edu.co" target="_blank" rel="noopener noreferrer">www.udea.edu.co</a> o contactar formalmente a la dependencia de Teleducación al correo: <a href="mailto:teleducacion.med@udea.edu.co">teleducacion.med@udea.edu.co</a>.
+            De conformidad con la legislación colombiana, todo titular tiene derecho a conocer, actualizar, rectificar y
+            suprimir sus datos personales. Para ejercer estos derechos o consultar la <strong>Política Institucional de
+              Tratamiento de Información y Datos Personales de la UdeA</strong>, puede ingresar a <a
+              href="https://www.udea.edu.co" target="_blank" rel="noopener noreferrer">www.udea.edu.co</a> o contactar
+            formalmente a la dependencia de Teleducación al correo: <a
+              href="mailto:teleducacion.med@udea.edu.co">teleducacion.med@udea.edu.co</a>.
           </p>
         </div>
 
         <!-- 3. Cookies y Almacenamiento Local -->
-        <div id="legal-tab-cookies" class="legal-tab-pane" role="tabpanel" aria-labelledby="tab-btn-cookies" style="display: none;">
+        <div id="legal-tab-cookies" class="legal-tab-pane" role="tabpanel" aria-labelledby="tab-btn-cookies"
+          style="display: none;">
           <div class="legal-notice-box alert-box-success">
             <div>
               <strong>Almacenamiento Técnico y Libre de Rastreo Publicitario</strong>
@@ -671,20 +700,26 @@
           </div>
           <h4>1. ¿Qué información almacena Aulas Abiertas en tu navegador?</h4>
           <p>
-            Esta web utiliza la tecnología estándar de <strong>Almacenamiento Local (localStorage)</strong> de tu propio navegador web exclusivamente para fines técnicos de usabilidad:
+            Esta web utiliza la tecnología estándar de <strong>Almacenamiento Local (localStorage)</strong> de tu propio
+            navegador web exclusivamente para fines técnicos de usabilidad:
           </p>
           <ul class="legal-bullet-list">
-            <li><strong>Filtros y Búsqueda:</strong> Recuerda temporalmente tus opciones de visualización (especialidad, día y modalidad) para una navegación más cómoda.</li>
-            <li><strong>Consentimiento de Notificación:</strong> Guarda un indicador técnico para no volverte a mostrar el banner de información sobre cookies una vez aceptado.</li>
+            <li><strong>Filtros y Búsqueda:</strong> Recuerda temporalmente tus opciones de visualización (especialidad,
+              día y modalidad) para una navegación más cómoda.</li>
+            <li><strong>Consentimiento de Notificación:</strong> Guarda un indicador técnico para no volverte a mostrar
+              el banner de información sobre cookies una vez aceptado.</li>
           </ul>
           <h4>2. Enlaces y Servicios de Terceros</h4>
           <p>
-            Al pulsar en los enlaces de reunión virtual (Microsoft Teams, Google Meet, Zoom) o al reproducir videos en YouTube, el usuario es dirigido o interactúa con plataformas externas de videoconferencia sujetas a sus propias políticas de privacidad y cookies.
+            Al pulsar en los enlaces de reunión virtual (Microsoft Teams, Google Meet, Zoom) o al reproducir videos en
+            YouTube, el usuario es dirigido o interactúa con plataformas externas de videoconferencia sujetas a sus
+            propias políticas de privacidad y cookies.
           </p>
         </div>
 
         <!-- 4. Términos y Propiedad Intelectual -->
-        <div id="legal-tab-terms" class="legal-tab-pane" role="tabpanel" aria-labelledby="tab-btn-terms" style="display: none;">
+        <div id="legal-tab-terms" class="legal-tab-pane" role="tabpanel" aria-labelledby="tab-btn-terms"
+          style="display: none;">
           <div class="legal-notice-box alert-box-info">
             <div>
               <strong>Propiedad Intelectual y Derechos de Autor (Ley 23 de 1982)</strong>
@@ -693,17 +728,24 @@
           </div>
           <h4>1. Derechos de Autor sobre Ponencias y Contenidos</h4>
           <p>
-            Todas las conferencias, presentaciones académicas, material clínico, material audiovisual y marcas institucionales ("Universidad de Antioquia", "Facultad de Medicina", "Aulas Abiertas") son propiedad de la Universidad de Antioquia y/o de sus respectivos docentes y conferencistas.
+            Todas las conferencias, presentaciones académicas, material clínico, material audiovisual y marcas
+            institucionales ("Universidad de Antioquia", "Facultad de Medicina", "Aulas Abiertas") son propiedad de la
+            Universidad de Antioquia y/o de sus respectivos docentes y conferencistas.
           </p>
           <h4>2. Condiciones de Uso</h4>
           <p>
-            Se autoriza el acceso libre, visualización y participación académica en las sesiones en vivo y grabaciones públicas con fines exclusivos de estudio, investigación y formación médica continua. Queda expresamente prohibida la grabación no autorizada, retransmisión con fines de lucro, alteración o explotación comercial total o parcial de los contenidos sin el consentimiento previo y por escrito de la Universidad de Antioquia.
+            Se autoriza el acceso libre, visualización y participación académica en las sesiones en vivo y grabaciones
+            públicas con fines exclusivos de estudio, investigación y formación médica continua. Queda expresamente
+            prohibida la grabación no autorizada, retransmisión con fines de lucro, alteración o explotación comercial
+            total o parcial de los contenidos sin el consentimiento previo y por escrito de la Universidad de Antioquia.
           </p>
         </div>
       </div>
 
-      <div class="modal-footer" style="padding: 14px 24px; background: var(--paper-warm); border-top: 1px solid var(--border-subtle); display: flex; justify-content: flex-end;">
-        <button type="button" id="btn-legal-modal-ok" class="btn-primary" style="padding: 8px 20px; font-size: 0.875rem;">
+      <div class="modal-footer"
+        style="padding: 14px 24px; background: var(--paper-warm); border-top: 1px solid var(--border-subtle); display: flex; justify-content: flex-end;">
+        <button type="button" id="btn-legal-modal-ok" class="btn-primary"
+          style="padding: 8px 20px; font-size: 0.875rem;">
           Entendido
         </button>
       </div>
@@ -711,12 +753,15 @@
   </div>
 
   <!-- Banner Discreto de Consentimiento de Almacenamiento Local -->
-  <aside id="cookie-consent-banner" class="cookie-banner" role="region" aria-label="Aviso de almacenamiento y cookies" style="display: none;">
+  <aside id="cookie-consent-banner" class="cookie-banner" role="region" aria-label="Aviso de almacenamiento y cookies"
+    style="display: none;">
     <div class="cookie-banner-container">
       <div class="cookie-banner-content">
         <div class="cookie-banner-text">
           <p>
-            <strong>Almacenamiento y Privacidad:</strong> En Aulas Abiertas utilizamos almacenamiento técnico en tu navegador (<code>localStorage</code>) para recordar tus preferencias de búsqueda y filtros seleccionados. No usamos cookies de rastreo comercial ni vendemos datos personales.
+            <strong>Almacenamiento y Privacidad:</strong> En Aulas Abiertas utilizamos almacenamiento técnico en tu
+            navegador (<code>localStorage</code>) para recordar tus preferencias de búsqueda y filtros seleccionados. No
+            usamos cookies de rastreo comercial ni vendemos datos personales.
           </p>
         </div>
       </div>

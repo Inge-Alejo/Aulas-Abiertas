@@ -1,0 +1,21 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Programación académica en tiempo real (Aulas Abiertas Teleducación UdeA)
+    // Permite lectura pública inmediata desde cualquier dispositivo
+    match /agenda/{document=**} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Favoritos por dispositivo/usuario
+    match /favoritos_usuario/{document=**} {
+      allow read, write: if true;
+    }
+
+    // Preguntas enviadas para los ponentes y equipo de Teleducación
+    match /preguntas_actividades/{document=**} {
+      allow read, write: if true;
+    }
+  }
+}

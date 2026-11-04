@@ -101,6 +101,9 @@ Configura estas variables en Vercel (*Project Settings > Environment Variables*)
 
 | Variable | Descripción | ¿Dónde obtenerla? |
 | :--- | :--- | :--- |
+| `ADMIN_PASSWORD` | Contraseña administrativa para Vercel Auth (Default: `Teleducacion2026*`) | Configurada en Vercel Dashboard |
+| `ADMIN_EMAIL` | Correo del administrador de Teleducación UdeA | Correo institucional UdeA |
+| `ADMIN_SESSION_SECRET` | Clave secreta para firmar tokens JWT de sesión | Generada o configurada en Vercel |
 | `VITE_PUBLIC_SCHEDULE_CSV_URL` | Enlace público CSV de Google Sheets | Pestaña `Programacion_publica` publicada como CSV |
 | `GEMINI_API_KEY` | Clave de API de Google Gemini | [Google AI Studio](https://aistudio.google.com/) |
 | `VITE_GEMINI_API_KEY` | Clave cliente para desarrollo local (opcional) | [Google AI Studio](https://aistudio.google.com/) |
@@ -111,11 +114,13 @@ Configura estas variables en Vercel (*Project Settings > Environment Variables*)
 | `VITE_FIREBASE_MESSAGING_SENDER_ID` | Firebase Messaging Sender ID | Consola de Firebase > Configuración del proyecto |
 | `VITE_FIREBASE_APP_ID` | Firebase App ID | Consola de Firebase > Configuración del proyecto |
 
-> **Nota:** Si no configuras Firebase de inmediato, la aplicación utiliza automáticamente `localStorage` como respaldo. Si no configuras Gemini de inmediato, el asistente muestra un mensaje cordial invitando a ingresar la clave.
+> **Arquitectura Híbrida Optimizada:**
+> - **Autenticación Directa por Vercel (`/api/auth`):** El inicio de sesión se valida de forma nativa en la infraestructura serverless de Vercel sin intermediarios ni dependencias de Firebase Auth.
+> - **Datos y Sincronización en Tiempo Real con Firebase Firestore:** Las conferencias publicadas desde el panel administrativo se almacenan en `agenda/programacion_activa` y se propagan instantáneamente a cualquier dispositivo conectado en el mundo mediante `onSnapshot` (sin necesidad de recargar la página).
 
 ---
 
-## 🔥 Configuración de Firebase (Paso a Paso)
+## 🔥 Configuración de Firebase y Reglas de Firestore
 
 1. Ingresa a la [Consola de Firebase](https://console.firebase.google.com/) con tu cuenta de Google.
 2. Haz clic en **"Crear un proyecto"** (ejemplo: `aulas-abiertas-udea`).
@@ -124,9 +129,28 @@ Configura estas variables en Vercel (*Project Settings > Environment Variables*)
    - Ubicación: selecciona una región cercana (ej. `us-central1` o `southamerica-east1`).
 4. Ve a la **Configuración del Proyecto** (ícono de engranaje) y en la sección *Tus apps*, haz clic en el ícono de Web `</>`.
 5. Copia los valores del objeto `firebaseConfig` y pégalos en las variables de entorno `VITE_FIREBASE_*`.
+6. En la pestaña **Reglas de Firestore**, copia las reglas definidas en `firestore.rules`:
+   ```javascript
+   rules_version = '2';
+   service cloud.firestore {
+     match /databases/{database}/documents {
+       match /agenda/{document=**} {
+         allow read: if true;
+         allow write: if true;
+       }
+       match /favoritos_usuario/{document=**} {
+         allow read, write: if true;
+       }
+       match /preguntas_actividades/{document=**} {
+         allow read, write: if true;
+       }
+     }
+   }
+   ```
 
 ### Colecciones utilizadas en Firestore:
-- **`favoritos_usuario`**: Actividades marcadas con estrella por los usuarios.
+- **`agenda` (`programacion_activa`)**: Agenda académica viva sincronizada en tiempo real para todos los dispositivos mediante WebSockets/onSnapshot.
+- **`favoritos_usuario`**: Actividades guardadas por los usuarios.
 - **`preguntas_actividades`**: Consultas clínicas e inquietudes enviadas a través del modal para los ponentes y Teleducación.
 
 ---

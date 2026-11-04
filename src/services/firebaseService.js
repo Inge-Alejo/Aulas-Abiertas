@@ -1,29 +1,28 @@
 /**
- * Servicio de integración con Firebase (Auth y Firestore) para Aulas Abiertas
- * - Firebase Authentication: Registro e inicio de sesión con Correo y Contraseña.
- * - Cloud Firestore: Guardar favoritos y enviar preguntas para ponentes.
- * - Respaldo Local: Si las variables no están presentes, opera de manera transparente en LocalStorage.
+ * firebaseService.js
+ * Servicio de sincronización de datos en tiempo real con Firebase Firestore.
+ * 
+ * - Almacenamiento en la nube de la programación académica en tiempo real (agenda/programacion_activa).
+ * - Difusión instantánea mediante onSnapshot para que cualquier dispositivo reciba cambios sin recargar.
+ * - Registro de favoritos y preguntas directas a ponentes en Firestore.
+ * - Respaldo transparente en Vercel Serverless API (/api/schedule) y caché local.
  */
 
 import { initializeApp, getApps } from 'firebase/app';
-import {
-  getAuth,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-  updateProfile
-} from 'firebase/auth';
 import {
   getFirestore,
   collection,
   addDoc,
   doc,
   setDoc,
+  getDoc,
   deleteDoc,
   getDocs,
+  onSnapshot,
   serverTimestamp
 } from 'firebase/firestore';
+
+import { getAdminToken } from './authService.js';
 
 // Configuración desde variables de entorno
 const firebaseConfig = {
@@ -36,189 +35,255 @@ const firebaseConfig = {
 };
 
 let app = null;
-let auth = null;
 let db = null;
 let isFirebaseReady = false;
 
 try {
   if (firebaseConfig.apiKey && firebaseConfig.projectId) {
     app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-    auth = getAuth(app);
     db = getFirestore(app);
     isFirebaseReady = true;
-    console.info('[Firebase] Conectado exitosamente con Auth y Firestore:', firebaseConfig.projectId);
+    console.info('[Firebase Firestore] Conectado exitosamente en tiempo real:', firebaseConfig.projectId);
   } else {
-    console.info('[Firebase] Operando con simulación local (LocalStorage).');
+    console.info('[Firebase Firestore] Sin credenciales cliente en .env, operando con sincronización Vercel / Local.');
   }
 } catch (error) {
-  console.warn('[Firebase] Inicialización fallida, usando respaldo local:', error.message);
+  console.warn('[Firebase Firestore] Error de inicialización:', error.message);
   isFirebaseReady = false;
 }
 
 const LOCAL_FAVORITES_KEY = 'aulas_abiertas_favoritos';
-const LOCAL_USER_KEY = 'aulas_abiertas_usuario_activo';
+const LOCAL_SCHEDULE_KEY = 'aulas_cached_live_schedule';
 
 /* ==========================================================================
-   FIREBASE AUTHENTICATION (CORREO Y CONTRASEÑA)
+   SINCRONIZACIÓN DE PROGRAMACIÓN EN TIEMPO REAL (FIRESTORE + VERCEL API)
    ========================================================================== */
 
 /**
- * Inicia sesión con correo y contraseña.
- * @param {string} email
- * @param {string} password
- * @returns {Promise<{ user: object }>}
+ * Guarda la programación académica en Firebase Firestore y en la API de Vercel.
+ * Se propaga en tiempo real a todos los dispositivos conectados.
+ * 
+ * @param {Array} activities
+ * @param {Object} metadata
+ * @returns {Promise<{ success: boolean, count: number }>}
  */
-export async function loginWithEmail(email, password) {
-  if (isFirebaseReady && auth) {
+export async function saveLiveScheduleToFirebase(activities, metadata = {}) {
+  if (!Array.isArray(activities) || activities.length === 0) {
+    throw new Error('No hay actividades válidas para guardar.');
+  }
+
+  const nowIso = new Date().toISOString();
+  const payload = {
+    activities,
+    count: activities.length,
+    updatedAt: nowIso,
+    updatedBy: metadata.user || 'Teleducación UdeA',
+    source: metadata.source || 'Boletín MailerLite / Scraper Gemini IA',
+    version: Date.now()
+  };
+
+  let firestoreSaved = false;
+
+  // 1. Guardar en Firebase Firestore (Sincronización en tiempo real global)
+  if (isFirebaseReady && db) {
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      return { user: userCredential.user };
-    } catch (error) {
-      throw translateAuthError(error);
+      const scheduleDocRef = doc(db, 'agenda', 'programacion_activa');
+      await setDoc(scheduleDocRef, {
+        ...payload,
+        firestoreTimestamp: serverTimestamp()
+      });
+      firestoreSaved = true;
+      console.info('[Firebase] Programación guardada en Firestore (agenda/programacion_activa)');
+    } catch (err) {
+      console.warn('[Firebase] Fallo al guardar en Firestore:', err.message);
     }
   }
 
-  // Respaldo de demostración local
-  if (!email || !password || password.length < 6) {
-    throw new Error('La contraseña debe tener al menos 6 caracteres.');
-  }
-
-  const mockUser = {
-    uid: `local_${btoa(email).replace(/=/g, '')}`,
-    email,
-    displayName: email.split('@')[0],
-    isLocal: true
-  };
-  localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(mockUser));
-  notifyAuthSubscribers(mockUser);
-  return { user: mockUser };
-}
-
-/**
- * Registra un nuevo usuario con correo, contraseña y nombre opcional.
- * @param {string} email
- * @param {string} password
- * @param {string} displayName
- * @returns {Promise<{ user: object }>}
- */
-export async function registerWithEmail(email, password, displayName = '') {
-  if (isFirebaseReady && auth) {
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      if (displayName) {
-        await updateProfile(userCredential.user, { displayName });
-      }
-      return { user: userCredential.user };
-    } catch (error) {
-      throw translateAuthError(error);
-    }
-  }
-
-  // Respaldo local
-  if (!email || !password || password.length < 6) {
-    throw new Error('La contraseña debe tener al menos 6 caracteres.');
-  }
-
-  const mockUser = {
-    uid: `local_${btoa(email).replace(/=/g, '')}`,
-    email,
-    displayName: displayName || email.split('@')[0],
-    isLocal: true
-  };
-  localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(mockUser));
-  notifyAuthSubscribers(mockUser);
-  return { user: mockUser };
-}
-
-/**
- * Cierra la sesión activa.
- */
-export async function logoutUser() {
-  if (isFirebaseReady && auth) {
-    await signOut(auth);
-    return;
-  }
-  localStorage.removeItem(LOCAL_USER_KEY);
-  notifyAuthSubscribers(null);
-}
-
-/**
- * Retorna el usuario actualmente autenticado (sincrónico si hay sesión local).
- */
-export function getCurrentUser() {
-  if (isFirebaseReady && auth) {
-    return auth.currentUser;
-  }
+  // 2. Guardar en la API Serverless de Vercel (/api/schedule) como respaldo en la nube
   try {
-    const raw = localStorage.getItem(LOCAL_USER_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch (e) {
-    return null;
-  }
-}
-
-// Suscripción a cambios de estado de autenticación
-const authSubscribers = [];
-
-function notifyAuthSubscribers(user) {
-  authSubscribers.forEach((cb) => {
-    try {
-      cb(user);
-    } catch (e) {
-      console.error(e);
+    const adminToken = getAdminToken();
+    const headers = { 'Content-Type': 'application/json' };
+    if (adminToken) {
+      headers['Authorization'] = `Bearer ${adminToken}`;
     }
-  });
+
+    await fetch('/api/schedule', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        activities,
+        source: payload.source,
+        updatedBy: payload.updatedBy
+      })
+    });
+  } catch (err) {
+    console.warn('[Vercel API] Notificación de persistencia en Vercel:', err.message);
+  }
+
+  // 3. Caché local en este dispositivo
+  try {
+    localStorage.setItem(LOCAL_SCHEDULE_KEY, JSON.stringify(payload));
+  } catch {
+    // Ignorar errores de almacenamiento local
+  }
+
+  return {
+    success: true,
+    count: activities.length,
+    firestoreSaved,
+    updatedAt: nowIso
+  };
 }
 
 /**
- * Escucha cambios en el estado de autenticación.
- * @param {Function} callback
- * @returns {Function} Función para cancelar suscripción
+ * Consulta la programación activa guardada en Firebase Firestore o Vercel API.
+ * Permite que cualquier dispositivo obtenga la programación más reciente.
+ * 
+ * @returns {Promise<{ activities: Array, source: string, updatedAt: string, isLive: boolean } | null>}
  */
-export function onAuthChange(callback) {
-  authSubscribers.push(callback);
-
-  if (isFirebaseReady && auth) {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      callback(user);
-    });
-    return unsubscribe;
+export async function getLiveScheduleFromFirebase() {
+  // 1. Intentar consultar desde Firebase Firestore
+  if (isFirebaseReady && db) {
+    try {
+      const scheduleDocRef = doc(db, 'agenda', 'programacion_activa');
+      const docSnap = await getDoc(scheduleDocRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        if (Array.isArray(data.activities) && data.activities.length > 0) {
+          return {
+            activities: data.activities,
+            source: 'Firebase Firestore (En tiempo real)',
+            updatedAt: data.updatedAt || new Date().toLocaleTimeString('es-CO'),
+            updatedBy: data.updatedBy || '',
+            isLive: true,
+            count: data.activities.length
+          };
+        }
+      }
+    } catch (err) {
+      console.warn('[Firebase] No se pudo leer agenda de Firestore:', err.message);
+    }
   }
 
-  // Notificar estado actual en modo local
-  const current = getCurrentUser();
-  callback(current);
+  // 2. Intentar consultar desde la API de Vercel (/api/schedule)
+  try {
+    const res = await fetch('/api/schedule');
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data.activities) && data.activities.length > 0) {
+        return {
+          activities: data.activities,
+          source: 'Vercel Cloud (Sincronizado)',
+          updatedAt: data.updatedAt || new Date().toLocaleTimeString('es-CO'),
+          updatedBy: data.updatedBy || '',
+          isLive: true,
+          count: data.activities.length
+        };
+      }
+    }
+  } catch {
+    // Continuar al siguiente respaldo
+  }
+
+  // 3. Intentar consultar desde la caché local del dispositivo
+  try {
+    const raw = localStorage.getItem(LOCAL_SCHEDULE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed.activities) && parsed.activities.length > 0) {
+        return {
+          activities: parsed.activities,
+          source: 'Caché de agenda local',
+          updatedAt: parsed.updatedAt || '',
+          isLive: true,
+          count: parsed.activities.length
+        };
+      }
+    }
+  } catch {
+    // Ignorar
+  }
+
+  return null;
+}
+
+/**
+ * Se suscribe en tiempo real a los cambios de la programación en Firestore.
+ * Cuando un administrador actualiza la agenda desde cualquier equipo,
+ * todos los dispositivos conectados se actualizan al instante sin recargar la página.
+ * 
+ * @param {Function} callback Callback invocado con { activities, source, updatedAt, isLive }
+ * @returns {Function} Función para cancelar la suscripción
+ */
+export function subscribeToLiveSchedule(callback) {
+  let isUnsubscribed = false;
+
+  // 1. Suscripción nativa Firestore onSnapshot (WebSocket en tiempo real)
+  if (isFirebaseReady && db) {
+    try {
+      const scheduleDocRef = doc(db, 'agenda', 'programacion_activa');
+      const unsubscribeFirestore = onSnapshot(
+        scheduleDocRef,
+        (docSnap) => {
+          if (isUnsubscribed) return;
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            if (Array.isArray(data.activities) && data.activities.length > 0) {
+              console.info(`[Firebase Realtime] Nueva versión de agenda recibida (${data.activities.length} actividades)`);
+              callback({
+                activities: data.activities,
+                source: 'Firebase Firestore (En tiempo real)',
+                updatedAt: data.updatedAt || new Date().toLocaleTimeString('es-CO'),
+                updatedBy: data.updatedBy,
+                count: data.activities.length,
+                isLive: true,
+                fromRealtime: true
+              });
+            }
+          }
+        },
+        (err) => {
+          console.warn('[Firebase onSnapshot] Advertencia de conexión:', err.message);
+        }
+      );
+
+      return () => {
+        isUnsubscribed = true;
+        unsubscribeFirestore();
+      };
+    } catch (e) {
+      console.warn('[Firebase] Fallo al establecer suscripción Firestore:', e);
+    }
+  }
+
+  // 2. Respaldo de sondeo ligero (Polling cada 30 segundos) si Firestore no está activo
+  let lastKnownUpdated = '';
+  const intervalId = setInterval(async () => {
+    if (isUnsubscribed) return;
+    try {
+      const res = await fetch('/api/schedule');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.activities && data.updatedAt && data.updatedAt !== lastKnownUpdated) {
+          lastKnownUpdated = data.updatedAt;
+          callback({
+            activities: data.activities,
+            source: 'Vercel Cloud (Sincronizado)',
+            updatedAt: data.updatedAt,
+            isLive: true,
+            fromRealtime: true
+          });
+        }
+      }
+    } catch {
+      // Ignorar fallas transitorias de red
+    }
+  }, 30000);
 
   return () => {
-    const idx = authSubscribers.indexOf(callback);
-    if (idx !== -1) authSubscribers.splice(idx, 1);
+    isUnsubscribed = true;
+    clearInterval(intervalId);
   };
-}
-
-/**
- * Traduce códigos de error comunes de Firebase a español amigable
- */
-function translateAuthError(error) {
-  const code = error.code || '';
-  let msg = 'Ocurrió un error al autenticar.';
-
-  if (code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found') {
-    msg = 'Correo electrónico o contraseña incorrectos.';
-  } else if (code === 'auth/email-already-in-use') {
-    msg = 'Este correo electrónico ya está registrado. Por favor inicia sesión.';
-  } else if (code === 'auth/weak-password') {
-    msg = 'La contraseña debe tener al menos 6 caracteres.';
-  } else if (code === 'auth/invalid-email') {
-    msg = 'El formato del correo electrónico no es válido.';
-  } else if (code === 'auth/network-request-failed') {
-    msg = 'Error de conexión. Verifica tu conexión a internet.';
-  } else if (error.message) {
-    msg = error.message;
-  }
-
-  const err = new Error(msg);
-  err.code = code;
-  return err;
 }
 
 /* ==========================================================================
@@ -237,7 +302,7 @@ export async function getFavoriteActivityIds() {
       snap.forEach((doc) => ids.push(doc.id));
       return ids;
     } catch (err) {
-      console.warn('[Firebase] Error al leer favoritos en Firestore, usando local:', err);
+      console.warn('[Firebase] Error al leer favoritos en Firestore, usando local:', err.message);
     }
   }
 
@@ -261,11 +326,13 @@ export async function toggleFavoriteActivity(activityId, activityData = {}) {
       try {
         await deleteDoc(doc(db, 'favoritos_usuario', activityId));
       } catch (err) {
-        console.warn('[Firebase] Fallo al borrar favorito en Firestore:', err);
+        console.warn('[Firebase] Fallo al borrar favorito en Firestore:', err.message);
       }
     }
     const updated = currentFavorites.filter((id) => id !== activityId);
-    localStorage.setItem(LOCAL_FAVORITES_KEY, JSON.stringify(updated));
+    try {
+      localStorage.setItem(LOCAL_FAVORITES_KEY, JSON.stringify(updated));
+    } catch {}
     return false;
   } else {
     if (isFirebaseReady && db) {
@@ -275,11 +342,13 @@ export async function toggleFavoriteActivity(activityId, activityData = {}) {
           savedAt: serverTimestamp()
         });
       } catch (err) {
-        console.warn('[Firebase] Fallo al guardar favorito en Firestore:', err);
+        console.warn('[Firebase] Fallo al guardar favorito en Firestore:', err.message);
       }
     }
     const updated = [...currentFavorites, activityId];
-    localStorage.setItem(LOCAL_FAVORITES_KEY, JSON.stringify(updated));
+    try {
+      localStorage.setItem(LOCAL_FAVORITES_KEY, JSON.stringify(updated));
+    } catch {}
     return true;
   }
 }
@@ -309,7 +378,9 @@ export async function submitActivityQuestion(questionData) {
     createdAt: new Date().toISOString()
   };
   pendingQuestions.push(localRecord);
-  localStorage.setItem('aulas_preguntas_pendientes', JSON.stringify(pendingQuestions));
+  try {
+    localStorage.setItem('aulas_preguntas_pendientes', JSON.stringify(pendingQuestions));
+  } catch {}
 
   return { success: true, id: localRecord.localId, isLocal: true };
 }
