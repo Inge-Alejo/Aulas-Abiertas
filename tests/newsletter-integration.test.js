@@ -87,3 +87,4 @@ test('5. Verificación de lógica en src/main.js', () => {
   assert.ok(js.includes('modal-newsletter-backdrop'), 'Falta la referencia a modal-newsletter-backdrop');
   assert.ok(js.includes('newsletter-mailerlite-iframe'), 'Falta la referencia al iframe en JS');
 });
+

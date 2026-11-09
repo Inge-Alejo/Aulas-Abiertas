@@ -736,6 +736,21 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   transform: translateY(-2px);
 }
 
+.spotlight-presencial-notice {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #FFFFFF;
+}
+
 @media (max-width: 640px) {
   .spotlight-wrapper {
     padding: 24px 18px;
@@ -1196,6 +1211,19 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   background-color: #FEE2E2;
 }
 
+.card-presencial-notice {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background-color: #F1F5F9;
+  border: 1px solid #CBD5E1;
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #475569;
+}
+
 .empty-results-box {
   background-color: var(--bg-page);
   border: 2px dashed var(--border-strong);
@@ -1286,9 +1314,120 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   margin-bottom: 16px;
 }
 
+/* ==============================================================================
+   CARRUSEL DE LISTAS DE REPRODUCCIÓN OFICIALES (3 FILAS X 4 COLUMNAS)
+   ============================================================================== */
+.playlists-carousel-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.playlists-section-heading {
+  font-family: var(--font-serif);
+  font-size: 1.625rem;
+  font-weight: 700;
+  color: var(--udea-green-primary);
+  margin-bottom: 6px;
+}
+
+.playlists-section-subheading {
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+  margin: 0;
+  max-width: 650px;
+}
+
+.playlists-carousel-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.playlists-page-indicator {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--udea-green-primary);
+  background: var(--udea-green-subtle);
+  border: 1px solid var(--udea-green-border);
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+}
+
+.playlists-nav-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-carousel-nav {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background-color: #FFFFFF;
+  border: 1.5px solid var(--border-strong);
+  color: var(--udea-green-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-carousel-nav:hover:not(:disabled) {
+  background-color: var(--udea-green-primary);
+  color: #FFFFFF;
+  border-color: var(--udea-green-primary);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+.btn-carousel-nav:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  border-color: var(--border-subtle);
+}
+
+/* Viewport y Track del Carrusel */
+.playlists-carousel-viewport {
+  overflow: hidden;
+  width: 100%;
+  position: relative;
+  outline: none;
+  border-radius: var(--radius-md);
+}
+
+.playlists-carousel-viewport:focus-visible {
+  box-shadow: 0 0 0 3px rgba(0, 77, 37, 0.25);
+}
+
+.playlists-carousel-track {
+  display: flex;
+  transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1);
+  width: 100%;
+  will-change: transform;
+}
+
+.playlists-slide {
+  flex: 0 0 100%;
+  min-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Cuadrícula estricta de 3 filas x 4 columnas (12 tarjetas por vista) */
+.playlists-slide .playlists-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(3, auto);
+  gap: 20px;
+}
+
 .playlists-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 20px;
 }
 
@@ -1326,6 +1465,15 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   transform: scale(1.08);
 }
 
+.playlist-card-category {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--udea-green-primary);
+  margin-bottom: 4px;
+  letter-spacing: 0.03em;
+}
+
 .playlist-card-title {
   font-family: var(--font-serif);
   font-size: 1.125rem;
@@ -1354,6 +1502,37 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   text-decoration: underline;
 }
 
+/* Puntos indicadores del Carrusel (Dots) */
+.playlists-dots-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.playlist-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-full);
+  background-color: var(--border-strong);
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  padding: 0;
+}
+
+.playlist-dot:hover {
+  background-color: var(--udea-green-primary);
+  transform: scale(1.15);
+}
+
+.playlist-dot.active {
+  width: 28px;
+  background-color: var(--udea-green-primary);
+  border-radius: 6px;
+}
+
 /* ==============================================================================
    SECCIÓN ACERCA DE AULAS ABIERTAS
    ============================================================================== */
@@ -1377,14 +1556,54 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   margin-bottom: 20px;
 }
 
-.quote-editorial {
-  border-left: 3px solid var(--udea-green-primary);
-  padding-left: 20px;
+/* Bloque Editorial Destacado de Cita Institucional */
+.quote-editorial-container {
+  position: relative;
+  background: linear-gradient(135deg, rgba(0, 77, 37, 0.05) 0%, rgba(16, 185, 129, 0.03) 100%), #FFFFFF;
+  border: 1px solid rgba(0, 77, 37, 0.15);
+  border-left: 5px solid var(--udea-green-primary);
+  border-radius: var(--radius-md);
+  padding: 28px 32px 24px 44px;
   margin: 28px 0;
+  box-shadow: var(--shadow-sm);
+}
+
+.quote-mark {
+  position: absolute;
+  top: 6px;
+  left: 12px;
+  font-family: var(--font-serif);
+  font-size: 3.25rem;
+  line-height: 1;
+  color: rgba(0, 77, 37, 0.22);
+  user-select: none;
+  pointer-events: none;
+}
+
+.quote-editorial {
   font-family: var(--font-serif);
   font-size: 1.25rem;
+  line-height: 1.6;
   font-style: italic;
   color: var(--udea-green-dark);
+  margin: 0 0 14px 0;
+  border: none;
+  padding: 0;
+}
+
+.quote-author {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  border-top: 1px dashed var(--border-subtle);
+  padding-top: 10px;
+}
+
+.quote-author strong {
+  color: var(--udea-green-primary);
+  font-weight: 700;
 }
 
 .venues-list {

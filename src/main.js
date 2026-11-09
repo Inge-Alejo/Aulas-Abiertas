@@ -59,14 +59,16 @@ const state = {
   }
 };
 
-// 12 Listas de reproducción temáticas oficiales verificadas del canal de Teleducación UdeA
+// 24 Listas de reproducción temáticas oficiales verificadas del canal de Teleducación UdeA
+// Organizadas en cuadrículas de 12 especialidades por vista (3 filas x 4 columnas)
 const VERIFIED_PLAYLISTS = [
+  // --- PÁGINA 1: Especialidades Médicas y Quirúrgicas Troncales (12 listas) ---
   {
     title: 'Medicina Interna',
     id: 'PLWutZMaMUREfzBbXZ8PWiR2-aYMNUV4br',
     url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREfzBbXZ8PWiR2-aYMNUV4br',
     category: 'Atención clínica y crítica',
-    description: 'Guías clínicas, falla cardíaca, riesgo cardiovascular y patologías sistémicas.'
+    description: 'Guías clínicas, falla cardíaca, riesgo cardiovascular y patologías sistémicas complejas.'
   },
   {
     title: 'Ginecología y Obstetricia',
@@ -80,70 +82,156 @@ const VERIFIED_PLAYLISTS = [
     id: 'PLWutZMaMUREcHGQHpTR1Orc08Zx1DGspv',
     url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREcHGQHpTR1Orc08Zx1DGspv',
     category: 'Atención clínica y crítica',
-    description: 'Reanimación, trombolisis, trauma, shock y soporte vital avanzado.'
+    description: 'Reanimación cardiopulmonar, trombolisis, trauma, shock y soporte vital avanzado.'
   },
   {
     title: 'Endocrinología',
     id: 'PLWutZMaMUREfcP8tw36_ngXsrOtpMgUwq',
     url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREfcP8tw36_ngXsrOtpMgUwq',
     category: 'Especialidades médicas',
-    description: 'Diabetes, osteoporosis, tiroides, metabolismo óseo y terapias hormonales.'
+    description: 'Diabetes mellitus, tiroides, osteoporosis, metabolismo óseo y endocrinopatías.'
   },
   {
     title: 'Anestesiología y Reanimación',
     id: 'PLWutZMaMUREe-WzJhxuwkjc5_On2c6--Q',
     url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREe-WzJhxuwkjc5_On2c6--Q',
     category: 'Áreas médico-quirúrgicas',
-    description: 'Vía aérea difícil, farmacología perioperatoria, monitoreo hemodinámico.'
+    description: 'Vía aérea difícil, farmacología perioperatoria, monitoreo hemodinámico e invasivo.'
   },
   {
     title: 'Pediatría y Puericultura',
     id: 'PLWutZMaMUREfGxKGOcU0DJ1dyZQT0bmgt',
     url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREfGxKGOcU0DJ1dyZQT0bmgt',
     category: 'Salud materno-infantil',
-    description: 'Infectología pediátrica, nutrición, desarrollo infantil y neonatología.'
+    description: 'Infectología pediátrica, nutrición, desarrollo infantil, urgencias pediátricas y neonatología.'
   },
   {
     title: 'Medicina Física y Rehabilitación',
     id: 'PLWutZMaMUREczvFffoLHzIgY0wjqkJsod',
     url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREczvFffoLHzIgY0wjqkJsod',
     category: 'Especialidades médicas',
-    description: 'Neurorrehabilitación, enfermedades neuromusculares y rehabilitación musculoesquelética.'
+    description: 'Neurorrehabilitación, patologías neuromusculares y rehabilitación funcional integral.'
   },
   {
     title: 'Alergología Clínica',
     id: 'PLWutZMaMUREeyppOkA_BSZWFI5rlEgM8e',
     url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREeyppOkA_BSZWFI5rlEgM8e',
     category: 'Especialidades médicas',
-    description: 'Hipersensibilidad a fármacos, inmunoterapia y enfermedades atópicas graves.'
+    description: 'Hipersensibilidad a fármacos, inmunoterapia de alérgenos y enfermedades atópicas.'
   },
   {
     title: 'Otorrinolaringología',
     id: 'PLWutZMaMUREdKYyYrlmTI20pawPQie37e',
     url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREdKYyYrlmTI20pawPQie37e',
     category: 'Áreas médico-quirúrgicas',
-    description: 'Patología de oído, nariz, laringe y cirugía de cabeza y cuello.'
+    description: 'Patología rinosinusoidal, otología, audiología clínica y cirugía de cabeza y cuello.'
   },
   {
-    title: 'Psiquiatría y Salud Mental (GREAPIC)',
+    title: 'Psiquiatría y Salud Mental',
     id: 'PLWutZMaMUREdq_6zLkAUtHtmpCMnEoBLa',
     url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREdq_6zLkAUtHtmpCMnEoBLa',
-    category: 'Salud mental',
-    description: 'Psiquiatría de enlace, salud mental infantil y prevención del burnout.'
+    category: 'Salud mental y neurociencias',
+    description: 'Psiquiatría de enlace, psicopatología clínica, salud mental comunitaria y prevención del suicidio.'
   },
   {
     title: 'Microbiología y Parasitología',
     id: 'PLWutZMaMUREcdNPC94HRcliXT6wwxMqAL',
     url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREcdNPC94HRcliXT6wwxMqAL',
-    category: 'Investigación básica y aplicada',
-    description: 'Resistencia antimicrobiana, mecanismos de virulencia y vigilancia epidemiológica.'
+    category: 'Ciencias biomédicas e investigación',
+    description: 'Resistencia antimicrobiana, vigilancia genómica, mecanismos de patogenicidad y diagnóstico.'
   },
   {
     title: 'Nefrología',
     id: 'PLWutZMaMUREfIPu3L-df2t0xnaJhL3pXz',
     url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREfIPu3L-df2t0xnaJhL3pXz',
     category: 'Especialidades médicas',
-    description: 'Enfermedad renal crónica, glomerulopatías, diálisis y trasplante renal.'
+    description: 'Enfermedad renal crónica, glomerulopatías primarias, hemodiálisis y trasplante renal.'
+  },
+
+  // --- PÁGINA 2: Especialidades Quirúrgicas, Diagnósticas e Investigación Clínica (12 listas) ---
+  {
+    title: 'Urología',
+    id: 'PLWutZMaMUREe0B2XwcNLikJ-k-vdctked',
+    url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREe0B2XwcNLikJ-k-vdctked',
+    category: 'Áreas médico-quirúrgicas',
+    description: 'Urología oncológica, litiasis urinaria, endourología, trasplante y cirugía reconstructiva.'
+  },
+  {
+    title: 'Neurología y Neurociencias',
+    id: 'PLWutZMaMUREfm1FZNBS1PHPemwsRHSPHQ',
+    url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREfm1FZNBS1PHPemwsRHSPHQ',
+    category: 'Especialidades médicas',
+    description: 'Jornadas de neurología clínica, epilepsia, trastornos del movimiento y patología vascular cerebral.'
+  },
+  {
+    title: 'Dermatología (DermADiálogos)',
+    id: 'PLH98JHMlVGyU',
+    url: 'https://www.youtube.com/playlist?list=PLH98JHMlVGyU',
+    category: 'Especialidades médicas',
+    description: 'Dermatitis atópica, oncología cutánea, eje piel-cerebro y manejo dermatológico multidisciplinario.'
+  },
+  {
+    title: 'Radiología en Trauma y Urgencias',
+    id: 'PLWutZMaMUREewSLkKCauL67aQ6_S0Roj3',
+    url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREewSLkKCauL67aQ6_S0Roj3',
+    category: 'Imágenes diagnósticas',
+    description: 'Pre-curso de radiología clínica, interpretación tomográfica y ecografía en urgencias y trauma.'
+  },
+  {
+    title: 'Telesalud y Sistemas de Salud',
+    id: 'PLIgvaz4TdHUI',
+    url: 'https://www.youtube.com/playlist?list=PLIgvaz4TdHUI',
+    category: 'Salud pública y tecnología',
+    description: 'Fundamentación en telesalud, salud digital, modelos de atención remota e innovación sanitaria.'
+  },
+  {
+    title: 'Salud e Infección',
+    id: 'PLHbFa91ek3s4',
+    url: 'https://www.youtube.com/playlist?list=PLHbFa91ek3s4',
+    category: 'Infectología y medicina preventiva',
+    description: 'Ciclos de infectología clínica, hepatitis virales, VIH/Sida y stewardship antimicrobiano.'
+  },
+  {
+    title: 'Epidemiología Clínica y Evidencia (GRAEPIC)',
+    id: 'PLWutZMaMUREd2CBAFWR0FaW_vK9U_7Wm3',
+    url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREd2CBAFWR0FaW_vK9U_7Wm3',
+    category: 'Investigación y evidencia clínica',
+    description: 'Grupo Académico de Epidemiología Clínica (GRAEPIC) UdeA y Cochrane Colombia: medicina basada en evidencia y análisis de causalidad.'
+  },
+  {
+    title: 'Ciencias Ómicas en Medicina',
+    id: 'PLFY8HrlG5gaM',
+    url: 'https://www.youtube.com/playlist?list=PLFY8HrlG5gaM',
+    category: 'Ciencias biomédicas e investigación',
+    description: 'Jornadas de medicina genómica, transcriptómica, proteómica y aplicaciones clínicas de precisión.'
+  },
+  {
+    title: 'Jornadas de Investigación de la Facultad',
+    id: 'PLWutZMaMUREcNMv8yhbT5TCrGm5GEVJIp',
+    url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREcNMv8yhbT5TCrGm5GEVJIp',
+    category: 'Investigación y desarrollo',
+    description: 'XVI Jornadas de Investigación de la Facultad de Medicina UdeA: avances y producción científica.'
+  },
+  {
+    title: 'Acto Médico y Humanismo Clínico',
+    id: 'PLWutZMaMUREdAKQ0E_AX7AZruUG-M1lDl',
+    url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREdAKQ0E_AX7AZruUG-M1lDl',
+    category: 'Humanidades médicas',
+    description: 'Reflexiones sobre la relación médico-paciente, la ética en la práctica clínica y la civilidad académica.'
+  },
+  {
+    title: 'Bioética Práctica en Escena',
+    id: 'PLWutZMaMUREdLH5q_2mHyWf8qrWJECMN8',
+    url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREdLH5q_2mHyWf8qrWJECMN8',
+    category: 'Bioética y derecho médico',
+    description: 'Dilemas éticos en salud, consentimiento informado, toma de decisiones al final de la vida y bioética.'
+  },
+  {
+    title: 'Investigación Traslacional',
+    id: 'PLWutZMaMUREejmQnOrP8bnhYRhnzAEaVM',
+    url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREejmQnOrP8bnhYRhnzAEaVM',
+    category: 'Investigación y desarrollo',
+    description: 'Puentes entre el laboratorio biomédico y la aplicación clínica diagnóstica y terapéutica.'
   }
 ];
 
@@ -380,7 +468,8 @@ function renderSpotlightActivity() {
  * Renderiza la tarjeta de una sesión dentro de la cuadrícula destacada
  */
 function renderSpotlightItemCard(act, isLive) {
-  const hasMeeting = Boolean(act.meeting_url);
+  const isPresencial = (act.modality || '').toLowerCase().includes('presenc') && !(act.modality || '').toLowerCase().includes('híbrid');
+  const hasMeeting = Boolean(act.meeting_url) && !isPresencial;
   const hasRecording = Boolean(act.recording_url);
 
   return `
@@ -419,7 +508,12 @@ function renderSpotlightItemCard(act, isLive) {
       </div>
 
       <div class="spotlight-item-actions">
-        ${hasMeeting ? `
+        ${isPresencial ? `
+          <div class="spotlight-presencial-notice">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span>Modalidad Presencial — Asistencia en sede</span>
+          </div>
+        ` : (hasMeeting ? `
           <a href="${act.meeting_url}" target="_blank" rel="noopener noreferrer" class="btn-spotlight-access ${isLive ? 'btn-spotlight-live' : ''}" style="width: 100%; justify-content: center; font-size: 0.875rem; padding: 10px 16px;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
             ${isLive ? 'Conectarse a la Sesión en Vivo' : 'Ingresar a la Sesión'}
@@ -428,7 +522,7 @@ function renderSpotlightItemCard(act, isLive) {
           <a href="#programacion" class="btn-secondary" style="width: 100%; justify-content: center; font-size: 0.8125rem; padding: 8px 12px; background: rgba(255,255,255,0.08); color: #FFFFFF; border-color: rgba(255,255,255,0.2);">
             Ver en Programación
           </a>
-        `}
+        `)}
 
         ${hasRecording ? `
           <a href="${act.recording_url}" target="_blank" rel="noopener noreferrer" class="btn-recording-link" style="width: 100%; justify-content: center; font-size: 0.8125rem; padding: 8px 12px;">
@@ -618,7 +712,8 @@ function renderScheduleList() {
  * Renderiza la tarjeta individual de una actividad académica
  */
 function renderActivityCard(act) {
-  const hasMeeting = Boolean(act.meeting_url);
+  const isPresencial = (act.modality || '').toLowerCase().includes('presenc') && !(act.modality || '').toLowerCase().includes('híbrid');
+  const hasMeeting = Boolean(act.meeting_url) && !isPresencial;
   const hasRecording = Boolean(act.recording_url);
 
   return `
@@ -654,12 +749,17 @@ function renderActivityCard(act) {
       ` : ''}
 
       <div class="card-actions">
-        ${hasMeeting ? `
+        ${isPresencial ? `
+          <span class="card-presencial-notice">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Asistencia presencial en sede
+          </span>
+        ` : (hasMeeting ? `
           <a href="${act.meeting_url}" target="_blank" rel="noopener noreferrer" class="btn-session-link" id="link-meet-${act.id}">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="10 8 16 12 10 16 10 8"/><circle cx="12" cy="12" r="10"/></svg>
             Ingresar a la sesión
           </a>
-        ` : ''}
+        ` : '')}
 
         ${hasRecording ? `
           <a href="${act.recording_url}" target="_blank" rel="noopener noreferrer" class="btn-recording-link" id="link-rec-${act.id}">
@@ -673,31 +773,175 @@ function renderActivityCard(act) {
 }
 
 /**
- * Renderiza las listas de reproducción oficiales en la sección de Biblioteca
+ * Renderiza las listas de reproducción oficiales en la sección de Biblioteca como un carrusel
+ * Mantiene la cuadrícula institucional estricta de 3 filas x 4 columnas (12 tarjetas por vista)
  */
-function renderPlaylists() {
-  const container = document.getElementById('playlists-grid-container');
-  if (!container) return;
+let currentPlaylistsPage = 0;
+const PLAYLISTS_PER_PAGE = 12; // 3 filas x 4 columnas
 
-  container.innerHTML = VERIFIED_PLAYLISTS.map((pl, idx) => `
-    <div class="playlist-card" id="playlist-card-${idx}">
-      <div class="playlist-card-icon" aria-hidden="true">
-        <svg width="32" height="23" viewBox="0 0 28 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M27.42 3.12C27.1 1.9 26.15 0.95 24.93 0.63 22.73 0.05 14 0 14 0s-8.73.05-10.93.63C1.85.95.9 1.9.58 3.12 0 5.32 0 9.9 0 9.9s0 4.58.58 6.78c.32 1.22 1.27 2.17 2.49 2.49 2.2.58 10.93.58 10.93.58s8.73 0 10.93-.58c1.22-.32 2.17-1.27 2.49-2.49.58-2.2.58-6.78.58-6.78s0-4.58-.58-6.78z" fill="#FF0000"/>
-          <polygon points="11.2,14.2 18.5,9.9 11.2,5.6" fill="#FFFFFF"/>
-        </svg>
+function renderPlaylists() {
+  const track = document.getElementById('playlists-carousel-track');
+  const legacyContainer = document.getElementById('playlists-grid-container');
+  const dotsContainer = document.getElementById('playlists-dots-container');
+  const pageIndicator = document.getElementById('playlists-page-indicator');
+  const prevBtn = document.getElementById('btn-playlists-prev');
+  const nextBtn = document.getElementById('btn-playlists-next');
+  const viewport = document.getElementById('playlists-carousel-viewport');
+
+  // Modo carrusel interactivo moderno
+  if (track) {
+    const totalPages = Math.ceil(VERIFIED_PLAYLISTS.length / PLAYLISTS_PER_PAGE);
+
+    const slidesHtml = [];
+    for (let page = 0; page < totalPages; page++) {
+      const pageItems = VERIFIED_PLAYLISTS.slice(page * PLAYLISTS_PER_PAGE, (page + 1) * PLAYLISTS_PER_PAGE);
+      const cardsHtml = pageItems.map((pl, idx) => {
+        const globalIdx = page * PLAYLISTS_PER_PAGE + idx;
+        return `
+          <div class="playlist-card" id="playlist-card-${globalIdx}">
+            <div class="playlist-card-icon" aria-hidden="true">
+              <svg width="32" height="23" viewBox="0 0 28 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M27.42 3.12C27.1 1.9 26.15 0.95 24.93 0.63 22.73 0.05 14 0 14 0s-8.73.05-10.93.63C1.85.95.9 1.9.58 3.12 0 5.32 0 9.9 0 9.9s0 4.58.58 6.78c.32 1.22 1.27 2.17 2.49 2.49 2.2.58 10.93.58 10.93.58s8.73 0 10.93-.58c1.22-.32 2.17-1.27 2.49-2.49.58-2.2.58-6.78.58-6.78s0-4.58-.58-6.78z" fill="#FF0000"/>
+                <polygon points="11.2,14.2 18.5,9.9 11.2,5.6" fill="#FFFFFF"/>
+              </svg>
+            </div>
+            <span class="playlist-card-category">
+              ${pl.category}
+            </span>
+            <h4 class="playlist-card-title">${pl.title}</h4>
+            <p class="playlist-card-meta">${pl.description}</p>
+            <a href="${pl.url}" target="_blank" rel="noopener noreferrer" class="playlist-card-link" id="link-playlist-${globalIdx}">
+              <span>Abrir en YouTube</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </a>
+          </div>
+        `;
+      }).join('');
+
+      slidesHtml.push(`
+        <div class="playlists-slide" data-page="${page}" aria-label="Página ${page + 1} de ${totalPages}">
+          <div class="playlists-grid">
+            ${cardsHtml}
+          </div>
+        </div>
+      `);
+    }
+
+    track.innerHTML = slidesHtml.join('');
+
+    // Generar dots si hay más de 1 página
+    if (dotsContainer) {
+      if (totalPages > 1) {
+        dotsContainer.innerHTML = Array.from({ length: totalPages }).map((_, i) => `
+          <button type="button" class="playlist-dot ${i === currentPlaylistsPage ? 'active' : ''}" data-page="${i}" aria-label="Ir a página ${i + 1} de listas" aria-selected="${i === currentPlaylistsPage}">
+          </button>
+        `).join('');
+
+        dotsContainer.querySelectorAll('.playlist-dot').forEach(dot => {
+          dot.addEventListener('click', () => {
+            const page = parseInt(dot.getAttribute('data-page'), 10);
+            goToPlaylistsPage(page);
+          });
+        });
+      } else {
+        dotsContainer.innerHTML = '';
+      }
+    }
+
+    function updateCarouselUI() {
+      track.style.transform = `translateX(-${currentPlaylistsPage * 100}%)`;
+
+      if (prevBtn) {
+        prevBtn.disabled = currentPlaylistsPage === 0;
+      }
+      if (nextBtn) {
+        nextBtn.disabled = currentPlaylistsPage >= totalPages - 1;
+      }
+      if (pageIndicator) {
+        pageIndicator.textContent = `Página ${currentPlaylistsPage + 1} de ${totalPages}`;
+      }
+      if (dotsContainer) {
+        dotsContainer.querySelectorAll('.playlist-dot').forEach((dot, idx) => {
+          const isActive = idx === currentPlaylistsPage;
+          dot.classList.toggle('active', isActive);
+          dot.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        });
+      }
+    }
+
+    function goToPlaylistsPage(page) {
+      if (page < 0) page = 0;
+      if (page >= totalPages) page = totalPages - 1;
+      currentPlaylistsPage = page;
+      updateCarouselUI();
+    }
+
+    if (prevBtn && !prevBtn._hasCarouselListener) {
+      prevBtn._hasCarouselListener = true;
+      prevBtn.addEventListener('click', () => goToPlaylistsPage(currentPlaylistsPage - 1));
+    }
+
+    if (nextBtn && !nextBtn._hasCarouselListener) {
+      nextBtn._hasCarouselListener = true;
+      nextBtn.addEventListener('click', () => goToPlaylistsPage(currentPlaylistsPage + 1));
+    }
+
+    // Soporte de navegación por teclado en el carrusel
+    if (viewport && !viewport._hasKeyboardListener) {
+      viewport._hasKeyboardListener = true;
+      viewport.setAttribute('tabindex', '0');
+      viewport.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') {
+          goToPlaylistsPage(currentPlaylistsPage - 1);
+        } else if (e.key === 'ArrowRight') {
+          goToPlaylistsPage(currentPlaylistsPage + 1);
+        }
+      });
+
+      // Soporte táctil / gestos swipe
+      let touchStartX = 0;
+      let touchEndX = 0;
+      viewport.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+      }, { passive: true });
+
+      viewport.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        const diff = touchStartX - touchEndX;
+        if (Math.abs(diff) > 50) {
+          if (diff > 0) {
+            goToPlaylistsPage(currentPlaylistsPage + 1);
+          } else {
+            goToPlaylistsPage(currentPlaylistsPage - 1);
+          }
+        }
+      }, { passive: true });
+    }
+
+    updateCarouselUI();
+    return;
+  }
+
+  // Fallback para contenedor legado si no existe el track
+  if (legacyContainer) {
+    legacyContainer.innerHTML = VERIFIED_PLAYLISTS.slice(0, 12).map((pl, idx) => `
+      <div class="playlist-card" id="playlist-card-${idx}">
+        <div class="playlist-card-icon" aria-hidden="true">
+          <svg width="32" height="23" viewBox="0 0 28 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M27.42 3.12C27.1 1.9 26.15 0.95 24.93 0.63 22.73 0.05 14 0 14 0s-8.73.05-10.93.63C1.85.95.9 1.9.58 3.12 0 5.32 0 9.9 0 9.9s0 4.58.58 6.78c.32 1.22 1.27 2.17 2.49 2.49 2.2.58 10.93.58 10.93.58s8.73 0 10.93-.58c1.22-.32 2.17-1.27 2.49-2.49.58-2.2.58-6.78.58-6.78s0-4.58-.58-6.78z" fill="#FF0000"/>
+            <polygon points="11.2,14.2 18.5,9.9 11.2,5.6" fill="#FFFFFF"/>
+          </svg>
+        </div>
+        <span class="playlist-card-category">${pl.category}</span>
+        <h4 class="playlist-card-title">${pl.title}</h4>
+        <p class="playlist-card-meta">${pl.description}</p>
+        <a href="${pl.url}" target="_blank" rel="noopener noreferrer" class="playlist-card-link" id="link-playlist-${idx}">
+          <span>Abrir en YouTube</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
       </div>
-      <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--udea-green-primary); margin-bottom: 4px;">
-        ${pl.category}
-      </span>
-      <h4 class="playlist-card-title">${pl.title}</h4>
-      <p class="playlist-card-meta">${pl.description}</p>
-      <a href="${pl.url}" target="_blank" rel="noopener noreferrer" class="playlist-card-link" id="link-playlist-${idx}">
-        <span>Abrir en YouTube</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-      </a>
-    </div>
-  `).join('');
+    `).join('');
+  }
 }
 
 /**

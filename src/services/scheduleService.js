@@ -243,8 +243,10 @@ export function parseScheduleCsv(csvText) {
     const location = row.location ? String(row.location).trim() : '';
     
     // Validación de URLs (descartar enlaces genéricos al visor de MailerLite)
+    // REGLA INSTITUCIONAL: Si el encuentro es estrictamente presencial, NO lleva enlace de reunión virtual
+    const isStrictlyPresencial = modality === 'Presencial';
     const rawMeeting = row.meeting_url ? String(row.meeting_url).trim() : '';
-    const meeting_url = (isValidUrl(rawMeeting) && !rawMeeting.includes('mailerlite.com')) ? rawMeeting : '';
+    const meeting_url = (!isStrictlyPresencial && isValidUrl(rawMeeting) && !rawMeeting.includes('mailerlite.com')) ? rawMeeting : '';
     
     const rawRecording = row.recording_url ? String(row.recording_url).trim() : '';
     const recording_url = isValidUrl(rawRecording) ? rawRecording : '';
@@ -381,6 +383,26 @@ export function getActiveOrUpcomingSessions(activities, referenceTime = new Date
   const currentDate = `${partMap.year}-${partMap.month}-${partMap.day}`;
   const currentTime = `${partMap.hour}:${partMap.minute}`;
 
+  // Función auxiliar para obtener la hora exacta de finalización de una actividad
+  function getEffectiveEndTime(act) {
+    if (act.endTime && typeof act.endTime === 'string' && act.endTime.trim()) {
+      return act.endTime.trim();
+    }
+    const [h, m] = (act.startTime || '07:00').split(':').map(Number);
+    // Duración típica de rondas y conferencias académicas UdeA: 1 hora
+    const endH = Math.min(23, (h || 7) + 1);
+    return `${String(endH).padStart(2, '0')}:${String(m || 0).padStart(2, '0')}`;
+  }
+
+  // Comprueba de forma rigurosa si un encuentro ya concluyó su horario
+  function hasEncounterEnded(act) {
+    if (act.date < currentDate) return true;
+    if (act.date > currentDate) return false;
+    const finishTime = getEffectiveEndTime(act);
+    // Si la hora actual ya alcanzó o superó la hora de fin, la sesión ya terminó
+    return currentTime >= finishTime;
+  }
+
   // Ordenar cronológicamente
   const sorted = [...activities].sort((a, b) => {
     if (a.date !== b.date) return a.date.localeCompare(b.date);
@@ -388,13 +410,11 @@ export function getActiveOrUpcomingSessions(activities, referenceTime = new Date
   });
 
   // 1. SESIONES EN VIVO AHORA: Revisar todas las que estén transcurriendo en este instante
+  // Regla: la hora actual debe ser >= inicio Y estrictamente < hora de fin (si ya acabó la hora de fin, no se muestra)
   const liveActivities = sorted.filter(act => {
     if (act.date !== currentDate) return false;
-    const finishTime = act.endTime || (() => {
-      const [h, m] = (act.startTime || '07:00').split(':').map(Number);
-      return `${String(Math.min(23, h + 2)).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-    })();
-    return currentTime >= act.startTime && currentTime <= finishTime;
+    const finishTime = getEffectiveEndTime(act);
+    return currentTime >= act.startTime && currentTime < finishTime;
   });
 
   if (liveActivities.length > 0) {
@@ -412,8 +432,14 @@ export function getActiveOrUpcomingSessions(activities, referenceTime = new Date
     };
   }
 
-  // 2. PRÓXIMAS SESIONES HOY: Si la sesión anterior ya pasó, mostrar las próximas del día de hoy
-  const todayUpcoming = sorted.filter(act => act.date === currentDate && act.startTime > currentTime);
+  // 2. PRÓXIMAS SESIONES HOY: Si la sesión anterior ya pasó, mostrar únicamente las que aún no inician y no han concluido
+  const todayUpcoming = sorted.filter(act => {
+    if (act.date !== currentDate) return false;
+    // Si ya terminó su hora de fin o ya comenzó, NO debe mostrarse en próximas sesiones
+    if (hasEncounterEnded(act)) return false;
+    return act.startTime > currentTime;
+  });
+
   if (todayUpcoming.length > 0) {
     const nextSlot = todayUpcoming[0].startTime;
     const nextSessions = todayUpcoming.filter(a => a.startTime === nextSlot);

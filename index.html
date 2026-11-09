@@ -294,14 +294,37 @@
           </div>
         </div>
 
-        <h3
-          style="font-family: var(--font-serif); font-size: 1.5rem; font-weight: 700; margin-bottom: 24px; color: var(--udea-green-primary);">
-          Listas de Reproducción Oficiales por Especialidad
-        </h3>
+        <div class="playlists-carousel-header">
+          <div>
+            <h3 class="playlists-section-heading">
+              Listas de Reproducción Oficiales por Especialidad
+            </h3>
+            <p class="playlists-section-subheading">
+              Colección temática oficial de Teleducación UdeA organizada en cuadrículas de 12 especialidades (3 filas × 4 columnas).
+            </p>
+          </div>
+          <div class="playlists-carousel-controls" aria-label="Controles del carrusel de listas de reproducción">
+            <span class="playlists-page-indicator" id="playlists-page-indicator">Página 1 de 2</span>
+            <div class="playlists-nav-buttons">
+              <button type="button" class="btn-carousel-nav" id="btn-playlists-prev" aria-label="Ver página anterior de listas" disabled>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+              </button>
+              <button type="button" class="btn-carousel-nav" id="btn-playlists-next" aria-label="Ver página siguiente de listas">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
 
-        <!-- Grid con las 12 listas oficiales verificadas -->
-        <div class="playlists-grid" id="playlists-grid-container">
-          <!-- Rellenado dinámicamente por JavaScript -->
+        <!-- Carrusel contenedor con tamaño estricto de 3 filas x 4 columnas por vista -->
+        <div class="playlists-carousel-viewport" id="playlists-carousel-viewport" role="region" aria-roledescription="carrusel" aria-label="Listas de reproducción oficiales por especialidad">
+          <div class="playlists-carousel-track" id="playlists-carousel-track">
+            <!-- Rellenado dinámicamente por JavaScript -->
+          </div>
+        </div>
+
+        <div class="playlists-dots-container" id="playlists-dots-container" role="tablist" aria-label="Páginas del carrusel">
+          <!-- Inyectado dinámicamente -->
         </div>
       </div>
     </section>
@@ -326,10 +349,16 @@
             salud en Colombia y el mundo.
           </p>
 
-          <blockquote class="quote-editorial">
-            "El conocimiento en salud no debe quedar confinado en los muros de un hospital ni en las aulas de un campus;
-            cobra su verdadero valor cuando se pone al servicio de toda la comunidad médica."
-          </blockquote>
+          <figure class="quote-editorial-container">
+            <div class="quote-mark" aria-hidden="true">“</div>
+            <blockquote class="quote-editorial">
+              El conocimiento en salud no debe quedar confinado en los muros de un hospital ni en las aulas de un campus; cobra su verdadero valor cuando se pone al servicio de toda la comunidad médica.
+            </blockquote>
+            <figcaption class="quote-author">
+              <strong>Facultad de Medicina</strong> · Universidad de Antioquia (UdeA)
+              <span>Iniciativa Aulas Abiertas · Teleducación Médica</span>
+            </figcaption>
+          </figure>
         </div>
 
         <div>
