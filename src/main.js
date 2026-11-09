@@ -157,6 +157,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupFilterListeners();
   setupAdminPanel();
   setupLegalSystem();
+  setupNewsletterSystem();
   initRealtimeSync();
 });
 
@@ -793,9 +794,11 @@ function setupNavigation() {
       mobileToggle.setAttribute('aria-expanded', isOpen);
     });
 
-    // Cerrar menú al hacer clic en un enlace
+    // Navegación en enlaces: cerrar menú móvil y actualizar estado activo
     nav.querySelectorAll('.nav-link').forEach(link => {
       link.addEventListener('click', () => {
+        nav.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
         nav.classList.remove('open');
         mobileToggle.setAttribute('aria-expanded', 'false');
       });
@@ -1368,6 +1371,107 @@ function setupLegalSystem() {
     }
   });
 }
+
+/**
+ * ==============================================================================
+ * SISTEMA DE SUSCRIPCIÓN AL BOLETÍN ACADÉMICO (MAILERLITE UDEA)
+ * ==============================================================================
+ */
+function setupNewsletterSystem() {
+  const modalNewsletter = document.getElementById('modal-newsletter-backdrop');
+  const btnCloseModal = document.getElementById('btn-close-modal-newsletter');
+  const btnCloseFooter = document.getElementById('btn-close-newsletter-footer');
+  const btnOpenModal = document.getElementById('btn-open-newsletter-modal');
+  const quickForm = document.getElementById('form-newsletter-quick');
+  const quickEmailInput = document.getElementById('newsletter-quick-email');
+  const iframe = document.getElementById('newsletter-mailerlite-iframe');
+  const loader = document.getElementById('newsletter-iframe-loader');
+
+  function openNewsletterModal(initialEmail = '') {
+    if (!modalNewsletter) return;
+
+    // Carga diferida (lazy load) del iframe para optimizar el rendimiento de red inicial
+    if (iframe && !iframe.getAttribute('src')) {
+      const dataSrc = iframe.getAttribute('data-src') || 'https://landing.mailerlite.com/webforms/landing/v8m8p9';
+      iframe.setAttribute('src', dataSrc);
+
+      iframe.addEventListener('load', () => {
+        if (loader) loader.classList.add('hidden');
+      });
+
+      // Temporizador de respaldo si el evento onload de cross-origin no dispara o se retrasa
+      setTimeout(() => {
+        if (loader) loader.classList.add('hidden');
+      }, 2500);
+    }
+
+    modalNewsletter.style.display = 'flex';
+    modalNewsletter.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+
+    if (initialEmail) {
+      showToast('Completa tu selección de especialidades en el formulario oficial', 'info');
+    }
+  }
+
+  function closeNewsletterModal() {
+    if (!modalNewsletter) return;
+    modalNewsletter.style.display = 'none';
+    modalNewsletter.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  // 1. Botón para abrir modal completo desde la sección
+  if (btnOpenModal) {
+    btnOpenModal.addEventListener('click', () => {
+      openNewsletterModal();
+    });
+  }
+
+  // 2. Formulario de suscripción rápida
+  if (quickForm) {
+    quickForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = quickEmailInput ? quickEmailInput.value.trim() : '';
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      if (!email || !emailRegex.test(email)) {
+        showToast('Por favor, ingresa un correo electrónico institucional o personal válido.', 'error');
+        if (quickEmailInput) quickEmailInput.focus();
+        return;
+      }
+
+      showToast('¡Casi listo! Selecciona tus especialidades médicas en el formulario.', 'success');
+      openNewsletterModal(email);
+    });
+  }
+
+  // 3. Botones de cierre
+  if (btnCloseModal) {
+    btnCloseModal.addEventListener('click', closeNewsletterModal);
+  }
+
+  if (btnCloseFooter) {
+    btnCloseFooter.addEventListener('click', closeNewsletterModal);
+  }
+
+  // 4. Cierre al hacer clic en el backdrop exterior
+  if (modalNewsletter) {
+    modalNewsletter.addEventListener('click', (e) => {
+      if (e.target === modalNewsletter) {
+        closeNewsletterModal();
+      }
+    });
+  }
+
+  // 5. Cierre con tecla Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modalNewsletter && modalNewsletter.style.display === 'flex') {
+      closeNewsletterModal();
+    }
+  });
+}
+
 
 
 

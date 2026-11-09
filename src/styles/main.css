@@ -2230,3 +2230,417 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   }
 }
 
+/* ==============================================================================
+   SECCIÓN Y MODAL DE BOLETÍN ACADÉMICO (MAILERLITE UDEA)
+   ============================================================================== */
+
+/* Botón Hero para Suscripción al Boletín */
+.btn-hero-newsletter {
+  background-color: rgba(0, 77, 37, 0.08);
+  color: var(--udea-green-primary);
+  padding: 14px 22px;
+  border-radius: var(--radius-sm);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1.5px solid rgba(0, 77, 37, 0.22);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-hero-newsletter:hover {
+  background-color: var(--udea-green-primary);
+  color: #FFFFFF;
+  border-color: var(--udea-green-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 77, 37, 0.22);
+}
+
+.btn-hero-newsletter:focus-visible {
+  outline: 2px solid var(--accent-lime);
+  outline-offset: 2px;
+}
+
+/* Contenedor de la Sección */
+.newsletter-section {
+  padding: 72px 0;
+  background: linear-gradient(180deg, var(--bg-page) 0%, #FFFFFF 100%);
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  position: relative;
+}
+
+.newsletter-card {
+  background: radial-gradient(circle at 90% 10%, rgba(16, 185, 129, 0.07) 0%, rgba(0, 77, 37, 0.03) 60%), #FFFFFF;
+  border: 1px solid var(--border-subtle);
+  border-left: 4px solid var(--udea-green-primary);
+  border-radius: var(--radius-lg);
+  padding: 48px;
+  box-shadow: var(--shadow-editorial);
+  position: relative;
+  overflow: hidden;
+}
+
+.newsletter-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 48px;
+  align-items: center;
+}
+
+/* Columna de Contenido y Formulario */
+.newsletter-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--udea-green-subtle);
+  color: var(--udea-green-primary);
+  border: 1px solid var(--udea-green-border);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  margin-bottom: 16px;
+}
+
+.newsletter-headline {
+  font-family: var(--font-serif);
+  font-size: 1.875rem;
+  line-height: 1.25;
+  color: var(--udea-green-primary);
+  margin-bottom: 14px;
+  letter-spacing: -0.01em;
+}
+
+.newsletter-subheadline {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.newsletter-subheadline strong {
+  color: var(--text-primary);
+}
+
+.newsletter-quick-form {
+  margin-bottom: 20px;
+}
+
+.newsletter-input-group {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.newsletter-input-field {
+  position: relative;
+  flex: 1;
+}
+
+.newsletter-mail-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.newsletter-input {
+  width: 100%;
+  height: 48px;
+  padding: 0 16px 0 42px;
+  font-size: 0.9375rem;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  background-color: #FFFFFF;
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.newsletter-input:focus {
+  border-color: var(--udea-green-primary);
+  box-shadow: 0 0 0 3px rgba(0, 77, 37, 0.15);
+  outline: none;
+}
+
+.btn-newsletter-submit {
+  height: 48px;
+  padding: 0 24px;
+  background-color: var(--udea-green-primary);
+  color: #FFFFFF;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+}
+
+.btn-newsletter-submit:hover {
+  background-color: var(--udea-green-dark);
+  box-shadow: 0 4px 12px rgba(0, 77, 37, 0.28);
+  transform: translateY(-1px);
+}
+
+.btn-newsletter-submit:focus-visible {
+  outline: 2px solid var(--accent-lime);
+  outline-offset: 2px;
+}
+
+.newsletter-guarantees {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 0.775rem;
+  color: var(--text-muted);
+}
+
+.newsletter-guarantees span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.newsletter-guarantees svg {
+  color: var(--accent-lime);
+}
+
+.newsletter-action-links {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-top: 16px;
+  border-top: 1px dashed var(--border-subtle);
+}
+
+.btn-newsletter-open-modal {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  color: var(--udea-green-primary);
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-newsletter-open-modal:hover {
+  background-color: var(--udea-green-subtle);
+  border-color: var(--udea-green-primary);
+}
+
+.newsletter-external-link {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color var(--transition-fast);
+}
+
+.newsletter-external-link:hover {
+  color: var(--udea-green-primary);
+}
+
+/* Columna de Beneficios */
+.newsletter-benefits-col {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background-color: #F8FAFC;
+  padding: 28px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+}
+
+.newsletter-benefit-item {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.benefit-icon-wrapper {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  background-color: var(--udea-green-subtle);
+  color: var(--udea-green-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--udea-green-border);
+}
+
+.benefit-item-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.benefit-item-desc {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Modal de Newsletter (MailerLite iFrame) */
+.newsletter-dialog {
+  max-width: 680px;
+  width: 95%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.newsletter-modal-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 24px;
+  background: #F1F5F9;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 0.8125rem;
+}
+
+.newsletter-modal-help {
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.newsletter-topbar-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--udea-green-primary);
+  font-weight: 600;
+  white-space: nowrap;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.newsletter-topbar-link:hover {
+  color: var(--udea-green-dark);
+}
+
+.newsletter-iframe-container {
+  position: relative;
+  flex: 1;
+  min-height: 520px;
+  max-height: calc(90vh - 150px);
+  background: #FFFFFF;
+  overflow: hidden;
+}
+
+.newsletter-iframe-loader {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: #FFFFFF;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  z-index: 2;
+  transition: opacity 0.3s ease;
+}
+
+.newsletter-iframe-loader.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.newsletter-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(0, 77, 37, 0.15);
+  border-top-color: var(--udea-green-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.newsletter-iframe {
+  width: 100%;
+  height: 100%;
+  min-height: 520px;
+  border: none;
+  display: block;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .newsletter-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .newsletter-card {
+    padding: 32px 24px;
+  }
+}
+
+@media (max-width: 640px) {
+  .newsletter-section {
+    padding: 48px 0;
+  }
+  .newsletter-card {
+    padding: 24px 18px;
+    border-radius: var(--radius-md);
+  }
+  .newsletter-headline {
+    font-size: 1.45rem;
+  }
+  .newsletter-input-group {
+    flex-direction: column;
+  }
+  .btn-newsletter-submit {
+    width: 100%;
+    justify-content: center;
+  }
+  .newsletter-guarantees {
+    flex-direction: column;
+    gap: 6px;
+  }
+  .newsletter-action-links {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .newsletter-modal-top-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .newsletter-iframe-container {
+    min-height: 440px;
+  }
+  .newsletter-iframe {
+    min-height: 440px;
+  }
+}
+
+
