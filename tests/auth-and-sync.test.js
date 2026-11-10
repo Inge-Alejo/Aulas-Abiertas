@@ -200,10 +200,12 @@ async function runTests() {
     console.log('  ✓ Protección activa: No permite inicio de sesión si ADMIN_PASSWORD no está definida (HTTP 500).');
   }
 
-  // 9. Permitir cualquier correo válido si ADMIN_EMAIL no está configurada
+  // 9. Flexibilidad de acceso en otros dispositivos: permite cualquier correo o correo por defecto si la contraseña es correcta
   {
     process.env.ADMIN_PASSWORD = TEST_PASSWORD;
-    delete process.env.ADMIN_EMAIL; // Sin restricción de correo
+    process.env.ADMIN_EMAIL = 'aprendizajes.med@udea.edu.co';
+
+    // 9.1 Login con correo personal pero contraseña correcta
     const { req, res } = createMockReqRes({
       method: 'POST',
       body: {
@@ -217,7 +219,32 @@ async function runTests() {
     assert.strictEqual(res._getStatusCode(), 200);
     assert.strictEqual(res._getData().success, true);
     assert.strictEqual(res._getData().user.email, 'medico.docente@gmail.com');
-    console.log('  ✓ Flexibilidad de acceso: Permite cualquier correo si ADMIN_EMAIL no está fijado.');
+    console.log('  ✓ Flexibilidad de acceso: Permite correo personal con la contraseña administrativa correcta.');
+
+    // 9.2 Login con contraseña que incluye comillas o espacios envolventes (copiado en móviles)
+    const { req: reqQuoted, res: resQuoted } = createMockReqRes({
+      method: 'POST',
+      body: {
+        action: 'login',
+        password: ` "${TEST_PASSWORD}" `
+      }
+    });
+
+    await authHandler(reqQuoted, resQuoted);
+    assert.strictEqual(resQuoted._getStatusCode(), 200);
+    assert.strictEqual(resQuoted._getData().success, true);
+    console.log('  ✓ Tolerancia en móviles: Acepta contraseñas con comillas envolventes o espacios accidentales.');
+
+    // 9.3 Endpoint de diagnóstico de autenticación (/api/auth?action=status)
+    const { req: reqAuthStatus, res: resAuthStatus } = createMockReqRes({
+      method: 'GET',
+      query: { action: 'status' }
+    });
+
+    await authHandler(reqAuthStatus, resAuthStatus);
+    assert.strictEqual(resAuthStatus._getStatusCode(), 200);
+    assert.strictEqual(resAuthStatus._getData().hasAdminPassword, true);
+    console.log('  ✓ Endpoint de diagnóstico /api/auth?action=status validado.');
   }
 
   console.log('\n🎉 ¡TODAS LAS PRUEBAS DE VERCEL AUTH Y SYNC PASARON EXITOSAMENTE (100% OK)!');

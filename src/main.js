@@ -1065,6 +1065,9 @@ function setupAdminPanel() {
   const passwordInput = document.getElementById('admin-input-password');
   const loginError = document.getElementById('admin-login-error');
   const loginSubmitBtn = document.getElementById('btn-submit-admin-login');
+  const loginServerStatus = document.getElementById('admin-login-server-status');
+  const togglePassBtn = document.getElementById('btn-toggle-admin-password');
+  const eyeIcon = document.getElementById('icon-eye-admin-password');
 
   const scraperForm = document.getElementById('form-admin-scraper');
   const scraperUrlInput = document.getElementById('admin-scraper-url');
@@ -1080,13 +1083,42 @@ function setupAdminPanel() {
 
   let currentUser = null;
 
+  const checkLoginServerStatus = async () => {
+    if (!loginServerStatus) return;
+    try {
+      const res = await fetch('/api/auth?action=status');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.hasAdminPassword === false) {
+          loginServerStatus.style.display = 'block';
+          loginServerStatus.innerHTML = `
+            <div style="background: rgba(220, 38, 38, 0.08); border: 1px solid rgba(220, 38, 38, 0.25); border-radius: 6px; padding: 8px 12px; color: #dc2626; line-height: 1.4;">
+              ⚠️ <strong>Atención:</strong> La variable <code>ADMIN_PASSWORD</code> no está detectada en el entorno de Vercel. Asegúrate de guardarla en Vercel Dashboard > Settings > Environment Variables y hacer un Redeploy.
+            </div>
+          `;
+        } else {
+          loginServerStatus.style.display = 'none';
+        }
+        if (emailInput && (!emailInput.value || emailInput.value === '')) {
+          emailInput.value = data.configuredEmail || 'aprendizajes.med@udea.edu.co';
+        }
+      }
+    } catch {
+      // Ignorar fallos de red
+    }
+  };
+
   const openAdminModal = (e) => {
     if (e) e.preventDefault();
     if (modal) {
       modal.style.display = 'flex';
       modal.setAttribute('aria-hidden', 'false');
       if (!currentUser) {
-        emailInput?.focus();
+        checkLoginServerStatus();
+        if (emailInput && (!emailInput.value || emailInput.value === '')) {
+          emailInput.value = 'aprendizajes.med@udea.edu.co';
+        }
+        passwordInput?.focus();
       }
     }
   };
@@ -1206,6 +1238,30 @@ function setupAdminPanel() {
     }
   };
 
+  // Alternar visualización de la contraseña (Mostrar / Ocultar)
+  if (togglePassBtn && passwordInput) {
+    togglePassBtn.addEventListener('click', () => {
+      const isPass = passwordInput.getAttribute('type') === 'password';
+      passwordInput.setAttribute('type', isPass ? 'text' : 'password');
+      togglePassBtn.setAttribute('title', isPass ? 'Ocultar contraseña' : 'Mostrar contraseña');
+      if (eyeIcon) {
+        if (isPass) {
+          // Icono de ojo tachado (ocultar)
+          eyeIcon.innerHTML = `
+            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+            <line x1="1" y1="1" x2="23" y2="23"></line>
+          `;
+        } else {
+          // Icono de ojo abierto (mostrar)
+          eyeIcon.innerHTML = `
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          `;
+        }
+      }
+    });
+  }
+
   // Verificar si hay sesión administrativa activa en Vercel
   verifyAdminSession();
 
@@ -1213,8 +1269,8 @@ function setupAdminPanel() {
   if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const email = emailInput.value.trim();
-      const password = passwordInput.value;
+      const email = emailInput?.value.trim() || 'aprendizajes.med@udea.edu.co';
+      const password = passwordInput?.value || '';
 
       if (loginError) loginError.style.display = 'none';
       if (loginSubmitBtn) {
@@ -1225,7 +1281,10 @@ function setupAdminPanel() {
       try {
         await loginAdmin(email, password);
         showToast('Acceso administrativo concedido (Vercel Auth)', 'success');
-        loginForm.reset();
+        if (passwordInput) passwordInput.value = '';
+        if (emailInput && (!emailInput.value || emailInput.value === '')) {
+          emailInput.value = 'aprendizajes.med@udea.edu.co';
+        }
       } catch (err) {
         if (loginError) {
           loginError.textContent = err.message || 'Error de credenciales.';

@@ -45,9 +45,11 @@ export async function loginAdmin(email, password) {
   const cleanEmail = (email || '').trim();
   const cleanPassword = (password || '').trim();
 
-  if (!cleanEmail || !cleanPassword) {
-    throw new Error('Por favor ingresa tu correo institucional y contraseña de acceso.');
+  if (!cleanPassword) {
+    throw new Error('Por favor ingresa tu contraseña de acceso.');
   }
+
+  const effectiveEmail = cleanEmail || 'aprendizajes.med@udea.edu.co';
 
   try {
     const response = await fetch('/api/auth', {
@@ -57,7 +59,7 @@ export async function loginAdmin(email, password) {
       },
       body: JSON.stringify({
         action: 'login',
-        email: cleanEmail,
+        email: effectiveEmail,
         password: cleanPassword
       })
     });
@@ -71,8 +73,18 @@ export async function loginAdmin(email, password) {
     currentAdminToken = data.token;
     currentAdminUser = data.user;
 
-    localStorage.setItem(TOKEN_KEY, data.token);
-    localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+    // Guardado resiliente para soportar modo incógnito / restricciones en dispositivos móviles
+    try {
+      localStorage.setItem(TOKEN_KEY, data.token);
+      localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+    } catch {
+      try {
+        sessionStorage.setItem(TOKEN_KEY, data.token);
+        sessionStorage.setItem(USER_KEY, JSON.stringify(data.user));
+      } catch {
+        // En memoria para esta sesión
+      }
+    }
 
     notifySubscribers(currentAdminUser);
 
@@ -85,6 +97,21 @@ export async function loginAdmin(email, password) {
     console.warn('[AuthService] Error de autenticación en Vercel:', error.message);
     throw error;
   }
+}
+
+/**
+ * Consulta el estado y disponibilidad del servicio de autenticación en Vercel
+ */
+export async function checkAuthServerStatus() {
+  try {
+    const response = await fetch('/api/auth?action=status');
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch {
+    // Modo offline
+  }
+  return { status: 'unknown', hasAdminPassword: false };
 }
 
 /**

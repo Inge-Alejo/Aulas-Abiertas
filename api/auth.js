@@ -6,24 +6,33 @@
 
 import crypto from 'node:crypto';
 
+// Sanitiza una cadena eliminando espacios invisibles, comillas envolventes y saltos de línea
+function sanitizeString(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/[\u200B-\u200D\uFEFF]/g, '') // caracteres de ancho cero
+    .replace(/^["']|["']$/g, '')           // comillas accidentales
+    .trim();
+}
+
 // Clave secreta para firmar tokens de sesión
 const getSessionSecret = () => {
   const secret = process.env.ADMIN_SESSION_SECRET || process.env.SESSION_SECRET;
   return secret
-    ? String(secret).trim().replace(/^["']|["']$/g, '')
+    ? sanitizeString(secret)
     : 'udea-teleducacion-aulas-abiertas-jwt-token-2026-secret-key';
 };
 
 // Obtiene y sanitiza la contraseña administrativa configurada en Vercel
 const getAdminPassword = () => {
-  const raw = process.env.ADMIN_PASSWORD;
-  return raw ? String(raw).trim().replace(/^["']|["']$/g, '') : '';
+  const raw = process.env.ADMIN_PASSWORD || process.env.ADMIN_PASS || process.env.ADMIN_KEY;
+  return sanitizeString(raw);
 };
 
 // Obtiene y sanitiza el correo administrativo configurado en Vercel (opcional)
 const getConfiguredAdminEmail = () => {
   const raw = process.env.ADMIN_EMAIL;
-  return raw ? String(raw).trim().toLowerCase().replace(/^["']|["']$/g, '') : '';
+  return raw ? sanitizeString(raw).toLowerCase() : '';
 };
 
 /**
@@ -94,9 +103,12 @@ export function verifyToken(token) {
 }
 
 export default async function handler(req, res) {
-  // Configuración de cabeceras CORS
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // Configuración de cabeceras CORS compatible con dispositivos móviles y navegadores estrictos
+  const origin = req.headers.origin || '*';
+  res.setHeader('Access-Control-Allow-Origin', origin);
+  if (origin !== '*') {
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
   res.setHeader(
     'Access-Control-Allow-Headers',
@@ -120,8 +132,19 @@ export default async function handler(req, res) {
 
   const action = req.query?.action || body?.action || (req.method === 'GET' ? 'verify' : 'login');
 
-  // 1. VERIFICAR SESIÓN
-  if (action === 'verify' || req.method === 'GET') {
+  // 1. ENDPOINT DE DIAGNÓSTICO DEL ESTADO DE AUTENTICACIÓN
+  if (action === 'status') {
+    const adminPassword = getAdminPassword();
+    const configuredEmail = getConfiguredAdminEmail();
+    return res.status(200).json({
+      status: 'ok',
+      hasAdminPassword: Boolean(adminPassword),
+      configuredEmail: configuredEmail || 'aprendizajes.med@udea.edu.co'
+    });
+  }
+
+  // 2. VERIFICAR SESIÓN
+  if (action === 'verify' || (req.method === 'GET' && action !== 'status')) {
     const authHeader = req.headers.authorization || '';
     const token = authHeader.startsWith('Bearer ')
       ? authHeader.slice(7).trim()
@@ -147,17 +170,17 @@ export default async function handler(req, res) {
     });
   }
 
-  // 2. INICIAR SESIÓN (LOGIN)
+  // 3. INICIAR SESIÓN (LOGIN)
   if (action === 'login' && req.method === 'POST') {
     const rawEmail = body.email || req.query?.email || '';
     const rawPassword = body.password || req.query?.password || '';
 
-    const cleanEmail = String(rawEmail).trim().toLowerCase();
-    const cleanPass = String(rawPassword).trim();
+    const cleanEmail = sanitizeString(rawEmail).toLowerCase();
+    const cleanPass = sanitizeString(rawPassword);
 
-    if (!cleanEmail || !cleanPass) {
+    if (!cleanPass) {
       return res.status(400).json({
-        error: 'Por favor ingresa correo electrónico y contraseña de acceso.'
+        error: 'Por favor ingresa tu contraseña de acceso administrativo.'
       });
     }
 
@@ -168,15 +191,20 @@ export default async function handler(req, res) {
     if (!adminPassword) {
       console.error('[Auth] La variable de entorno ADMIN_PASSWORD no está configurada.');
       return res.status(500).json({
-        error: 'La variable ADMIN_PASSWORD no está disponible en Vercel. Asegúrate de guardarla en Settings > Environment Variables y hacer Redeploy.'
+        error: 'La variable ADMIN_PASSWORD no está disponible en Vercel. Asegúrate de configurarla en Project Settings > Environment Variables y realizar un Redeploy.'
       });
     }
 
-    // 2. Comprobar contraseña
-    if (cleanPass !== adminPassword) {
+    // 2. Comprobar contraseña con tolerancia a espacios y comillas envolventes
+    const passMatches =
+      cleanPass === adminPassword ||
+      cleanPass.replace(/^["']|["']$/g, '') === adminPassword.replace(/^["']|["']$/g, '') ||
+      cleanPass.replace(/\r\n|\n|\r/g, '').trim() === adminPassword;
+
+    if (!passMatches) {
       if (cleanPass.toLowerCase() === adminPassword.toLowerCase()) {
         return res.status(401).json({
-          error: 'Contraseña incorrecta: verifica mayúsculas y minúsculas (la clave distingue entre mayúsculas y minúsculas).'
+          error: 'Contraseña incorrecta: verifica mayúsculas y minúsculas (la contraseña distingue entre mayúsculas y minúsculas).'
         });
       }
       return res.status(401).json({
@@ -184,27 +212,17 @@ export default async function handler(req, res) {
       });
     }
 
-    // 3. Comprobar correo si se especificó ADMIN_EMAIL en Vercel
-    if (configuredAdminEmail) {
-      const isEmailAllowed =
-        cleanEmail === configuredAdminEmail ||
-        cleanEmail.endsWith('@udea.edu.co') ||
-        cleanEmail.includes('teleducacion') ||
-        cleanEmail.includes('aprendizajes');
-
-      if (!isEmailAllowed) {
-        return res.status(401).json({
-          error: `Correo no autorizado. Debe coincidir con ${configuredAdminEmail} o pertenecer al dominio @udea.edu.co.`
-        });
-      }
-    }
+    // 3. Correo institucional efectivo
+    const effectiveEmail = cleanEmail && cleanEmail.includes('@')
+      ? cleanEmail
+      : configuredAdminEmail || 'aprendizajes.med@udea.edu.co';
 
     // Token con vigencia de 7 días
     const expTime = Date.now() + 7 * 24 * 60 * 60 * 1000;
-    const displayName = cleanEmail.split('@')[0] || 'Administrador';
+    const displayName = effectiveEmail.split('@')[0] || 'Administrador';
 
     const token = signToken({
-      email: cleanEmail,
+      email: effectiveEmail,
       role: 'admin',
       displayName,
       iat: Date.now(),
@@ -215,7 +233,7 @@ export default async function handler(req, res) {
       success: true,
       token,
       user: {
-        email: cleanEmail,
+        email: effectiveEmail,
         role: 'admin',
         displayName
       },
@@ -224,7 +242,7 @@ export default async function handler(req, res) {
     });
   }
 
-  // 3. CERRAR SESIÓN
+  // 4. CERRAR SESIÓN
   if (action === 'logout') {
     return res.status(200).json({
       success: true,

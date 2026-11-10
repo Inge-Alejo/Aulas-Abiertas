@@ -642,17 +642,32 @@
           </div>
 
           <div id="admin-login-error" class="auth-alert error" style="display: none;"></div>
+          <div id="admin-login-server-status" style="display: none; margin-bottom: 12px; font-size: 0.8125rem;"></div>
 
           <div class="form-group">
             <label for="admin-input-email">Correo de administrador o institucional *</label>
             <input type="email" id="admin-input-email" required class="form-control" autocomplete="username"
-              placeholder="aprendizajes.med@udea.edu.co">
+              autocapitalize="none" autocorrect="off" spellcheck="false"
+              value="aprendizajes.med@udea.edu.co" placeholder="aprendizajes.med@udea.edu.co">
           </div>
 
           <div class="form-group">
-            <label for="admin-input-password">Contraseña *</label>
-            <input type="password" id="admin-input-password" required class="form-control"
-              autocomplete="current-password" placeholder="Contraseña configurada en Vercel">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label for="admin-input-password" style="margin-bottom: 0;">Contraseña *</label>
+            </div>
+            <div style="position: relative; display: flex; align-items: center;">
+              <input type="password" id="admin-input-password" required class="form-control"
+                autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false"
+                placeholder="Contraseña configurada en Vercel" style="padding-right: 44px;">
+              <button type="button" id="btn-toggle-admin-password" class="btn-toggle-password"
+                aria-label="Mostrar u ocultar contraseña" title="Mostrar contraseña"
+                style="position: absolute; right: 6px; background: transparent; border: none; cursor: pointer; padding: 6px; color: var(--text-muted); display: inline-flex; align-items: center; justify-content: center;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="icon-eye-admin-password" aria-hidden="true">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+            </div>
           </div>
 
           <div class="modal-footer" style="margin-top: 10px;">
