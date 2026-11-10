@@ -138,6 +138,17 @@ async function runTests() {
     assert.strictEqual(getData.count, 1);
     assert.strictEqual(getData.activities[0].title, 'Avances en Falla Cardíaca 2026');
     console.log('  ✓ Consulta pública de la agenda activa desde cualquier dispositivo validada.');
+
+    // 5.1 Endpoint de información y configuración de la nube (/api/schedule?info=status)
+    const { req: reqStatus, res: resStatus } = createMockReqRes({
+      method: 'GET',
+      query: { info: 'status' }
+    });
+    await scheduleHandler(reqStatus, resStatus);
+    assert.strictEqual(resStatus._getStatusCode(), 200);
+    assert.strictEqual(resStatus._getData().success, true);
+    assert.ok(resStatus._getData().cloudStorage);
+    console.log('  ✓ Endpoint de diagnóstico y configuración pública (/api/schedule?info=status) validado.');
   }
 
   // 6. Rechazo de credenciales incorrectas

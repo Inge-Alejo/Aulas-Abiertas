@@ -136,10 +136,11 @@
               </svg>
               Ver Conferencias Grabadas
             </a>
-            <a href="#boletin" class="btn-hero-newsletter" id="hero-btn-boletin" title="Suscribirse al boletín académico por correo">
+            <a href="#boletin" class="btn-hero-newsletter" id="hero-btn-boletin"
+              title="Suscribirse al boletín académico por correo">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                <polyline points="22,6 12,13 2,6"/>
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                <polyline points="22,6 12,13 2,6" />
               </svg>
               Suscribirse al Boletín
             </a>
@@ -300,30 +301,39 @@
               Listas de Reproducción Oficiales por Especialidad
             </h3>
             <p class="playlists-section-subheading">
-              Colección temática oficial de Teleducación UdeA organizada en cuadrículas de 12 especialidades (3 filas × 4 columnas).
+              Colección temática oficial de Teleducación UdeA organizada en cuadrículas de 12 especialidades (3 filas ×
+              4 columnas).
             </p>
           </div>
           <div class="playlists-carousel-controls" aria-label="Controles del carrusel de listas de reproducción">
             <span class="playlists-page-indicator" id="playlists-page-indicator">Página 1 de 2</span>
             <div class="playlists-nav-buttons">
-              <button type="button" class="btn-carousel-nav" id="btn-playlists-prev" aria-label="Ver página anterior de listas" disabled>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+              <button type="button" class="btn-carousel-nav" id="btn-playlists-prev"
+                aria-label="Ver página anterior de listas" disabled>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
               </button>
-              <button type="button" class="btn-carousel-nav" id="btn-playlists-next" aria-label="Ver página siguiente de listas">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+              <button type="button" class="btn-carousel-nav" id="btn-playlists-next"
+                aria-label="Ver página siguiente de listas">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
               </button>
             </div>
           </div>
         </div>
 
         <!-- Carrusel contenedor con tamaño estricto de 3 filas x 4 columnas por vista -->
-        <div class="playlists-carousel-viewport" id="playlists-carousel-viewport" role="region" aria-roledescription="carrusel" aria-label="Listas de reproducción oficiales por especialidad">
+        <div class="playlists-carousel-viewport" id="playlists-carousel-viewport" role="region"
+          aria-roledescription="carrusel" aria-label="Listas de reproducción oficiales por especialidad">
           <div class="playlists-carousel-track" id="playlists-carousel-track">
             <!-- Rellenado dinámicamente por JavaScript -->
           </div>
         </div>
 
-        <div class="playlists-dots-container" id="playlists-dots-container" role="tablist" aria-label="Páginas del carrusel">
+        <div class="playlists-dots-container" id="playlists-dots-container" role="tablist"
+          aria-label="Páginas del carrusel">
           <!-- Inyectado dinámicamente -->
         </div>
       </div>
@@ -356,7 +366,8 @@
             </blockquote>
             <figcaption class="quote-author">
               <strong>Dr. Héctor Abad Gómez</strong> (1921–1987)
-              <span>Médico, profesor y pionero de la salud pública · Facultad de Medicina, Universidad de Antioquia</span>
+              <span>Médico, profesor y pionero de la salud pública · Facultad de Medicina, Universidad de
+                Antioquia</span>
             </figcaption>
           </figure>
         </div>
@@ -404,49 +415,61 @@
                 Recibe la programación y novedades académicas en tu correo
               </h2>
               <p class="newsletter-subheadline">
-                Únete a la lista oficial de <strong>Teleducación de la Facultad de Medicina UdeA</strong> — <em>Aprendizaje a lo largo de toda la vida</em>. Te enviaremos semanalmente los enlaces a salas virtuales, grandes rondas y conferencias de tus especialidades predilectas.
+                Únete a la lista oficial de <strong>Teleducación de la Facultad de Medicina UdeA</strong> —
+                <em>Aprendizaje a lo largo de toda la vida</em>. Te enviaremos semanalmente los enlaces a salas
+                virtuales, grandes rondas y conferencias de tus especialidades predilectas.
               </p>
 
               <!-- Formulario de suscripción rápida -->
               <form id="form-newsletter-quick" class="newsletter-quick-form" novalidate>
                 <div class="newsletter-input-group">
                   <div class="newsletter-input-field">
-                    <svg class="newsletter-mail-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                    <input
-                      type="email"
-                      id="newsletter-quick-email"
-                      class="newsletter-input"
-                      placeholder="tucorreo@udea.edu.co o correo personal"
-                      required
-                      autocomplete="email"
-                      aria-label="Correo electrónico para suscripción al boletín"
-                    >
+                    <svg class="newsletter-mail-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2" aria-hidden="true">
+                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                      <polyline points="22,6 12,13 2,6" />
+                    </svg>
+                    <input type="email" id="newsletter-quick-email" class="newsletter-input"
+                      placeholder="tucorreo@udea.edu.co o correo personal" required autocomplete="email"
+                      aria-label="Correo electrónico para suscripción al boletín">
                   </div>
                   <button type="submit" class="btn-newsletter-submit" id="btn-newsletter-quick-submit">
                     <span>Suscribirme</span>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                      aria-hidden="true">
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                      <polyline points="12 5 19 12 12 19" />
+                    </svg>
                   </button>
                 </div>
                 <div class="newsletter-guarantees">
-                  <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Envío semanal cada lunes</span>
-                  <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Cancela con 1 clic</span>
-                  <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> 100% libre de spam</span>
+                  <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="2.5" aria-hidden="true">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg> Envío semanal cada lunes</span>
+                  <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="2.5" aria-hidden="true">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg> Cancela con 1 clic</span>
+                  <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="2.5" aria-hidden="true">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg> 100% libre de spam</span>
                 </div>
               </form>
 
               <div class="newsletter-action-links">
                 <button type="button" class="btn-newsletter-open-modal" id="btn-open-newsletter-modal">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 12h6m-3-3v6"/></svg>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    aria-hidden="true">
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <path d="M9 12h6m-3-3v6" />
+                  </svg>
                   <span>Abrir formulario completo con especialidades</span>
                 </button>
-                <a
-                  href="https://landing.mailerlite.com/webforms/landing/v8m8p9"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="newsletter-external-link"
-                  id="link-newsletter-external"
-                  title="Abrir formulario oficial de MailerLite en pestaña nueva"
-                >
+                <a href="https://landing.mailerlite.com/webforms/landing/v8m8p9" target="_blank"
+                  rel="noopener noreferrer" class="newsletter-external-link" id="link-newsletter-external"
+                  title="Abrir formulario oficial de MailerLite en pestaña nueva">
                   Abrir directamente en MailerLite ↗
                 </a>
               </div>
@@ -455,31 +478,43 @@
             <div class="newsletter-benefits-col">
               <div class="newsletter-benefit-item">
                 <div class="benefit-icon-wrapper" aria-hidden="true">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                  </svg>
                 </div>
                 <div>
                   <h4 class="benefit-item-title">Agenda Semanal Anticipada</h4>
-                  <p class="benefit-item-desc">Recibe la programación consolidada con horas, ponentes y enlaces directos a Zoom, Meet y YouTube.</p>
+                  <p class="benefit-item-desc">Recibe la programación consolidada con horas, ponentes y enlaces directos
+                    a Zoom, Meet y YouTube.</p>
                 </div>
               </div>
 
               <div class="newsletter-benefit-item">
                 <div class="benefit-icon-wrapper" aria-hidden="true">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                  </svg>
                 </div>
                 <div>
                   <h4 class="benefit-item-title">Especialidades a tu Medida</h4>
-                  <p class="benefit-item-desc">Podrás elegir tus áreas predilectas: Cardiología, Pediatría, Urgencias, Ginecología, Cirugía, Salud Mental y más.</p>
+                  <p class="benefit-item-desc">Podrás elegir tus áreas predilectas: Cardiología, Pediatría, Urgencias,
+                    Ginecología, Cirugía, Salud Mental y más.</p>
                 </div>
               </div>
 
               <div class="newsletter-benefit-item">
                 <div class="benefit-icon-wrapper" aria-hidden="true">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  </svg>
                 </div>
                 <div>
                   <h4 class="benefit-item-title">Habeas Data Institucional</h4>
-                  <p class="benefit-item-desc">Tus datos están protegidos bajo las políticas de tratamiento de datos de la Universidad de Antioquia (Ley 1581 de 2012).</p>
+                  <p class="benefit-item-desc">Tus datos están protegidos bajo las políticas de tratamiento de datos de
+                    la Universidad de Antioquia (Ley 1581 de 2012).</p>
                 </div>
               </div>
             </div>
@@ -536,7 +571,8 @@
           <ul class="footer-links">
             <li><a href="https://www.udea.edu.co" target="_blank" rel="noopener noreferrer">Universidad de Antioquia</a>
             </li>
-            <li><a href="https://landing.mailerlite.com/webforms/landing/v8m8p9" target="_blank" rel="noopener noreferrer">Suscripción MailerLite UdeA</a></li>
+            <li><a href="https://landing.mailerlite.com/webforms/landing/v8m8p9" target="_blank"
+                rel="noopener noreferrer">Suscripción MailerLite UdeA</a></li>
             <li><a href="https://extension.medicinaudea.co" target="_blank" rel="noopener noreferrer">Portal Educación
                 Continua</a></li>
             <li><a href="https://www.youtube.com/@teleducacionmedicinaudea" target="_blank"
@@ -598,16 +634,19 @@
         </div>
 
         <form id="form-admin-login" class="modal-body-form">
-          <div style="background: rgba(0, 77, 37, 0.05); border: 1px solid rgba(0, 77, 37, 0.15); border-radius: 6px; padding: 10px 12px; margin-bottom: 12px; font-size: 0.8125rem; color: var(--udea-forest); line-height: 1.45;">
-            <strong>✦ Autenticación directa por Vercel:</strong> Ingresa con tus credenciales de Teleducación UdeA. La agenda y actualizaciones se sincronizan en la nube con <strong>Firebase Firestore</strong> en tiempo real para todos los dispositivos.
+          <div
+            style="background: rgba(0, 77, 37, 0.05); border: 1px solid rgba(0, 77, 37, 0.15); border-radius: 6px; padding: 10px 12px; margin-bottom: 12px; font-size: 0.8125rem; color: var(--udea-forest); line-height: 1.45;">
+            <strong>✦ Autenticación directa por Vercel:</strong> Ingresa con tus credenciales de Teleducación UdeA. La
+            agenda y actualizaciones se sincronizan en la nube con <strong>Firebase Firestore</strong> en tiempo real
+            para todos los dispositivos.
           </div>
 
           <div id="admin-login-error" class="auth-alert error" style="display: none;"></div>
 
           <div class="form-group">
             <label for="admin-input-email">Correo de administrador o institucional *</label>
-            <input type="email" id="admin-input-email" required class="form-control"
-              autocomplete="username" placeholder="aprendizajes.med@udea.edu.co">
+            <input type="email" id="admin-input-email" required class="form-control" autocomplete="username"
+              placeholder="aprendizajes.med@udea.edu.co">
           </div>
 
           <div class="form-group">
@@ -648,6 +687,9 @@
               ponentes y enlaces para actualizar la web con un solo clic.
             </p>
           </div>
+
+          <!-- Diagnóstico de Sincronización en la Nube Multi-dispositivo -->
+          <div id="admin-cloud-sync-status" class="admin-sync-status-box" aria-live="polite"></div>
 
           <form id="form-admin-scraper">
             <div class="form-group">
@@ -728,31 +770,34 @@
 
   <!-- Modal de Suscripción Oficial al Boletín Académico (MailerLite UdeA) -->
   <div id="modal-newsletter-backdrop" class="modal-backdrop" aria-hidden="true" style="display: none;">
-    <div class="modal-dialog newsletter-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-newsletter-title">
+    <div class="modal-dialog newsletter-dialog" role="dialog" aria-modal="true"
+      aria-labelledby="modal-newsletter-title">
       <div class="modal-header">
         <div>
           <span class="section-label" style="font-size: 0.75rem;">Teleducación Médica UdeA</span>
-          <h3 id="modal-newsletter-title" style="font-size: 1.25rem; font-family: var(--font-serif); margin-top: 4px; color: var(--udea-forest);">
+          <h3 id="modal-newsletter-title"
+            style="font-size: 1.25rem; font-family: var(--font-serif); margin-top: 4px; color: var(--udea-forest);">
             Suscripción al Boletín Académico
           </h3>
         </div>
-        <button id="btn-close-modal-newsletter" class="modal-close-btn" aria-label="Cerrar ventana de suscripción">✕</button>
+        <button id="btn-close-modal-newsletter" class="modal-close-btn"
+          aria-label="Cerrar ventana de suscripción">✕</button>
       </div>
 
       <div class="newsletter-modal-top-bar">
         <p class="newsletter-modal-help">
-          Completa el formulario oficial de <strong>MailerLite UdeA</strong> para seleccionar tus áreas de interés clínico (Cardiología, Pediatría, Urgencias, etc.).
+          Completa el formulario oficial de <strong>MailerLite UdeA</strong> para seleccionar tus áreas de interés
+          clínico (Cardiología, Pediatría, Urgencias, etc.).
         </p>
-        <a
-          href="https://landing.mailerlite.com/webforms/landing/v8m8p9"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="newsletter-topbar-link"
-          id="link-newsletter-topbar"
-          title="Abrir formulario en pantalla completa"
-        >
+        <a href="https://landing.mailerlite.com/webforms/landing/v8m8p9" target="_blank" rel="noopener noreferrer"
+          class="newsletter-topbar-link" id="link-newsletter-topbar" title="Abrir formulario en pantalla completa">
           <span>Abrir en pestaña nueva</span>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            aria-hidden="true">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+            <polyline points="15 3 21 3 21 9" />
+            <line x1="10" y1="14" x2="21" y2="3" />
+          </svg>
         </a>
       </div>
 
@@ -761,21 +806,19 @@
           <div class="newsletter-spinner" aria-hidden="true"></div>
           <p>Cargando formulario oficial de MailerLite...</p>
         </div>
-        <iframe
-          id="newsletter-mailerlite-iframe"
+        <iframe id="newsletter-mailerlite-iframe"
           title="Formulario oficial de suscripción al boletín de Teleducación UdeA"
-          data-src="https://landing.mailerlite.com/webforms/landing/v8m8p9"
-          class="newsletter-iframe"
-          loading="lazy"
-          allow="cross-origin-isolated"
-        ></iframe>
+          data-src="https://landing.mailerlite.com/webforms/landing/v8m8p9" class="newsletter-iframe" loading="lazy"
+          allow="cross-origin-isolated"></iframe>
       </div>
 
-      <div class="modal-footer" style="padding: 12px 24px; background: var(--paper-warm); border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <div class="modal-footer"
+        style="padding: 12px 24px; background: var(--paper-warm); border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
         <span style="font-size: 0.8125rem; color: var(--text-muted);">
           Protegido por Google reCAPTCHA y las políticas de la Universidad de Antioquia.
         </span>
-        <button type="button" id="btn-close-newsletter-footer" class="btn-secondary" style="padding: 8px 18px; font-size: 0.875rem;">
+        <button type="button" id="btn-close-newsletter-footer" class="btn-secondary"
+          style="padding: 8px 18px; font-size: 0.875rem;">
           Cerrar
         </button>
       </div>

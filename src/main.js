@@ -59,23 +59,29 @@ const state = {
   }
 };
 
-// 24 Listas de reproducción temáticas oficiales verificadas del canal de Teleducación UdeA
-// Organizadas en cuadrículas de 12 especialidades por vista (3 filas x 4 columnas)
+// 12 Listas de reproducción temáticas oficiales verificadas del canal de Teleducación UdeA
+// Incluye las especialidades solicitadas actualmente activas en Aulas Abiertas (3 filas x 4 columnas)
 const VERIFIED_PLAYLISTS = [
-  // --- PÁGINA 1: Especialidades Médicas y Quirúrgicas Troncales (12 listas) ---
   {
-    title: 'Medicina Interna',
-    id: 'PLWutZMaMUREfzBbXZ8PWiR2-aYMNUV4br',
-    url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREfzBbXZ8PWiR2-aYMNUV4br',
-    category: 'Atención clínica y crítica',
-    description: 'Guías clínicas, falla cardíaca, riesgo cardiovascular y patologías sistémicas complejas.'
+    title: 'Urología',
+    id: 'PLWutZMaMUREe0B2XwcNLikJ-k-vdctked',
+    url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREe0B2XwcNLikJ-k-vdctked',
+    category: 'Áreas médico-quirúrgicas',
+    description: 'Urología oncológica, litiasis urinaria, endourología, trasplante y cirugía reconstructiva.'
   },
   {
-    title: 'Ginecología y Obstetricia',
-    id: 'PLWutZMaMUREdErivJcGl_RVOeCp15cOjh',
-    url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREdErivJcGl_RVOeCp15cOjh',
-    category: 'Salud materno-infantil',
-    description: 'Preeclampsia, embarazo de alto riesgo, salud fetal y oncología ginecológica.'
+    title: 'Anestesiología',
+    id: 'PLWutZMaMUREe-WzJhxuwkjc5_On2c6--Q',
+    url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREe-WzJhxuwkjc5_On2c6--Q',
+    category: 'Áreas médico-quirúrgicas',
+    description: 'Vía aérea difícil, farmacología perioperatoria, monitoreo hemodinámico e invasivo.'
+  },
+  {
+    title: 'Rehabilitación Cardiaca',
+    id: 'rehabilitacion-cardiaca',
+    url: 'https://www.youtube.com/@teleducacionmedicinaudea/search?query=Rehabilitaci%C3%B3n+Cardiaca',
+    category: 'Especialidades médicas y cardiología',
+    description: 'Rehabilitación en falla cardíaca, paciente oncológico, prevención secundaria y ejercicio terapéutico.'
   },
   {
     title: 'Medicina de Urgencias',
@@ -85,6 +91,20 @@ const VERIFIED_PLAYLISTS = [
     description: 'Reanimación cardiopulmonar, trombolisis, trauma, shock y soporte vital avanzado.'
   },
   {
+    title: 'Medicina Crítica y Cuidados Intensivos',
+    id: 'medicina-critica-cuidados-intensivos',
+    url: 'https://www.youtube.com/@teleducacionmedicinaudea/search?query=Medicina+Cr%C3%ADtica+y+Cuidados+Intensivos',
+    category: 'Atención clínica y crítica',
+    description: 'Ventilación mecánica, vía aérea en UCI, shock cardiogénico, SDRA y cuidado crítico integral.'
+  },
+  {
+    title: 'Alergología',
+    id: 'PLWutZMaMUREeyppOkA_BSZWFI5rlEgM8e',
+    url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREeyppOkA_BSZWFI5rlEgM8e',
+    category: 'Especialidades médicas',
+    description: 'Hipersensibilidad a fármacos, inmunoterapia de alérgenos y patologías atópicas complejas.'
+  },
+  {
     title: 'Endocrinología',
     id: 'PLWutZMaMUREfcP8tw36_ngXsrOtpMgUwq',
     url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREfcP8tw36_ngXsrOtpMgUwq',
@@ -92,18 +112,18 @@ const VERIFIED_PLAYLISTS = [
     description: 'Diabetes mellitus, tiroides, osteoporosis, metabolismo óseo y endocrinopatías.'
   },
   {
-    title: 'Anestesiología y Reanimación',
-    id: 'PLWutZMaMUREe-WzJhxuwkjc5_On2c6--Q',
-    url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREe-WzJhxuwkjc5_On2c6--Q',
-    category: 'Áreas médico-quirúrgicas',
-    description: 'Vía aérea difícil, farmacología perioperatoria, monitoreo hemodinámico e invasivo.'
+    title: 'GRAEPIC',
+    id: 'PLWutZMaMUREd2CBAFWR0FaW_vK9U_7Wm3',
+    url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREd2CBAFWR0FaW_vK9U_7Wm3',
+    category: 'Investigación y evidencia clínica',
+    description: 'Grupo Académico de Epidemiología Clínica (GRAEPIC) UdeA y Cochrane: medicina basada en la evidencia y análisis causal.'
   },
   {
-    title: 'Pediatría y Puericultura',
-    id: 'PLWutZMaMUREfGxKGOcU0DJ1dyZQT0bmgt',
-    url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREfGxKGOcU0DJ1dyZQT0bmgt',
-    category: 'Salud materno-infantil',
-    description: 'Infectología pediátrica, nutrición, desarrollo infantil, urgencias pediátricas y neonatología.'
+    title: 'Nefrología',
+    id: 'PLWutZMaMUREfIPu3L-df2t0xnaJhL3pXz',
+    url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREfIPu3L-df2t0xnaJhL3pXz',
+    category: 'Especialidades médicas',
+    description: 'Enfermedad renal crónica, glomerulopatías primarias, hemodiálisis y trasplante renal.'
   },
   {
     title: 'Medicina Física y Rehabilitación',
@@ -113,125 +133,18 @@ const VERIFIED_PLAYLISTS = [
     description: 'Neurorrehabilitación, patologías neuromusculares y rehabilitación funcional integral.'
   },
   {
-    title: 'Alergología Clínica',
-    id: 'PLWutZMaMUREeyppOkA_BSZWFI5rlEgM8e',
-    url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREeyppOkA_BSZWFI5rlEgM8e',
-    category: 'Especialidades médicas',
-    description: 'Hipersensibilidad a fármacos, inmunoterapia de alérgenos y enfermedades atópicas.'
+    title: 'Pediatría',
+    id: 'PLWutZMaMUREfGxKGOcU0DJ1dyZQT0bmgt',
+    url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREfGxKGOcU0DJ1dyZQT0bmgt',
+    category: 'Salud materno-infantil',
+    description: 'Infectología pediátrica, nutrición, desarrollo infantil, urgencias pediátricas y neonatología.'
   },
   {
-    title: 'Otorrinolaringología',
-    id: 'PLWutZMaMUREdKYyYrlmTI20pawPQie37e',
-    url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREdKYyYrlmTI20pawPQie37e',
-    category: 'Áreas médico-quirúrgicas',
-    description: 'Patología rinosinusoidal, otología, audiología clínica y cirugía de cabeza y cuello.'
-  },
-  {
-    title: 'Psiquiatría y Salud Mental',
-    id: 'PLWutZMaMUREdq_6zLkAUtHtmpCMnEoBLa',
-    url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREdq_6zLkAUtHtmpCMnEoBLa',
-    category: 'Salud mental y neurociencias',
-    description: 'Psiquiatría de enlace, psicopatología clínica, salud mental comunitaria y prevención del suicidio.'
-  },
-  {
-    title: 'Microbiología y Parasitología',
-    id: 'PLWutZMaMUREcdNPC94HRcliXT6wwxMqAL',
-    url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREcdNPC94HRcliXT6wwxMqAL',
-    category: 'Ciencias biomédicas e investigación',
-    description: 'Resistencia antimicrobiana, vigilancia genómica, mecanismos de patogenicidad y diagnóstico.'
-  },
-  {
-    title: 'Nefrología',
-    id: 'PLWutZMaMUREfIPu3L-df2t0xnaJhL3pXz',
-    url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREfIPu3L-df2t0xnaJhL3pXz',
-    category: 'Especialidades médicas',
-    description: 'Enfermedad renal crónica, glomerulopatías primarias, hemodiálisis y trasplante renal.'
-  },
-
-  // --- PÁGINA 2: Especialidades Quirúrgicas, Diagnósticas e Investigación Clínica (12 listas) ---
-  {
-    title: 'Urología',
-    id: 'PLWutZMaMUREe0B2XwcNLikJ-k-vdctked',
-    url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREe0B2XwcNLikJ-k-vdctked',
-    category: 'Áreas médico-quirúrgicas',
-    description: 'Urología oncológica, litiasis urinaria, endourología, trasplante y cirugía reconstructiva.'
-  },
-  {
-    title: 'Neurología y Neurociencias',
-    id: 'PLWutZMaMUREfm1FZNBS1PHPemwsRHSPHQ',
-    url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREfm1FZNBS1PHPemwsRHSPHQ',
-    category: 'Especialidades médicas',
-    description: 'Jornadas de neurología clínica, epilepsia, trastornos del movimiento y patología vascular cerebral.'
-  },
-  {
-    title: 'Dermatología (DermADiálogos)',
-    id: 'PLH98JHMlVGyU',
-    url: 'https://www.youtube.com/playlist?list=PLH98JHMlVGyU',
-    category: 'Especialidades médicas',
-    description: 'Dermatitis atópica, oncología cutánea, eje piel-cerebro y manejo dermatológico multidisciplinario.'
-  },
-  {
-    title: 'Radiología en Trauma y Urgencias',
-    id: 'PLWutZMaMUREewSLkKCauL67aQ6_S0Roj3',
-    url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREewSLkKCauL67aQ6_S0Roj3',
-    category: 'Imágenes diagnósticas',
-    description: 'Pre-curso de radiología clínica, interpretación tomográfica y ecografía en urgencias y trauma.'
-  },
-  {
-    title: 'Telesalud y Sistemas de Salud',
-    id: 'PLIgvaz4TdHUI',
-    url: 'https://www.youtube.com/playlist?list=PLIgvaz4TdHUI',
-    category: 'Salud pública y tecnología',
-    description: 'Fundamentación en telesalud, salud digital, modelos de atención remota e innovación sanitaria.'
-  },
-  {
-    title: 'Salud e Infección',
-    id: 'PLHbFa91ek3s4',
-    url: 'https://www.youtube.com/playlist?list=PLHbFa91ek3s4',
-    category: 'Infectología y medicina preventiva',
-    description: 'Ciclos de infectología clínica, hepatitis virales, VIH/Sida y stewardship antimicrobiano.'
-  },
-  {
-    title: 'Epidemiología Clínica y Evidencia (GRAEPIC)',
-    id: 'PLWutZMaMUREd2CBAFWR0FaW_vK9U_7Wm3',
-    url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREd2CBAFWR0FaW_vK9U_7Wm3',
-    category: 'Investigación y evidencia clínica',
-    description: 'Grupo Académico de Epidemiología Clínica (GRAEPIC) UdeA y Cochrane Colombia: medicina basada en evidencia y análisis de causalidad.'
-  },
-  {
-    title: 'Ciencias Ómicas en Medicina',
-    id: 'PLFY8HrlG5gaM',
-    url: 'https://www.youtube.com/playlist?list=PLFY8HrlG5gaM',
-    category: 'Ciencias biomédicas e investigación',
-    description: 'Jornadas de medicina genómica, transcriptómica, proteómica y aplicaciones clínicas de precisión.'
-  },
-  {
-    title: 'Jornadas de Investigación de la Facultad',
-    id: 'PLWutZMaMUREcNMv8yhbT5TCrGm5GEVJIp',
-    url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREcNMv8yhbT5TCrGm5GEVJIp',
-    category: 'Investigación y desarrollo',
-    description: 'XVI Jornadas de Investigación de la Facultad de Medicina UdeA: avances y producción científica.'
-  },
-  {
-    title: 'Acto Médico y Humanismo Clínico',
-    id: 'PLWutZMaMUREdAKQ0E_AX7AZruUG-M1lDl',
-    url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREdAKQ0E_AX7AZruUG-M1lDl',
-    category: 'Humanidades médicas',
-    description: 'Reflexiones sobre la relación médico-paciente, la ética en la práctica clínica y la civilidad académica.'
-  },
-  {
-    title: 'Bioética Práctica en Escena',
-    id: 'PLWutZMaMUREdLH5q_2mHyWf8qrWJECMN8',
-    url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREdLH5q_2mHyWf8qrWJECMN8',
-    category: 'Bioética y derecho médico',
-    description: 'Dilemas éticos en salud, consentimiento informado, toma de decisiones al final de la vida y bioética.'
-  },
-  {
-    title: 'Investigación Traslacional',
-    id: 'PLWutZMaMUREejmQnOrP8bnhYRhnzAEaVM',
-    url: 'https://www.youtube.com/playlist?list=PLWutZMaMUREejmQnOrP8bnhYRhnzAEaVM',
-    category: 'Investigación y desarrollo',
-    description: 'Puentes entre el laboratorio biomédico y la aplicación clínica diagnóstica y terapéutica.'
+    title: 'Videoteca Completa Teleducación UdeA',
+    id: 'todas-las-listas-udea',
+    url: 'https://www.youtube.com/@teleducacionmedicinaudea/playlists',
+    category: 'Repositorio institucional',
+    description: 'Explora el archivo completo de conferencias, simposios y jornadas académicas de la Facultad de Medicina.'
   }
 ];
 
@@ -852,13 +765,17 @@ function renderPlaylists() {
       track.style.transform = `translateX(-${currentPlaylistsPage * 100}%)`;
 
       if (prevBtn) {
+        prevBtn.style.display = totalPages > 1 ? 'inline-flex' : 'none';
         prevBtn.disabled = currentPlaylistsPage === 0;
       }
       if (nextBtn) {
+        nextBtn.style.display = totalPages > 1 ? 'inline-flex' : 'none';
         nextBtn.disabled = currentPlaylistsPage >= totalPages - 1;
       }
       if (pageIndicator) {
-        pageIndicator.textContent = `Página ${currentPlaylistsPage + 1} de ${totalPages}`;
+        pageIndicator.textContent = totalPages > 1
+          ? `Página ${currentPlaylistsPage + 1} de ${totalPages}`
+          : `${VERIFIED_PLAYLISTS.length} Especialidades Verificadas`;
       }
       if (dotsContainer) {
         dotsContainer.querySelectorAll('.playlist-dot').forEach((dot, idx) => {
@@ -1205,6 +1122,7 @@ function setupAdminPanel() {
       if (userDisplay) {
         userDisplay.textContent = user.displayName || user.email.split('@')[0];
       }
+      updateAdminCloudStatusUI();
     } else {
       if (adminNavBtn) {
         adminNavBtn.textContent = 'Acceso';
@@ -1214,6 +1132,79 @@ function setupAdminPanel() {
       if (viewDash) viewDash.style.display = 'none';
     }
   });
+
+  /**
+   * Actualiza el diagnóstico visual del estado de sincronización en la nube
+   */
+  const updateAdminCloudStatusUI = async () => {
+    const statusBox = document.getElementById('admin-cloud-sync-status');
+    if (!statusBox) return;
+
+    statusBox.innerHTML = `
+      <div style="font-size: 0.8125rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px; padding: 8px 12px; background: rgba(0,0,0,0.02); border-radius: 6px; margin-bottom: 12px;">
+        <span class="spinner-dot" style="width: 10px; height: 10px;"></span>
+        Verificando estado de sincronización en la nube...
+      </div>
+    `;
+
+    try {
+      const fbStatus = getFirebaseStatus();
+      const res = await fetch('/api/schedule?info=status');
+      const data = res.ok ? await res.json() : null;
+
+      const isRealtime = fbStatus.isReady;
+      const projectId = fbStatus.projectId;
+      const hasCloudApi = Boolean(data?.cloudStorage?.firestoreRest || data?.cloudStorage?.vercelKv || data?.cloudStorage?.serverlessTmp);
+
+      if (isRealtime) {
+        statusBox.innerHTML = `
+          <div style="background: rgba(0, 77, 37, 0.08); border: 1px solid rgba(0, 77, 37, 0.25); border-radius: 6px; padding: 10px 14px; margin-bottom: 14px; font-size: 0.8125rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+              <span style="font-weight: 700; color: var(--udea-forest); display: flex; align-items: center; gap: 6px;">
+                <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#28a745;"></span>
+                Sincronización en Tiempo Real Activa
+              </span>
+              <span style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono);">${projectId || 'Firebase'}</span>
+            </div>
+            <p style="margin: 4px 0 0; color: var(--text-base); font-size: 0.75rem; line-height: 1.4;">
+              Las conferencias publicadas se reflejan instantáneamente en cualquier celular o computador conectado vía WebSocket.
+            </p>
+          </div>
+        `;
+      } else if (hasCloudApi) {
+        statusBox.innerHTML = `
+          <div style="background: rgba(217, 119, 6, 0.08); border: 1px solid rgba(217, 119, 6, 0.25); border-radius: 6px; padding: 10px 14px; margin-bottom: 14px; font-size: 0.8125rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+              <span style="font-weight: 700; color: #b45309; display: flex; align-items: center; gap: 6px;">
+                <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#f59e0b;"></span>
+                Sincronización en Nube (Vercel Serverless API)
+              </span>
+              <span style="font-size: 0.75rem; color: #92400e; font-weight: 600;">Sondeo Activo</span>
+            </div>
+            <p style="margin: 4px 0 0; color: var(--text-base); font-size: 0.75rem; line-height: 1.4;">
+              Los datos se guardan en la nube y se sincronizan en otros dispositivos mediante sondeo periódico (cada 20s) y al volver a la pestaña. Para difusión WebSocket inmediata, agrega <code>VITE_FIREBASE_API_KEY</code> y <code>VITE_FIREBASE_PROJECT_ID</code> en Vercel.
+            </p>
+          </div>
+        `;
+      } else {
+        statusBox.innerHTML = `
+          <div style="background: rgba(220, 38, 38, 0.08); border: 1px solid rgba(220, 38, 38, 0.25); border-radius: 6px; padding: 10px 14px; margin-bottom: 14px; font-size: 0.8125rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+              <span style="font-weight: 700; color: #dc2626; display: flex; align-items: center; gap: 6px;">
+                <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#dc2626;"></span>
+                Modo Local (Sin sincronización multi-dispositivo)
+              </span>
+            </div>
+            <p style="margin: 4px 0 0; color: var(--text-base); font-size: 0.75rem; line-height: 1.4;">
+              Para que otros dispositivos vean la programación en tiempo real, configura las variables <code>VITE_FIREBASE_API_KEY</code> y <code>VITE_FIREBASE_PROJECT_ID</code> en el panel de Vercel.
+            </p>
+          </div>
+        `;
+      }
+    } catch {
+      // Ignorar fallos de diagnóstico
+    }
+  };
 
   // Verificar si hay sesión administrativa activa en Vercel
   verifyAdminSession();
@@ -1338,17 +1329,21 @@ function setupAdminPanel() {
           };
         });
 
-        // 1. Persistir en Firebase Firestore (y respaldo Vercel API) para que cualquier dispositivo lo vea
+        // 1. Persistir en Firebase Firestore y Vercel Cloud API
         const admin = getAdminUser();
-        await saveLiveScheduleToFirebase(normalized, {
+        const saveResult = await saveLiveScheduleToFirebase(normalized, {
           user: admin?.email || 'teleducacion@udea.edu.co',
           source: 'Boletín MailerLite / Scraper Gemini IA'
         });
 
         // 2. Actualizar estado local inmediatamente
+        const sourceLabel = saveResult.firestoreSaved
+          ? 'Firebase Firestore (En tiempo real)'
+          : `Vercel Cloud (${saveResult.vercelStorageProvider || 'Sincronizado'})`;
+
         state.allActivities = normalized;
         state.dataSourceInfo = {
-          source: 'Firebase Firestore (En tiempo real)',
+          source: sourceLabel,
           lastUpdated: new Date().toLocaleTimeString('es-CO'),
           isLive: true
         };
@@ -1364,7 +1359,13 @@ function setupAdminPanel() {
         populateDayFilter();
         renderScheduleList();
 
-        showToast(`¡Programación de ${normalized.length} conferencias guardada en Firebase y visible en todos los dispositivos!`, 'success');
+        if (saveResult.firestoreSaved) {
+          showToast(`¡Programación de ${normalized.length} conferencias sincronizada en la nube y visible en tiempo real en todos los dispositivos! 🟢`, 'success');
+        } else if (saveResult.vercelSaved) {
+          showToast(`¡Programación guardada en Vercel Cloud (${saveResult.vercelStorageProvider})! Visible en todos los dispositivos al actualizar o cambiar de pestaña. 🟡`, 'success');
+        } else {
+          showToast(`⚠️ Guardada en la caché local de este navegador. Configura las variables de Firebase en Vercel para sincronizar otros dispositivos.`, 'warning');
+        }
         closeAdminModal();
       } catch (err) {
         console.error('Error al sincronizar programación:', err);

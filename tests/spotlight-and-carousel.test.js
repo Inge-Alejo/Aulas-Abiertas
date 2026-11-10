@@ -123,27 +123,31 @@ test('4. Configuración del carrusel de listas de reproducción (3 filas x 4 col
   assert.ok(html.includes('id="btn-playlists-next"'), 'Debe existir botón next');
   assert.ok(html.includes('id="playlists-page-indicator"'), 'Debe existir indicador de página');
 
-  // JS: Verificación de 24 playlists (2 páginas de 12)
+  // JS: Verificación de las 11 listas activas de Aulas Abiertas en cuadrícula 3x4
   assert.ok(js.includes('PLAYLISTS_PER_PAGE = 12'), 'Debe fijar 12 listas por página (3x4)');
   assert.ok(js.includes('Urología'), 'Debe incluir playlist de Urología');
-  assert.ok(js.includes('DermADiálogos'), 'Debe incluir playlist de Dermatología / DermADiálogos');
-  assert.ok(js.includes('Radiología en Trauma y Urgencias'), 'Debe incluir playlist de Radiología');
+  assert.ok(js.includes('Anestesiología'), 'Debe incluir playlist de Anestesiología');
+  assert.ok(js.includes('Rehabilitación Cardiaca'), 'Debe incluir playlist de Rehabilitación Cardiaca');
+  assert.ok(js.includes('Medicina de Urgencias'), 'Debe incluir playlist de Medicina de Urgencias');
+  assert.ok(js.includes('Medicina Crítica y Cuidados Intensivos'), 'Debe incluir playlist de Medicina Crítica y Cuidados Intensivos');
+  assert.ok(js.includes('Alergología'), 'Debe incluir playlist de Alergología');
+  assert.ok(js.includes('Endocrinología'), 'Debe incluir playlist de Endocrinología');
+  assert.ok(js.includes('GRAEPIC'), 'Debe incluir playlist de GRAEPIC');
+  assert.ok(js.includes('Nefrología'), 'Debe incluir playlist de Nefrología');
+  assert.ok(js.includes('Medicina Física y Rehabilitación'), 'Debe incluir playlist de Medicina Física y Rehabilitación');
+  assert.ok(js.includes('Pediatría'), 'Debe incluir playlist de Pediatría');
 
   // CSS: Verificación de regla 4 columnas x 3 filas
   assert.ok(css.includes('grid-template-columns: repeat(4, 1fr)'), 'Debe tener 4 columnas en CSS');
   assert.ok(css.includes('playlists-carousel-track'), 'Debe tener estilos para el track del carrusel');
 });
 
-test('5. Corrección de nomenclatura institucional: GRAEPIC vs Psiquiatría', () => {
+test('5. Corrección de nomenclatura institucional: GRAEPIC verificado sin errata GREAPIC', () => {
   const js = fs.readFileSync(path.join(ROOT, 'src/main.js'), 'utf-8');
   const csv = fs.readFileSync(path.join(ROOT, 'public/data/programacion_semanal_octubre_2026.csv'), 'utf-8');
 
-  // En main.js la playlist de Psiquiatría no debe tener (GREAPIC)
-  assert.ok(!js.includes('Psiquiatría y Salud Mental (GREAPIC)'), 'Psiquiatría no debe tener GREAPIC en el título');
-  assert.ok(js.includes('title: \'Psiquiatría y Salud Mental\''), 'Debe existir título limpio para Psiquiatría');
-
   // En main.js debe existir GRAEPIC correctamente escrito
-  assert.ok(js.includes('Epidemiología Clínica y Evidencia (GRAEPIC)'), 'Debe existir lista para GRAEPIC');
+  assert.ok(js.includes('GRAEPIC'), 'Debe existir lista para GRAEPIC');
   assert.ok(!js.includes('GREAPIC'), 'No debe existir la errata GREAPIC en ningún lugar de main.js');
 
   // En el CSV no debe existir GREAPIC
