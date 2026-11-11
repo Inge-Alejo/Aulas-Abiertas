@@ -13,10 +13,12 @@ const CANDIDATE_MODELS = [
 /**
  * Normaliza una fecha a formato ISO YYYY-MM-DD
  * Soporta formatos: YYYY-MM-DD, YYYY/MM/DD, DD/MM/YYYY, D/M/YYYY, YYYY-M-D
+ * y textos en español como "Viernes 13 de noviembre" o "13 de noviembre de 2026"
  * @param {string} rawDate
- * @returns {string}
+ * @param {number} [fallbackYear=2026]
+ * @returns {string} Fecha normalizada o cadena original
  */
-export function normalizeDate(rawDate) {
+export function normalizeDate(rawDate, fallbackYear = 2026) {
   if (!rawDate || typeof rawDate !== 'string') return '';
   const trimmed = rawDate.trim();
 
@@ -42,6 +44,33 @@ export function normalizeDate(rawDate) {
   if (ymdMatch) {
     const [, y, m, d] = ymdMatch;
     return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+  }
+
+  // Texto en español: ej "Viernes 13 de noviembre", "13 de noviembre de 2026", "Viernes 13 nov"
+  const monthMap = {
+    enero: '01', ene: '01',
+    febrero: '02', feb: '02',
+    marzo: '03', mar: '03',
+    abril: '04', abr: '04',
+    mayo: '05', may: '05',
+    junio: '06', jun: '06',
+    julio: '07', jul: '07',
+    agosto: '08', ago: '08',
+    septiembre: '09', setiembre: '09', sep: '09', set: '09',
+    octubre: '10', oct: '10',
+    noviembre: '11', nov: '11',
+    diciembre: '12', dic: '12'
+  };
+
+  const textMatch = trimmed.toLowerCase().match(/(?:lunes|martes|mi[ée]rcoles|jueves|viernes|s[áa]bado|domingo)?[\s,]*(\d{1,2})\s+de\s+([a-záéíóú]+)(?:\s+(?:de\s+)?(\d{4}))?/i);
+  if (textMatch) {
+    const day = textMatch[1].padStart(2, '0');
+    const monthName = textMatch[2].normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const month = monthMap[monthName];
+    const year = textMatch[3] || String(fallbackYear);
+    if (month) {
+      return `${year}-${month}-${day}`;
+    }
   }
 
   return trimmed;
@@ -129,23 +158,25 @@ function parseSingleActivityBlock(blockStr) {
       return match ? match[1].replace(/\\"/g, '"').trim() : '';
     };
 
-    const title = getField('title');
-    const department = getField('department');
+    const title = getField('title') || getField('titulo') || getField('tema');
+    const department = getField('department') || getField('departamento') || getField('especialidad');
     if (!title && !department) return null;
+
+    const dateVal = getField('date') || getField('fecha') || getField('dia');
 
     return {
       id: getField('id') || `AA-${Date.now()}`,
-      date: getField('date'),
-      start_time: getField('start_time'),
-      end_time: getField('end_time'),
+      date: normalizeDate(dateVal),
+      start_time: getField('start_time') || getField('startTime') || getField('hora') || getField('hora_inicio'),
+      end_time: getField('end_time') || getField('endTime') || getField('hora_fin'),
       department: department,
       title: title,
-      speakers: getField('speakers'),
-      modality: getField('modality') || 'Virtual',
-      location: getField('location'),
-      meeting_url: getField('meeting_url'),
-      recording_url: getField('recording_url'),
-      summary: getField('summary')
+      speakers: getField('speakers') || getField('ponente') || getField('ponentes') || getField('presenta'),
+      modality: getField('modality') || getField('modalidad') || 'Virtual',
+      location: getField('location') || getField('lugar') || getField('auditorio'),
+      meeting_url: getField('meeting_url') || getField('meetingUrl') || getField('enlace'),
+      recording_url: getField('recording_url') || getField('recordingUrl') || getField('grabacion'),
+      summary: getField('summary') || getField('resumen')
     };
   }
 }
@@ -438,28 +469,30 @@ REGLAS CRÍTICAS DE SALIDA:
 
       // Sanitizar campos garantizando formato, fechas normalizadas y removiendo enlaces de MailerLite
       activities = parsedItems.map((act, idx) => {
-        const normDate = normalizeDate(act.date ? String(act.date).trim() : '');
-        const modality = (act.modality && String(act.modality).trim()) || 'Virtual';
+        const rawDate = act.date || act.fecha || act.dia || '';
+        const normDate = normalizeDate(rawDate ? String(rawDate).trim() : '');
+        const modality = (act.modality || act.modalidad || '').trim() || 'Virtual';
         const isStrictlyPresencial = modality.toLowerCase().includes('presenc') && !modality.toLowerCase().includes('híbrid');
 
-        let mUrl = act.meeting_url ? String(act.meeting_url).trim() : '';
+        let rawMeeting = (act.meeting_url || act.meetingUrl || act.enlace || '').trim();
+        let mUrl = rawMeeting;
         if (isStrictlyPresencial || mUrl.includes('mailerlite.com') || !mUrl.startsWith('http')) {
           mUrl = '';
         }
 
         return {
           id: act.id ? String(act.id).trim() : `AA-${idx + 1}`,
-          date: normDate,
-          start_time: act.start_time ? String(act.start_time).trim() : '',
-          end_time: act.end_time ? String(act.end_time).trim() : '',
-          department: act.department ? String(act.department).trim() : '',
-          title: act.title ? String(act.title).trim() : '',
-          speakers: act.speakers ? String(act.speakers).trim() : '',
+          date: normDate || rawDate,
+          start_time: (act.start_time || act.startTime || act.hora || act.hora_inicio || '').trim(),
+          end_time: (act.end_time || act.endTime || act.hora_fin || '').trim(),
+          department: (act.department || act.departamento || act.especialidad || '').trim(),
+          title: (act.title || act.titulo || act.tema || '').trim(),
+          speakers: (act.speakers || act.ponente || act.ponentes || act.presenta || '').trim(),
           modality: modality,
-          location: act.location ? String(act.location).trim() : '',
+          location: (act.location || act.lugar || act.ubicacion || '').trim(),
           meeting_url: mUrl,
-          recording_url: act.recording_url ? String(act.recording_url).trim() : '',
-          summary: act.summary ? String(act.summary).trim() : ''
+          recording_url: (act.recording_url || act.recordingUrl || act.grabacion || '').trim(),
+          summary: (act.summary || act.resumen || '').trim()
         };
       });
     } catch (parseErr) {

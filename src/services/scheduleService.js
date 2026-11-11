@@ -68,10 +68,12 @@ export function formatTime12h(raw) {
 /**
  * Normaliza una fecha a formato ISO YYYY-MM-DD
  * Soporta formatos: YYYY-MM-DD, YYYY/MM/DD, DD/MM/YYYY, D/M/YYYY, YYYY-M-D
+ * y textos en español como "Viernes 13 de noviembre" o "13 de noviembre de 2026"
  * @param {string} rawDate
+ * @param {number} [fallbackYear=2026]
  * @returns {string} Fecha normalizada o cadena original
  */
-export function normalizeDate(rawDate) {
+export function normalizeDate(rawDate, fallbackYear = 2026) {
   if (!rawDate || typeof rawDate !== 'string') return '';
   const trimmed = rawDate.trim();
 
@@ -97,6 +99,33 @@ export function normalizeDate(rawDate) {
   if (ymdMatch) {
     const [, y, m, d] = ymdMatch;
     return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+  }
+
+  // Texto en español: ej "Viernes 13 de noviembre", "13 de noviembre de 2026", "Viernes 13 nov"
+  const monthMap = {
+    enero: '01', ene: '01',
+    febrero: '02', feb: '02',
+    marzo: '03', mar: '03',
+    abril: '04', abr: '04',
+    mayo: '05', may: '05',
+    junio: '06', jun: '06',
+    julio: '07', jul: '07',
+    agosto: '08', ago: '08',
+    septiembre: '09', setiembre: '09', sep: '09', set: '09',
+    octubre: '10', oct: '10',
+    noviembre: '11', nov: '11',
+    diciembre: '12', dic: '12'
+  };
+
+  const textMatch = trimmed.toLowerCase().match(/(?:lunes|martes|mi[ée]rcoles|jueves|viernes|s[áa]bado|domingo)?[\s,]*(\d{1,2})\s+de\s+([a-záéíóú]+)(?:\s+(?:de\s+)?(\d{4}))?/i);
+  if (textMatch) {
+    const day = textMatch[1].padStart(2, '0');
+    const monthName = textMatch[2].normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const month = monthMap[monthName];
+    const year = textMatch[3] || String(fallbackYear);
+    if (month) {
+      return `${year}-${month}-${day}`;
+    }
   }
 
   return trimmed;

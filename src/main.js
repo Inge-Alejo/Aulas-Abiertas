@@ -1329,15 +1329,24 @@ function setupAdminPanel() {
         if (modelBadge) modelBadge.textContent = result.modelUsed || 'Gemini IA';
 
         if (previewTbody) {
-          previewTbody.innerHTML = lastScrapedActivities.map((act) => `
+          previewTbody.innerHTML = lastScrapedActivities.map((act) => {
+            const rawD = act.date || act.fecha || act.dia || '';
+            const normD = normalizeDate(rawD);
+            const formattedDay = isValidDate(normD) ? formatDayLabel(normD) : (normD || rawD || 'Por confirmar');
+            const isoBadge = normD ? `<span style="display: block; font-size: 0.72rem; color: var(--text-muted); font-family: var(--font-mono); font-weight: normal;">${normD}</span>` : '';
+            return `
             <tr>
-              <td><strong>${act.date}</strong></td>
-              <td>${formatTime12h(act.start_time || act.startTime)}</td>
-              <td>${act.department}</td>
-              <td>${act.title}</td>
-              <td><span class="card-modality-badge modality-${(act.modality || '').toLowerCase()}">${act.modality || 'Virtual'}</span></td>
+              <td>
+                <strong style="color: var(--udea-green-primary);">${formattedDay}</strong>
+                ${isoBadge}
+              </td>
+              <td><span style="font-family: var(--font-mono); font-weight: 600;">${formatTime12h(act.start_time || act.startTime || act.hora || '07:00')}</span></td>
+              <td>${act.department || act.departamento || ''}</td>
+              <td>${act.title || act.titulo || ''}</td>
+              <td><span class="card-modality-badge modality-${(act.modality || act.modalidad || '').toLowerCase()}">${act.modality || act.modalidad || 'Virtual'}</span></td>
             </tr>
-          `).join('');
+          `;
+          }).join('');
         }
 
         if (scraperResults) scraperResults.style.display = 'block';
@@ -1451,17 +1460,21 @@ function setupAdminPanel() {
       }
 
       const headers = ['Fecha', 'Hora', 'Departamento / Especialidad', 'Título de la Conferencia', 'Ponente(s)', 'Modalidad', 'Lugar', 'Enlace de Conexión', 'Grabación'];
-      const rows = lastScrapedActivities.map(a => [
-        a.date || '',
-        a.start_time || a.startTime || '',
-        a.department || '',
-        a.title || '',
-        a.speakers || '',
-        a.modality || 'Virtual',
-        a.location || '',
-        a.meeting_url || a.meetingUrl || '',
-        a.recording_url || a.recordingUrl || ''
-      ]);
+      const rows = lastScrapedActivities.map(a => {
+        const rawD = a.date || a.fecha || a.dia || '';
+        const normD = normalizeDate(rawD);
+        return [
+          normD || rawD,
+          a.start_time || a.startTime || a.hora || '',
+          a.department || a.departamento || '',
+          a.title || a.titulo || '',
+          a.speakers || a.ponentes || a.ponente || '',
+          a.modality || a.modalidad || 'Virtual',
+          a.location || a.lugar || '',
+          a.meeting_url || a.meetingUrl || a.enlace || '',
+          a.recording_url || a.recordingUrl || a.grabacion || ''
+        ];
+      });
 
       const tsvContent = [
         headers.join('\t'),
@@ -1498,19 +1511,23 @@ function setupAdminPanel() {
         // Carga dinámica de la biblioteca xlsx
         const XLSX = await import('xlsx');
 
-        const rows = lastScrapedActivities.map(a => ({
-          'Fecha': a.date || '',
-          'Hora Inicio': a.start_time || a.startTime || '07:00',
-          'Hora Fin': a.end_time || a.endTime || '',
-          'Departamento / Especialidad': a.department || '',
-          'Título de la Conferencia': a.title || '',
-          'Ponente(s)': a.speakers || '',
-          'Modalidad': a.modality || 'Virtual',
-          'Lugar': a.location || '',
-          'Enlace de Conexión': a.meeting_url || a.meetingUrl || '',
-          'Enlace de Grabación': a.recording_url || a.recordingUrl || '',
-          'Resumen': a.summary || ''
-        }));
+        const rows = lastScrapedActivities.map(a => {
+          const rawD = a.date || a.fecha || a.dia || '';
+          const normD = normalizeDate(rawD);
+          return {
+            'Fecha': normD || rawD,
+            'Hora Inicio': a.start_time || a.startTime || a.hora || '07:00',
+            'Hora Fin': a.end_time || a.endTime || a.hora_fin || '',
+            'Departamento / Especialidad': a.department || a.departamento || '',
+            'Título de la Conferencia': a.title || a.titulo || '',
+            'Ponente(s)': a.speakers || a.ponentes || a.ponente || '',
+            'Modalidad': a.modality || a.modalidad || 'Virtual',
+            'Lugar': a.location || a.lugar || '',
+            'Enlace de Conexión': a.meeting_url || a.meetingUrl || a.enlace || '',
+            'Enlace de Grabación': a.recording_url || a.recordingUrl || a.grabacion || '',
+            'Resumen': a.summary || a.resumen || ''
+          };
+        });
 
         const worksheet = XLSX.utils.json_to_sheet(rows);
 

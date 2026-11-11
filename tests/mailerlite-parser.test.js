@@ -330,5 +330,29 @@ test('normalizeDate - soporta múltiples variantes de fecha para el viernes y re
   assert.strictEqual(normalizeDate('13/11/2026'), '2026-11-13');
   assert.strictEqual(normalizeDate('13-11-2026'), '2026-11-13');
   assert.strictEqual(normalizeDate(' 2026-11-13  '), '2026-11-13');
+  assert.strictEqual(normalizeDate('Viernes 13 de noviembre'), '2026-11-13');
+  assert.strictEqual(normalizeDate('Viernes 13 de noviembre de 2026'), '2026-11-13');
+  assert.strictEqual(normalizeDate('Lunes 09 de noviembre'), '2026-11-09');
   assert.strictEqual(normalizeDate(''), '');
+});
+
+test('parseActivitiesFromAi - soporte para campo "fecha" o "dia" en lugar de "date"', () => {
+  const jsonWithFecha = `[
+    {
+      "id": "AA-01",
+      "fecha": "2026-11-13",
+      "hora": "07:00",
+      "departamento": "Farmacología y Toxicología",
+      "titulo": "Toxicología clínica",
+      "ponente": "Dra. Gisela Tabares",
+      "modalidad": "Virtual",
+      "enlace": "https://teams.microsoft.com/test"
+    }
+  ]`;
+
+  const parsed = parseActivitiesFromAi(jsonWithFecha);
+  assert.strictEqual(parsed.length, 1);
+  const act = parsed[0];
+  assert.strictEqual(act.fecha || act.date, '2026-11-13');
+  assert.strictEqual(act.titulo || act.title, 'Toxicología clínica');
 });
