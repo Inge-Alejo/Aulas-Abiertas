@@ -15,7 +15,8 @@ import {
   formatTime12h,
   getMondayOfWeek,
   getSundayOfWeek,
-  normalizeDate
+  normalizeDate,
+  isValidDate
 } from './services/scheduleService.js';
 
 import {

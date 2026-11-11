@@ -86,5 +86,6 @@ test('5. Verificación de lógica en src/main.js', () => {
   assert.ok(js.includes('function setupNewsletterSystem()'), 'Falta la definición de setupNewsletterSystem()');
   assert.ok(js.includes('modal-newsletter-backdrop'), 'Falta la referencia a modal-newsletter-backdrop');
   assert.ok(js.includes('newsletter-mailerlite-iframe'), 'Falta la referencia al iframe en JS');
+  assert.ok(js.includes('isValidDate'), 'isValidDate debe estar importado en src/main.js');
 });
 
