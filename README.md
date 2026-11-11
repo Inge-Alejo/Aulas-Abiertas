@@ -22,7 +22,7 @@ Diseñado bajo principios editoriales contemporáneos inspirados en publicacione
 
 - **Frontend Core:** [Vite](https://vite.dev/) (HTML5 semántico, Vanilla CSS estructurado en variables de diseño, JavaScript moderno ES Modules).
 - **Procesamiento de Datos:** [PapaParse](https://www.papaparse.com/) para parseo seguro de CSV (soporte nativo de comillas, saltos de línea, tildes y caracteres especiales en español).
-- **Inteligencia Artificial:** [Google Generative Language API (Gemini)](https://ai.google.dev/) con alternancia y degradación suave (`gemini-3.5-flash-lite` -> `gemini-3.1-flash-lite` -> `gemini-2.5-flash-lite` -> `gemini-1.5-flash`).
+- **Inteligencia Artificial:** [Google Generative Language API (Gemini)](https://ai.google.dev/) con alternancia y optimización de latencia (`gemini-3.5-flash-lite` -> `gemini-3.1-flash-lite`).
 - **Base de Datos:** [Firebase SDK](https://firebase.google.com/) (Cloud Firestore) con respaldo transparente en LocalStorage cuando no hay credenciales configuradas.
 - **Despliegue Serverless:** [Vercel](https://vercel.com/) con enrutamiento de API serverless y optimización de activos estáticos.
 - **Control de Tiempo y Zona Horaria:** Motor de cálculo en zona horaria `America/Bogota` (UTC-5), normalización automática de horas 12h/24h, validación de fechas ISO `AAAA-MM-DD` y cálculo estricto de semanas Lunes–Domingo.
@@ -160,11 +160,10 @@ Configura estas variables en Vercel (*Project Settings > Environment Variables*)
 La aplicación cuenta con un botón flotante **✦ Pregúntale a la IA** y botones en cada tarjeta de actividad.
 
 ### Alternancia y Resiliencia de Modelos:
-El motor en `api/gemini.js` y `src/services/geminiService.js` implementa un sistema de cascada automática:
-1. **Prioridad 1:** Intenta generar respuesta con `gemini-3.5-flash-lite`.
-2. **Prioridad 2 (Alternancia):** Si no está disponible o arroja error, conmuta automáticamente a `gemini-3.1-flash-lite`.
-3. **Respaldo Resiliente:** Si ninguna versión de preview responde, se degrada limpiamente a `gemini-2.5-flash-lite` / `gemini-1.5-flash`.
-4. **Contexto Clínico:** La IA recibe en su *system prompt* la totalidad de actividades académicas reales cargadas en la semana, respondiendo con datos verídicos de ponentes, horarios y enlaces.
+El motor en `api/gemini.js` y `src/services/geminiService.js` implementa un sistema de alternancia de alto rendimiento:
+1. **Prioridad 1:** Intenta generar respuesta y extracción con `gemini-3.5-flash-lite`.
+2. **Prioridad 2 (Alternancia):** Si no está disponible o arroja saturación, conmuta automáticamente a `gemini-3.1-flash-lite`.
+3. **Contexto Clínico:** La IA recibe en su *system prompt* la totalidad de actividades académicas reales cargadas en la semana, respondiendo con datos verídicos de ponentes, horarios y enlaces.
 
 ---
 

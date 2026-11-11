@@ -2,14 +2,12 @@
  * Serverless API para Vercel: Scraper Inteligente de Boletines MailerLite con Gemini IA
  * Permite ingresar una URL de MailerLite (ej: https://preview.mailerlite.com/k8w4m4m5a6)
  * y extraer todas las actividades estructuradas en JSON y CSV para Google Sheets.
+ * Modelos oficiales configurados: Gemini 3.5 Flash Lite y Gemini 3.1 Flash Lite.
  */
 
 const CANDIDATE_MODELS = [
   'gemini-3.5-flash-lite',
-  'gemini-3.1-flash-lite',
-  'gemini-2.5-flash-lite',
-  'gemini-2.0-flash',
-  'gemini-1.5-flash'
+  'gemini-3.1-flash-lite'
 ];
 
 /**

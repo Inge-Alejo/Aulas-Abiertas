@@ -1,17 +1,13 @@
 /**
  * API Serverless para Vercel: Asistente Académico con Gemini API
- * Soporta alternancia/fallback de modelos:
- * Prioridad 1: gemini-3.5-flash-lite
- * Prioridad 2: gemini-3.1-flash-lite
- * Fallback resiliente: gemini-2.5-flash-lite -> gemini-2.0-flash -> gemini-1.5-flash
+ * Modelos oficiales configurados:
+ * - Prioridad 1: gemini-3.5-flash-lite
+ * - Prioridad 2: gemini-3.1-flash-lite
  */
 
 const CANDIDATE_MODELS = [
   'gemini-3.5-flash-lite',
-  'gemini-3.1-flash-lite',
-  'gemini-2.5-flash-lite',
-  'gemini-2.0-flash',
-  'gemini-1.5-flash'
+  'gemini-3.1-flash-lite'
 ];
 
 export default async function handler(req, res) {
