@@ -14,7 +14,8 @@ import {
   formatDayLabel,
   formatTime12h,
   getMondayOfWeek,
-  getSundayOfWeek
+  getSundayOfWeek,
+  normalizeDate
 } from './services/scheduleService.js';
 
 import {
@@ -1365,9 +1366,14 @@ function setupAdminPanel() {
       try {
         // Normalizar estructura de actividades con cálculo exacto de semana (Lunes a Domingo)
         const normalized = lastScrapedActivities.map((a, i) => {
-          const rawDate = a.date;
+          const rawDate = normalizeDate(a.date);
           const monday = getMondayOfWeek(rawDate);
           const sunday = getSundayOfWeek(monday);
+          const modality = a.modality || 'Virtual';
+          const isStrictlyPresencial = modality.toLowerCase().includes('presenc') && !modality.toLowerCase().includes('híbrid');
+          const rawMeeting = a.meeting_url ? String(a.meeting_url).trim() : '';
+          const meeting_url = (!isStrictlyPresencial && !rawMeeting.includes('mailerlite.com') && rawMeeting.startsWith('http')) ? rawMeeting : '';
+
           return {
             id: a.id || `AA-${rawDate}-${(a.start_time || a.startTime || '0700').replace(':', '')}-${i}`,
             date: rawDate,
@@ -1376,9 +1382,9 @@ function setupAdminPanel() {
             department: a.department || 'Facultad de Medicina',
             title: a.title,
             speakers: a.speakers || '',
-            modality: a.modality || 'Virtual',
+            modality: modality,
             location: a.location || '',
-            meeting_url: (a.meeting_url && !a.meeting_url.includes('mailerlite.com')) ? a.meeting_url : '',
+            meeting_url: meeting_url,
             recording_url: a.recording_url || a.recordingUrl || '',
             summary: a.summary || '',
             dayLabel: formatDayLabel(rawDate),

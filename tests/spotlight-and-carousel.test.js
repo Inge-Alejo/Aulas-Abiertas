@@ -25,7 +25,7 @@ const ROOT = path.join(__dirname, '..');
 test('1. Presencia de la cita editorial institucional en index.html', () => {
   const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf-8');
   const expectedQuote = 'La medicina debe ser para el servicio de todos los seres humanos de una comunidad, y no solamente para los que pueden tener acceso a ella por su posición económica o geográfica.';
-  
+
   assert.ok(html.includes(expectedQuote), 'La cita textual institucional debe existir en index.html');
   assert.ok(html.includes('Héctor Abad Gómez'), 'Debe citar al Dr. Héctor Abad Gómez');
   assert.ok(html.includes('quote-editorial-container'), 'Debe estar contenida dentro de quote-editorial-container');

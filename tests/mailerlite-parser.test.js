@@ -199,3 +199,136 @@ test('parseActivitiesFromAi - bloque con comillas sin escapar en el título', ()
   assert.strictEqual(result[0].department, 'Urología');
   assert.ok(result[0].title.includes('ENFERMEDAD RENAL'));
 });
+
+test('parseActivitiesFromAi - extracción de múltiples conferencias del Viernes (virtuales y presenciales)', () => {
+  const fridayAiJson = `[
+    {
+      "id": "AA-2026-027",
+      "date": "2026-11-13",
+      "start_time": "07:00",
+      "end_time": "08:00",
+      "department": "Farmacología y Toxicología",
+      "title": "Complicaciones clínicas de las terapias basadas en incretinas",
+      "speakers": "Dra. Gisela Tabares Ospina",
+      "modality": "Virtual",
+      "location": "Teams",
+      "meeting_url": "https://teams.microsoft.com/meet/264789585190059?p=Mnn6ZAE52HlZGBqa64",
+      "recording_url": "",
+      "summary": "Toxicología clínica"
+    },
+    {
+      "id": "AA-2026-028",
+      "date": "2026-11-13",
+      "start_time": "07:00",
+      "end_time": "08:30",
+      "department": "Medicina Interna",
+      "title": "Mujer con síndrome constitucional, bicitopenia y lesiones nodulares hepáticas y adrenales",
+      "speakers": "Manuela Valencia Muñoz",
+      "modality": "Presencial",
+      "location": "Auditorio 108 Morfología - Facultad de Medicina",
+      "meeting_url": "",
+      "recording_url": "",
+      "summary": "Discusión de caso clínico en morfología"
+    },
+    {
+      "id": "AA-2026-029",
+      "date": "2026-11-13",
+      "start_time": "08:00",
+      "end_time": "09:00",
+      "department": "Historia de la Medicina",
+      "title": "Medellín un recorrido por su historia",
+      "speakers": "Dr. Edison Muñoz",
+      "modality": "Presencial",
+      "location": "Auditorio 108",
+      "meeting_url": "",
+      "recording_url": "",
+      "summary": ""
+    }
+  ]`;
+
+  const parsed = parseActivitiesFromAi(fridayAiJson);
+  assert.strictEqual(parsed.length, 3, 'Deben extraerse las 3 conferencias del viernes sin recortar');
+  
+  const fridayActs = parsed.filter(a => a.date === '2026-11-13');
+  assert.strictEqual(fridayActs.length, 3, 'Todas las 3 actividades pertenecen al viernes 2026-11-13');
+  
+  // Conferencia 1: Farmacología (Virtual con Teams)
+  assert.strictEqual(fridayActs[0].department, 'Farmacología y Toxicología');
+  assert.strictEqual(fridayActs[0].modality, 'Virtual');
+  assert.ok(fridayActs[0].meeting_url.includes('teams.microsoft.com'));
+
+  // Conferencia 2: Medicina Interna (Presencial sin link virtual)
+  assert.strictEqual(fridayActs[1].department, 'Medicina Interna');
+  assert.strictEqual(fridayActs[1].modality, 'Presencial');
+  assert.strictEqual(fridayActs[1].meeting_url, '', 'La actividad presencial del viernes debe tener meeting_url vacío');
+  assert.ok(fridayActs[1].location.includes('Auditorio 108'));
+
+  // Conferencia 3: Historia de la Medicina (Presencial)
+  assert.strictEqual(fridayActs[2].department, 'Historia de la Medicina');
+  assert.strictEqual(fridayActs[2].modality, 'Presencial');
+  assert.strictEqual(fridayActs[2].meeting_url, '');
+});
+
+test('cleanMailerliteHtml - filtra enlaces fantasma vacíos y conserva conferencias del viernes', async () => {
+  const { cleanMailerliteHtml } = await import('../api/scrape-mailerlite.js');
+
+  const mockNewsletterHtml = `
+    <table>
+      <tr><td>Viernes 13 de noviembre</td></tr>
+      <tr>
+        <td>Farmacología y Toxicología</td>
+        <td>Hora: 7:00 am</td>
+        <td>Tema: Farmaco charla</td>
+        <td>Presenta: Dr. Farmaco</td>
+        <td><a href="https://teams.microsoft.com/meet/123">Aquí</a></td>
+        <!-- Enlaces fantasma vacíos insertados por el editor de MailerLite -->
+        <td><a href="https://teams.microsoft.com/ghost1"></a></td>
+        <td><a href="https://teams.microsoft.com/ghost2">  </a></td>
+      </tr>
+      <tr>
+        <td>Medicina Interna</td>
+        <td>Hora: 7:00 am</td>
+        <td>Tema: Caso clínico complejo</td>
+        <td>Presenta: Dra. Caso</td>
+        <td>Presencial: Auditorio 108 Morfología</td>
+        <!-- Enlace vacío fantasma en bloque presencial -->
+        <td><a href="https://teams.microsoft.com/ghost3"></a></td>
+      </tr>
+      <tr>
+        <!-- Enlaces externos institucionales -->
+        <td><a href="tel:+576042196940">Llamar</a></td>
+        <td><a href="mailto:info@udea.edu.co">Escribir</a></td>
+      </tr>
+    </table>
+  `;
+
+  const cleaned = cleanMailerliteHtml(mockNewsletterHtml);
+  
+  // Debe contener la primera conferencia del viernes
+  assert.ok(cleaned.includes('Farmacología y Toxicología'));
+  assert.ok(cleaned.includes('[ENLACE_REUNION_VIRTUAL: https://teams.microsoft.com/meet/123 (Texto: Aquí)]'));
+
+  // Debe contener la segunda conferencia del viernes
+  assert.ok(cleaned.includes('Medicina Interna'));
+  assert.ok(cleaned.includes('Presencial: Auditorio 108 Morfología'));
+
+  // Los enlaces fantasma NO deben aparecer como ENLACE_REUNION_VIRTUAL
+  assert.ok(!cleaned.includes('ghost1'));
+  assert.ok(!cleaned.includes('ghost2'));
+  assert.ok(!cleaned.includes('ghost3'));
+
+  // Los enlaces telefónicos y correo se marcan como ENLACE_EXTERNO
+  assert.ok(cleaned.includes('[ENLACE_EXTERNO: tel:+576042196940 (Texto: Llamar)]'));
+  assert.ok(cleaned.includes('[ENLACE_EXTERNO: mailto:info@udea.edu.co (Texto: Escribir)]'));
+});
+
+test('normalizeDate - soporta múltiples variantes de fecha para el viernes y resto de semana', async () => {
+  const { normalizeDate } = await import('../api/scrape-mailerlite.js');
+
+  assert.strictEqual(normalizeDate('2026-11-13'), '2026-11-13');
+  assert.strictEqual(normalizeDate('2026/11/13'), '2026-11-13');
+  assert.strictEqual(normalizeDate('13/11/2026'), '2026-11-13');
+  assert.strictEqual(normalizeDate('13-11-2026'), '2026-11-13');
+  assert.strictEqual(normalizeDate(' 2026-11-13  '), '2026-11-13');
+  assert.strictEqual(normalizeDate(''), '');
+});

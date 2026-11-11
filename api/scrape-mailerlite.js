@@ -11,6 +11,92 @@ const CANDIDATE_MODELS = [
 ];
 
 /**
+ * Normaliza una fecha a formato ISO YYYY-MM-DD
+ * Soporta formatos: YYYY-MM-DD, YYYY/MM/DD, DD/MM/YYYY, D/M/YYYY, YYYY-M-D
+ * @param {string} rawDate
+ * @returns {string}
+ */
+export function normalizeDate(rawDate) {
+  if (!rawDate || typeof rawDate !== 'string') return '';
+  const trimmed = rawDate.trim();
+
+  // YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    return trimmed;
+  }
+
+  // YYYY/MM/DD
+  if (/^\d{4}\/\d{2}\/\d{2}$/.test(trimmed)) {
+    return trimmed.replace(/\//g, '-');
+  }
+
+  // DD/MM/YYYY o DD-MM-YYYY
+  const dmyMatch = trimmed.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if (dmyMatch) {
+    const [, d, m, y] = dmyMatch;
+    return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+  }
+
+  // YYYY-M-D
+  const ymdMatch = trimmed.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (ymdMatch) {
+    const [, y, m, d] = ymdMatch;
+    return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+  }
+
+  return trimmed;
+}
+
+/**
+ * Limpia y preprocesa el HTML de un boletín de MailerLite eliminando enlaces fantasma
+ * y estructurando enlaces de reunión y texto limpio para optimizar la extracción con IA.
+ * @param {string} html
+ * @returns {string}
+ */
+export function cleanMailerliteHtml(html) {
+  if (!html || typeof html !== 'string') return '';
+
+  // 1. Filtrar enlaces <a>: descartar enlaces fantasma vacíos de MailerLite (cleanText vacío)
+  // y distinguir enlaces de reunión de enlaces externos o administrativos
+  const preprocessed = html.replace(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi, (m, href, text) => {
+    const cleanText = text.replace(/<[^>]+>/g, '').trim();
+    if (!cleanText) return ' '; // Descartar enlaces vacíos fantasma que MailerLite deja en el HTML
+
+    const trimmedHref = href.trim();
+    // Excluir enlaces de correo, teléfono o navegación interna del visor de MailerLite
+    if (trimmedHref.startsWith('mailto:') || trimmedHref.startsWith('tel:') || trimmedHref.includes('mailerlite.com')) {
+      return ` [ENLACE_EXTERNO: ${trimmedHref} (Texto: ${cleanText})] `;
+    }
+    return ` [ENLACE_REUNION_VIRTUAL: ${trimmedHref} (Texto: ${cleanText})] `;
+  });
+
+  // 2. Limpieza profunda de etiquetas, estilos, scripts y normalización de saltos de línea
+  return preprocessed
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+    .replace(/<head\b[^<]*(?:(?!<\/head>)<[^<]*)*<\/head>/gi, '')
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/<svg\b[^<]*(?:(?!<\/svg>)<[^<]*)*<\/svg>/gi, '')
+    .replace(/\s*(?:style|class|id|cellpadding|cellspacing|border|width|height|bgcolor|align|valign|target|role|data-[a-z-]+|aria-[a-z-]+)="[^"]*"/gi, '')
+    .replace(/\s*(?:style|class|id|cellpadding|cellspacing|border|width|height|bgcolor|align|valign|target|role|data-[a-z-]+|aria-[a-z-]+)='[^']*'/gi, '')
+    .replace(/<(?:\/)?(?:tbody|thead|tfoot)>/gi, '')
+    .replace(/<br\s*[\/]?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<\/tr>/gi, '\n')
+    .replace(/<\/td>/gi, ' | ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/[|\s]*\n[|\s]*/g, '\n')
+    .replace(/\n{2,}/g, '\n')
+    .trim();
+}
+
+/**
  * Inspecciona un objeto parseado para encontrar la propiedad que contiene el arreglo de actividades
  */
 function resolveArrayFromParsed(data) {
@@ -214,42 +300,15 @@ export default async function handler(req, res) {
         }
 
         const html = await fetchRes.text();
-        
-        // Reemplazar enlaces <a> con indicador explícito [ENLACE_REUNION_VIRTUAL: URL] para que la IA extraiga los enlaces directos de Teams/Meet
-        let preprocessed = html.replace(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi, (m, href, text) => {
-          const cleanText = text.replace(/<[^>]+>/g, '').trim();
-          return ` [ENLACE_REUNION_VIRTUAL: ${href.trim()} (Texto: ${cleanText})] `;
-        });
-
-        // Limpieza profunda de scripts, estilos y atributos redundantes, y conversión a texto limpio con saltos de línea
-        contentToAnalyze = preprocessed
-          .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-          .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
-          .replace(/<head\b[^<]*(?:(?!<\/head>)<[^<]*)*<\/head>/gi, '')
-          .replace(/<!--[\s\S]*?-->/g, '')
-          .replace(/<svg\b[^<]*(?:(?!<\/svg>)<[^<]*)*<\/svg>/gi, '')
-          .replace(/\s*(?:style|class|id|cellpadding|cellspacing|border|width|height|bgcolor|align|valign|target|role|data-[a-z-]+|aria-[a-z-]+)="[^"]*"/gi, '')
-          .replace(/\s*(?:style|class|id|cellpadding|cellspacing|border|width|height|bgcolor|align|valign|target|role|data-[a-z-]+|aria-[a-z-]+)='[^']*'/gi, '')
-          .replace(/<(?:\/)?(?:tbody|thead|tfoot)>/gi, '')
-          .replace(/<br\s*[\/]?>/gi, '\n')
-          .replace(/<\/p>/gi, '\n')
-          .replace(/<\/tr>/gi, '\n')
-          .replace(/<\/td>/gi, ' | ')
-          .replace(/<[^>]+>/g, ' ')
-          .replace(/&nbsp;/g, ' ')
-          .replace(/&amp;/g, '&')
-          .replace(/&quot;/g, '"')
-          .replace(/&lt;/g, '<')
-          .replace(/&gt;/g, '>')
-          .replace(/[ \t]+/g, ' ')
-          .replace(/[|\s]*\n[|\s]*/g, '\n')
-          .replace(/\n{2,}/g, '\n')
-          .trim();
+        contentToAnalyze = cleanMailerliteHtml(html);
       } catch (err) {
         return res.status(400).json({
           error: `No fue posible descargar el contenido del enlace: ${err.message}`
         });
       }
+    } else if (rawContent && typeof rawContent === 'string' && /<[a-z][\s\S]*>/i.test(rawContent)) {
+      // Si el usuario pegó HTML en crudo en lugar de texto plano, aplicar la misma limpieza profunda
+      contentToAnalyze = cleanMailerliteHtml(rawContent);
     }
 
     if (!contentToAnalyze) {
@@ -260,32 +319,56 @@ export default async function handler(req, res) {
 Tu tarea es analizar minuciosamente TODO el boletín semanal de MailerLite y extraer CADA UNA de las conferencias o actividades académicas programadas para todos los días de la semana (Lunes, Martes, Miércoles, Jueves, Viernes, Sábado/Domingo).
 
 INSTRUCCIONES CLAVE DE EXTRACCIÓN:
-1. EXHAUSTIVIDAD TOTAL: El boletín contiene habitualmente entre 30 y 40 conferencias en total para toda la semana. Debes recorrer el documento de principio a fin y extraer ABSOLUTAMENTE TODAS las actividades sin omitir ninguna y sin detenerte prematuramente.
-2. FECHAS EXACTAS: El boletín agrupa las conferencias bajo encabezados de días como "Lunes 26 de octubre", "Martes 27 de octubre", "Miércoles 28 de octubre", "Jueves 29 de octubre", "Viernes 30 de octubre". Determina el año, mes y día exactos y escribe la fecha en formato ISO "AAAA-MM-DD" (por ejemplo: "2026-10-26") para cada actividad de ese día.
-3. HORA: La hora de inicio (start_time) normalizada en formato 24h "HH:mm" (ej: "07:00", "08:30", "14:00"). La hora de fin (end_time) si existe en "HH:mm", o cadena vacía "" si no se especifica.
-4. ENLACE DE CONEXIÓN A REUNIÓN (meeting_url):
-- MUY IMPORTANTE: En el texto de cada conferencia aparece su enlace de reunión virtual indicado explícitamente en [ENLACE_REUNION_VIRTUAL: URL]. Puede ser de Microsoft Teams (https://teams.microsoft.com/...), Google Meet (http://meet.google.com/ o https://meet.google.com/...), Zoom o YouTube.
-- DEBES COPIAR ESE ENLACE EXACTO de Teams/Meet/Zoom en el campo meeting_url de esa conferencia.
-- ESTÁ TOTALMENTE PROHIBIDO colocar la URL del boletín de MailerLite (como preview.mailerlite.com) en meeting_url.
-- Si una actividad es presencial y no incluye enlace virtual, deja meeting_url como cadena vacía "".
-5. CAMPOS A EXTRAER POR CADA ACTIVIDAD (JSON):
+1. EXHAUSTIVIDAD TOTAL: El boletín contiene habitualmente entre 25 y 40 conferencias en total para toda la semana. Debes recorrer el documento de principio a fin y extraer ABSOLUTAMENTE TODAS las actividades sin omitir ninguna y sin detenerte prematuramente.
+
+2. ATENCIÓN ESPECIAL AL VIERNES (ÚLTIMO DÍA DE LA SEMANA):
+- ¡REGLA CRÍTICA PARA EL VIERNES!: El viernes se ubica al final del boletín y habitualmente contiene MÚLTIPLES conferencias (ej: 2, 3 o más actividades para diferentes especialidades como Farmacología, Medicina Interna, Pediatría, Cirugía, Urgencias, etc.).
+- NUNCA te detengas al extraer la primera actividad del viernes. Debes extraer TODAS y CADA UNA de las conferencias que aparezcan bajo el encabezado del viernes hasta agotar la programación.
+- No confundas la última conferencia del viernes con la sección final de suscripción al canal de YouTube, enlaces de WhatsApp o pie de página institucional.
+- Asegúrate de incluir tanto la primera conferencia del viernes como la segunda, tercera y subsiguientes.
+
+3. CONFERENCIAS PRESENCIALES (SIN ENLACE VIRTUAL):
+- ¡MUY IMPORTANTE!: Varias conferencias (por ejemplo, de Medicina Interna o Historia de la Medicina) son 100% PRESENCIALES en auditorios físicos (ej: "Auditorio 108 Morfología - Facultad de Medicina", auditorios de hospitales o sedes de la Facultad).
+- ESTAS ACTIVIDADES PRESENCIALES NO TIENEN BOTÓN VIRTUAL "Aquí" NI ENLACE DE TEAMS/MEET.
+- DEBES EXTRAERLAS OBLIGATORIAMENTE. No las omitas ni las descartes por ser presenciales.
+- Para las actividades presenciales asigna:
+  * "modality": "Presencial"
+  * "location": El lugar físico indicado (ej: "Auditorio 108 Morfología - Facultad de Medicina")
+  * "meeting_url": "" (cadena vacía obligatoria para eventos presenciales)
+
+4. FECHAS EXACTAS:
+- El boletín agrupa las conferencias bajo encabezados de días como "Lunes 09 de noviembre", "Martes 10 de noviembre", "Miércoles 11 de noviembre", "Jueves 12 de noviembre", "Viernes 13 de noviembre" (o fechas de octubre, etc.).
+- Determina el año, mes y día exactos y escribe la fecha en formato ISO "AAAA-MM-DD" (por ejemplo: "2026-11-13") para CADA actividad de ese día. No inventes fechas ni dejes el campo vacío.
+
+5. HORAS:
+- La hora de inicio (start_time) normalizada en formato 24h "HH:mm" (ej: "07:00", "08:00", "14:00"). Si el boletín dice "7:00 am", escribe "07:00".
+- La hora de fin (end_time) si existe en "HH:mm", o cadena vacía "" si no se especifica.
+
+6. ENLACE DE CONEXIÓN A REUNIÓN VIRTUAL (meeting_url):
+- En las actividades virtuales o híbridas, copia el enlace directo indicado en [ENLACE_REUNION_VIRTUAL: URL (Texto: Aquí)].
+- Copia únicamente enlaces válidos de videoconferencia (Microsoft Teams, Google Meet, Zoom o YouTube).
+- NUNCA coloques en meeting_url enlaces a preview.mailerlite.com, mailto:, tel: ni enlaces de cancelación de suscripción.
+- Si la actividad es presencial, meeting_url DEBE ser cadena vacía "".
+
+7. CAMPOS A EXTRAER POR CADA ACTIVIDAD (JSON):
 - id: Identificador único generado (ej: "AA-2026-001", "AA-2026-002", etc.)
-- date: Fecha en formato "AAAA-MM-DD"
-- start_time: Hora de inicio en formato "HH:mm" (24h)
-- end_time: Hora de finalización "HH:mm" o ""
-- department: Especialidad, servicio o departamento médico (ej: "Urología", "Medicina Interna", "Dermatología", "Cirugía General", "GREAPIC", etc.)
-- title: Título completo y exacto de la conferencia
-- speakers: Nombre del ponente o ponentes separados por punto y coma ";". Si no hay, ""
-- modality: "Virtual", "Presencial", "Híbrida" o "Por confirmar"
-- location: Lugar físico o plataforma (ej: "Piso 5", "Auditorio", "Teams", "Google Meet")
-- meeting_url: URL real de videollamada (Teams, Google Meet, Zoom) si aparece en [ENLACE_REUNION_VIRTUAL: URL], o ""
+- date: Fecha en formato ISO "AAAA-MM-DD" (ej: "2026-11-13")
+- start_time: Hora de inicio en formato 24h "HH:mm"
+- end_time: Hora de finalización en formato 24h "HH:mm" o ""
+- department: Especialidad médica o servicio (ej: "Urología", "Medicina Interna", "Farmacología y Toxicología", "Cirugía Vascular", "Cardiología", "GRAEPIC", "Pediatría y Puericultura", "Medicina Crítica", "Medicina de Urgencias", "Anestesiología y Reanimación", "Enfermedades Infecciosas", etc.)
+- title: Título exacto de la conferencia (extraído del campo "Tema:")
+- speakers: Nombre del ponente o expositor (extraído del campo "Presenta:"). Si no hay, ""
+- modality: "Virtual", "Presencial", "Híbrida"
+- location: Lugar físico si es presencial, o "Teams" / "Google Meet" si es virtual
+- meeting_url: URL real de videollamada para virtuales, o "" si es presencial
 - recording_url: URL de grabación o transmisión si aparece, o ""
-- summary: Breve descripción o temática si se detalla en el texto, o ""
+- summary: Breve descripción temática si se detalla en el texto, o ""
 
 REGLAS CRÍTICAS DE SALIDA:
 - Devuelve ÚNICAMENTE un arreglo JSON plano: [ { ... }, { ... } ].
 - NUNCA agregues claves contenedoras (como {"activities": [...]}), texto introductorio ni explicaciones.
-- NUNCA uses comillas dobles sin escapar dentro de los textos de 'title' o 'summary'. Si hay comillas en el boletín, usa comillas simples ' o angulares « ».`;
+- NUNCA uses comillas dobles sin escapar dentro de los textos de 'title' o 'summary'. Si hay comillas en el boletín, usa comillas simples ' o angulares « ».
+- Cierra obligatoriamente el corchete final ] del arreglo JSON.`;
 
     let successfulResponse = null;
     let usedModel = null;
@@ -353,21 +436,26 @@ REGLAS CRÍTICAS DE SALIDA:
     try {
       const parsedItems = parseActivitiesFromAi(successfulResponse);
 
-      // Sanitizar campos garantizando formato y removiendo enlaces de MailerLite
+      // Sanitizar campos garantizando formato, fechas normalizadas y removiendo enlaces de MailerLite
       activities = parsedItems.map((act, idx) => {
+        const normDate = normalizeDate(act.date ? String(act.date).trim() : '');
+        const modality = (act.modality && String(act.modality).trim()) || 'Virtual';
+        const isStrictlyPresencial = modality.toLowerCase().includes('presenc') && !modality.toLowerCase().includes('híbrid');
+
         let mUrl = act.meeting_url ? String(act.meeting_url).trim() : '';
-        if (mUrl.includes('mailerlite.com') || !mUrl.startsWith('http')) {
+        if (isStrictlyPresencial || mUrl.includes('mailerlite.com') || !mUrl.startsWith('http')) {
           mUrl = '';
         }
+
         return {
           id: act.id ? String(act.id).trim() : `AA-${idx + 1}`,
-          date: act.date ? String(act.date).trim() : '',
+          date: normDate,
           start_time: act.start_time ? String(act.start_time).trim() : '',
           end_time: act.end_time ? String(act.end_time).trim() : '',
           department: act.department ? String(act.department).trim() : '',
           title: act.title ? String(act.title).trim() : '',
           speakers: act.speakers ? String(act.speakers).trim() : '',
-          modality: act.modality ? String(act.modality).trim() : 'Virtual',
+          modality: modality,
           location: act.location ? String(act.location).trim() : '',
           meeting_url: mUrl,
           recording_url: act.recording_url ? String(act.recording_url).trim() : '',

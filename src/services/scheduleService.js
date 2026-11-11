@@ -66,6 +66,43 @@ export function formatTime12h(raw) {
 }
 
 /**
+ * Normaliza una fecha a formato ISO YYYY-MM-DD
+ * Soporta formatos: YYYY-MM-DD, YYYY/MM/DD, DD/MM/YYYY, D/M/YYYY, YYYY-M-D
+ * @param {string} rawDate
+ * @returns {string} Fecha normalizada o cadena original
+ */
+export function normalizeDate(rawDate) {
+  if (!rawDate || typeof rawDate !== 'string') return '';
+  const trimmed = rawDate.trim();
+
+  // YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    return trimmed;
+  }
+
+  // YYYY/MM/DD
+  if (/^\d{4}\/\d{2}\/\d{2}$/.test(trimmed)) {
+    return trimmed.replace(/\//g, '-');
+  }
+
+  // DD/MM/YYYY o DD-MM-YYYY
+  const dmyMatch = trimmed.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if (dmyMatch) {
+    const [, d, m, y] = dmyMatch;
+    return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+  }
+
+  // YYYY-M-D
+  const ymdMatch = trimmed.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (ymdMatch) {
+    const [, y, m, d] = ymdMatch;
+    return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+  }
+
+  return trimmed;
+}
+
+/**
  * Valida un formato de fecha ISO YYYY-MM-DD
  * @param {string} dateStr
  * @returns {boolean}
@@ -209,7 +246,7 @@ export function parseScheduleCsv(csvText) {
 
   result.data.forEach((row, index) => {
     // Columnas esperadas: id, date, start_time, end_time, department, title, speakers, modality, location, meeting_url, recording_url, summary
-    const rawDate = row.date ? String(row.date).trim() : '';
+    const rawDate = normalizeDate(row.date ? String(row.date).trim() : '');
     const rawStart = row.start_time ? String(row.start_time).trim() : '';
     const rawTitle = row.title ? String(row.title).trim() : '';
     const rawDept = row.department ? String(row.department).trim() : '';
