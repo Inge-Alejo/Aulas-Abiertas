@@ -112,15 +112,30 @@ Configura estas variables en Vercel (*Project Settings > Environment Variables*)
 | `VITE_FIREBASE_PROJECT_ID` | Firebase Project ID | Consola de Firebase > Configuración del proyecto |
 | `VITE_FIREBASE_STORAGE_BUCKET` | Firebase Storage Bucket | Consola de Firebase > Configuración del proyecto |
 | `VITE_FIREBASE_MESSAGING_SENDER_ID` | Firebase Messaging Sender ID | Consola de Firebase > Configuración del proyecto |
+| `BLOB_READ_WRITE_TOKEN` | Token de acceso para Vercel Blob Storage (Persistencia CDN en 1 clic) | Autogenerado al conectar Blob en Vercel Dashboard > Storage |
 | `VITE_FIREBASE_APP_ID` | Firebase App ID | Consola de Firebase > Configuración del proyecto |
 
-> **Arquitectura Híbrida Optimizada:**
+> **Arquitectura Híbrida de Sincronización en la Nube:**
 > - **Autenticación Directa por Vercel (`/api/auth`):** El inicio de sesión se valida de forma nativa en la infraestructura serverless de Vercel sin intermediarios ni dependencias de Firebase Auth.
-> - **Datos y Sincronización en Tiempo Real con Firebase Firestore:** Las conferencias publicadas desde el panel administrativo se almacenan en `agenda/programacion_activa` y se propagan instantáneamente a cualquier dispositivo conectado en el mundo mediante `onSnapshot` (sin necesidad de recargar la página).
+> - **Persistencia Global con Vercel Blob (`@vercel/blob`):** Solución en 1 clic nativa en Vercel. Almacena la programación activa en la CDN global para sincronización multi-dispositivo e incógnito sin base de datos externa.
+> - **Sincronización en Tiempo Real con Firebase Firestore:** Las conferencias se sincronizan en `agenda/programacion_activa` y se propagan instantáneamente a cualquier dispositivo conectado en el mundo mediante WebSockets (`onSnapshot`).
 
 ---
 
-## 🔥 Configuración de Firebase y Reglas de Firestore
+## ☁️ Sincronización en la Nube Multi-Dispositivo (Vercel Blob & Firebase)
+
+Para que las conferencias publicadas desde el panel administrativo se reflejen de inmediato en **cualquier celular, tablet, computador o ventana de incógnito**, la plataforma ofrece dos alternativas:
+
+### Opción 1: Vercel Blob Storage (Recomendada — 1 Clic, Sin código)
+1. Ve a tu proyecto en [Vercel Dashboard](https://vercel.com/).
+2. Haz clic en la pestaña **Storage**.
+3. Haz clic en **Create Database** y selecciona **Blob**.
+4. Haz clic en **Connect to Project**.
+5. ¡Listo! Vercel inyectará automáticamente `BLOB_READ_WRITE_TOKEN`. Al publicar una agenda, esta se guardará en la CDN global de Vercel y se sincronizará en todos los dispositivos e incógnito.
+
+---
+
+## 🔥 Configuración de Firebase y Reglas de Firestore (Opción 2)
 
 1. Ingresa a la [Consola de Firebase](https://console.firebase.google.com/) con tu cuenta de Google.
 2. Haz clic en **"Crear un proyecto"** (ejemplo: `aulas-abiertas-udea`).

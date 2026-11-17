@@ -10,6 +10,7 @@
     "test": "node tests/schedule-parser.test.js && node tests/mailerlite-parser.test.js && node tests/auth-and-sync.test.js && node tests/newsletter-integration.test.js && node tests/spotlight-and-carousel.test.js"
   },
   "dependencies": {
+    "@vercel/blob": "^2.9.0",
     "firebase": "^13.1.0",
     "papaparse": "^5.5.2",
     "xlsx": "^0.18.5"

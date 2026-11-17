@@ -1188,7 +1188,7 @@ function setupAdminPanel() {
 
       const isRealtime = fbStatus.isReady;
       const projectId = fbStatus.projectId;
-      const hasCloudApi = Boolean(data?.cloudStorage?.firestoreRest || data?.cloudStorage?.vercelKv || data?.cloudStorage?.serverlessTmp);
+      const isSharedCloudActive = Boolean(isRealtime || data?.isSharedCloudActive || data?.cloudStorage?.vercelBlob || data?.cloudStorage?.firestoreRest || data?.cloudStorage?.vercelKv);
 
       if (isRealtime) {
         statusBox.innerHTML = `
@@ -1196,42 +1196,65 @@ function setupAdminPanel() {
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
               <span style="font-weight: 700; color: var(--udea-forest); display: flex; align-items: center; gap: 6px;">
                 <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#28a745;"></span>
-                Sincronización en Tiempo Real Activa
+                Sincronización en Tiempo Real Activa (WebSocket)
               </span>
               <span style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono);">${projectId || 'Firebase'}</span>
             </div>
             <p style="margin: 4px 0 0; color: var(--text-base); font-size: 0.75rem; line-height: 1.4;">
-              Las conferencias publicadas se reflejan instantáneamente en cualquier celular o computador conectado vía WebSocket.
+              Las conferencias publicadas se reflejan instantáneamente en cualquier celular, computador o ventana de incógnito conectada vía WebSocket.
             </p>
           </div>
         `;
-      } else if (hasCloudApi) {
+      } else if (data?.cloudStorage?.vercelBlob) {
         statusBox.innerHTML = `
-          <div style="background: rgba(217, 119, 6, 0.08); border: 1px solid rgba(217, 119, 6, 0.25); border-radius: 6px; padding: 10px 14px; margin-bottom: 14px; font-size: 0.8125rem;">
+          <div style="background: rgba(0, 77, 37, 0.08); border: 1px solid rgba(0, 77, 37, 0.25); border-radius: 6px; padding: 10px 14px; margin-bottom: 14px; font-size: 0.8125rem;">
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
-              <span style="font-weight: 700; color: #b45309; display: flex; align-items: center; gap: 6px;">
-                <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#f59e0b;"></span>
-                Sincronización en Nube (Vercel Serverless API)
+              <span style="font-weight: 700; color: var(--udea-forest); display: flex; align-items: center; gap: 6px;">
+                <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#28a745;"></span>
+                Persistencia Global en la Nube Activa (Vercel Blob Storage)
               </span>
-              <span style="font-size: 0.75rem; color: #92400e; font-weight: 600;">Sondeo Activo</span>
+              <span style="font-size: 0.75rem; color: var(--udea-forest); font-weight: 600;">CDN Global</span>
             </div>
             <p style="margin: 4px 0 0; color: var(--text-base); font-size: 0.75rem; line-height: 1.4;">
-              Los datos se guardan en la nube y se sincronizan en otros dispositivos mediante sondeo periódico (cada 20s) y al volver a la pestaña. Para difusión WebSocket inmediata, agrega <code>VITE_FIREBASE_API_KEY</code> y <code>VITE_FIREBASE_PROJECT_ID</code> en Vercel.
+              Cualquier dispositivo e incógnito obtiene la última programación publicada mediante la CDN de Vercel. Sondeo automático cada 15s y al volver a la pestaña.
+            </p>
+          </div>
+        `;
+      } else if (data?.cloudStorage?.firestoreRest || data?.cloudStorage?.vercelKv) {
+        const providerName = data.cloudStorage.firestoreRest ? 'Google Cloud Firestore REST' : 'Vercel KV';
+        statusBox.innerHTML = `
+          <div style="background: rgba(0, 77, 37, 0.08); border: 1px solid rgba(0, 77, 37, 0.25); border-radius: 6px; padding: 10px 14px; margin-bottom: 14px; font-size: 0.8125rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+              <span style="font-weight: 700; color: var(--udea-forest); display: flex; align-items: center; gap: 6px;">
+                <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#28a745;"></span>
+                Persistencia Global en la Nube Activa (${providerName})
+              </span>
+              <span style="font-size: 0.75rem; color: var(--udea-forest); font-weight: 600;">Sincronizado</span>
+            </div>
+            <p style="margin: 4px 0 0; color: var(--text-base); font-size: 0.75rem; line-height: 1.4;">
+              Los cambios se guardan en la nube global y se propagan a todos los celulares y ventanas de incógnito.
             </p>
           </div>
         `;
       } else {
         statusBox.innerHTML = `
-          <div style="background: rgba(220, 38, 38, 0.08); border: 1px solid rgba(220, 38, 38, 0.25); border-radius: 6px; padding: 10px 14px; margin-bottom: 14px; font-size: 0.8125rem;">
+          <div style="background: rgba(220, 38, 38, 0.08); border: 1px solid rgba(220, 38, 38, 0.3); border-radius: 8px; padding: 12px 14px; margin-bottom: 14px; font-size: 0.8125rem;">
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
               <span style="font-weight: 700; color: #dc2626; display: flex; align-items: center; gap: 6px;">
                 <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#dc2626;"></span>
-                Modo Local (Sin sincronización multi-dispositivo)
+                Modo Local (Sin base de datos compartida en la nube)
               </span>
             </div>
-            <p style="margin: 4px 0 0; color: var(--text-base); font-size: 0.75rem; line-height: 1.4;">
-              Para que otros dispositivos vean la programación en tiempo real, configura las variables <code>VITE_FIREBASE_API_KEY</code> y <code>VITE_FIREBASE_PROJECT_ID</code> en el panel de Vercel.
+            <p style="margin: 6px 0 8px; color: var(--text-base); font-size: 0.775rem; line-height: 1.45;">
+              Si publicas ahora, la programación solo se guardará en la memoria de este navegador. <strong>En incógnito y otros celulares no se verá</strong> hasta habilitar almacenamiento compartido.
             </p>
+            <div style="background: rgba(255,255,255,0.7); border-radius: 6px; padding: 8px 10px; font-size: 0.75rem; color: #1e293b; border: 1px solid rgba(220, 38, 38, 0.2);">
+              <p style="margin: 0 0 4px; font-weight: 700;">👉 ¿Cómo habilitar sincronización en 1 minuto?</p>
+              <ul style="margin: 0; padding-left: 16px; line-height: 1.4;">
+                <li><strong>Recomendado (1 clic):</strong> En tu proyecto en <a href="https://vercel.com" target="_blank" rel="noopener" style="color: #0284c7; text-decoration: underline;">Vercel</a> > <strong>Storage</strong> > <strong>Create Database</strong> > <strong>Blob</strong> > <strong>Connect</strong>.</li>
+                <li><strong>O con Firebase:</strong> Configura <code>VITE_FIREBASE_API_KEY</code> y <code>VITE_FIREBASE_PROJECT_ID</code> en las variables de entorno de Vercel.</li>
+              </ul>
+            </div>
           </div>
         `;
       }
@@ -1434,14 +1457,36 @@ function setupAdminPanel() {
         populateDayFilter();
         renderScheduleList();
 
-        if (saveResult.firestoreSaved) {
-          showToast(`¡Programación de ${normalized.length} conferencias sincronizada en la nube y visible en tiempo real en todos los dispositivos! 🟢`, 'success');
-        } else if (saveResult.vercelSaved) {
-          showToast(`¡Programación guardada en Vercel Cloud (${saveResult.vercelStorageProvider})! Visible en todos los dispositivos al actualizar o cambiar de pestaña. 🟡`, 'success');
+        if (saveResult.isSharedCloudActive) {
+          const providerText = saveResult.firestoreSaved
+            ? 'Firebase Firestore (En tiempo real)'
+            : (saveResult.vercelStorageProvider === 'vercel_blob' ? 'Vercel Blob Storage' : saveResult.vercelStorageProvider);
+          showToast(`¡Programación de ${normalized.length} conferencias guardada en ${providerText}! Visible en todos los dispositivos e incógnito. 🟢`, 'success');
+          closeAdminModal();
         } else {
-          showToast(`⚠️ Guardada en la caché local de este navegador. Configura las variables de Firebase en Vercel para sincronizar otros dispositivos.`, 'warning');
+          showToast(`⚠️ Guardada en este navegador, pero NO en la nube global. En incógnito y otros celulares no se verá hasta activar Vercel Blob o Firebase.`, 'warning');
+          const statusBox = document.getElementById('admin-cloud-sync-status');
+          if (statusBox) {
+            statusBox.innerHTML = `
+              <div style="background: rgba(220, 38, 38, 0.1); border: 2px solid #dc2626; border-radius: 8px; padding: 12px 14px; margin-bottom: 14px; font-size: 0.8125rem;">
+                <h5 style="color: #b91c1c; font-weight: 700; margin: 0 0 6px 0; font-size: 0.875rem;">
+                  ⚠️ Guardado local exitoso — Falta Base de Datos en la Nube
+                </h5>
+                <p style="margin: 0 0 8px 0; color: var(--text-base); line-height: 1.45;">
+                  La agenda ya está activa en este navegador, pero <strong>NO se verá en incógnito ni en otros celulares</strong> porque aún no has conectado un almacenamiento compartido en Vercel.
+                </p>
+                <div style="background: #ffffff; border-radius: 6px; padding: 10px; border: 1px solid #fca5a5; font-size: 0.775rem;">
+                  <p style="margin: 0 0 4px 0; font-weight: 700; color: #1e293b;">👉 ¿Cómo habilitar sincronización en 1 minuto?</p>
+                  <ol style="margin: 0; padding-left: 18px; color: #334155; line-height: 1.45;">
+                    <li>Ve a tu proyecto en <strong>Vercel Dashboard</strong>.</li>
+                    <li>Abre la pestaña <strong>Storage</strong> > <strong>Create Database</strong> > selecciona <strong>Blob</strong>.</li>
+                    <li>Haz clic en <strong>Connect to Project</strong>. ¡Listo! Vercel activará automáticamente la persistencia global.</li>
+                  </ol>
+                </div>
+              </div>
+            `;
+          }
         }
-        closeAdminModal();
       } catch (err) {
         console.error('Error al sincronizar programación:', err);
         showToast(`Error al guardar en Firebase: ${err.message}`, 'error');

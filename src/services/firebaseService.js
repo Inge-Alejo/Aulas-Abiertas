@@ -126,7 +126,11 @@ export async function saveLiveScheduleToFirebase(activities, metadata = {}) {
   let firestoreSaved = false;
   let firestoreError = null;
   let vercelSaved = false;
+  let vercelPersisted = false;
   let vercelStorageProvider = 'local';
+  let warningMessage = null;
+  let howToFix = null;
+  let activeProviders = [];
 
   // 1. Guardar en Firebase Firestore (Sincronización en tiempo real global)
   if (isFirebaseReady && db) {
@@ -137,6 +141,7 @@ export async function saveLiveScheduleToFirebase(activities, metadata = {}) {
         firestoreTimestamp: serverTimestamp()
       });
       firestoreSaved = true;
+      activeProviders.push('Firebase Firestore (En tiempo real)');
       lastFirestoreError = null;
       console.info('[Firebase] Programación guardada en Firestore (agenda/programacion_activa)');
     } catch (err) {
@@ -169,7 +174,17 @@ export async function saveLiveScheduleToFirebase(activities, metadata = {}) {
     if (res.ok) {
       const vData = await res.json();
       vercelSaved = true;
+      vercelPersisted = Boolean(vData.persisted);
       vercelStorageProvider = vData.storageProvider || 'vercel_cloud';
+      warningMessage = vData.warning || null;
+      howToFix = vData.howToFix || null;
+      if (Array.isArray(vData.activeProviders) && vData.activeProviders.length > 0) {
+        vData.activeProviders.forEach(p => {
+          if (!activeProviders.includes(p)) activeProviders.push(p);
+        });
+      } else if (vercelPersisted && !activeProviders.includes(vercelStorageProvider)) {
+        activeProviders.push(vercelStorageProvider);
+      }
     }
   } catch (err) {
     console.warn('[Vercel API] Notificación de persistencia en Vercel:', err.message);
@@ -182,13 +197,20 @@ export async function saveLiveScheduleToFirebase(activities, metadata = {}) {
     // Ignorar errores de almacenamiento local
   }
 
+  const isSharedCloudActive = Boolean(firestoreSaved || vercelPersisted);
+
   return {
-    success: firestoreSaved || vercelSaved,
+    success: isSharedCloudActive || firestoreSaved || vercelSaved,
+    isSharedCloudActive,
     count: activities.length,
     firestoreSaved,
     firestoreError,
     vercelSaved,
+    vercelPersisted,
     vercelStorageProvider,
+    activeProviders,
+    warning: warningMessage,
+    howToFix,
     updatedAt: nowIso
   };
 }
@@ -235,20 +257,34 @@ export async function getLiveScheduleFromFirebase() {
     }
   }
 
-  // 2. Intentar consultar desde la API de Vercel (/api/schedule)
+  // 2. Intentar consultar desde la API de Vercel (/api/schedule) con cache-busting
   try {
-    const res = await fetch('/api/schedule');
+    const res = await fetch(`/api/schedule?t=${Date.now()}`, {
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache',
+        Accept: 'application/json'
+      }
+    });
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data.activities) && data.activities.length > 0) {
+        let providerLabel = `Vercel Cloud (${data.storageProvider || 'Sincronizado'})`;
+        if (data.storageProvider === 'vercel_blob') {
+          providerLabel = 'Vercel Blob (CDN Global)';
+        } else if (data.storageProvider === 'firestore_rest') {
+          providerLabel = 'Google Cloud Firestore';
+        }
+
         return {
           activities: data.activities,
-          source: `Vercel Cloud (${data.storageProvider || 'Sincronizado'})`,
+          source: providerLabel,
           updatedAt: data.updatedAt || new Date().toLocaleTimeString('es-CO'),
           updatedBy: data.updatedBy || '',
           isLive: true,
           count: data.activities.length,
-          version: data.version || 0
+          version: data.version || 0,
+          storageProvider: data.storageProvider
         };
       }
     }
@@ -374,7 +410,7 @@ export function subscribeToLiveSchedule(callback) {
     }
   };
 
-  const intervalId = setInterval(checkRemoteUpdates, 20000);
+  const intervalId = setInterval(checkRemoteUpdates, 15000);
 
   // 3. Reactivación instantánea al volver a la pestaña o desbloquear el celular
   const handleVisibilityChange = () => {
@@ -383,11 +419,13 @@ export function subscribeToLiveSchedule(callback) {
     }
   };
   document.addEventListener('visibilitychange', handleVisibilityChange);
+  window.addEventListener('focus', handleVisibilityChange);
 
   return () => {
     isUnsubscribed = true;
     clearInterval(intervalId);
     document.removeEventListener('visibilitychange', handleVisibilityChange);
+    window.removeEventListener('focus', handleVisibilityChange);
     if (unsubscribeFirestore) {
       try {
         unsubscribeFirestore();

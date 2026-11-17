@@ -123,7 +123,10 @@ async function runTests() {
 
     await scheduleHandler(reqSave, resSave);
     assert.strictEqual(resSave._getStatusCode(), 200);
-    assert.strictEqual(resSave._getData().success, true);
+    const saveResp = resSave._getData();
+    assert.strictEqual(saveResp.success, true);
+    assert.ok(typeof saveResp.persisted === 'boolean');
+    assert.ok(saveResp.storageProvider);
     console.log('  ✓ Publicación y persistencia de actividades exitosa en la nube.');
 
     // 5. Consulta GET pública de la agenda desde cualquier dispositivo
@@ -146,8 +149,11 @@ async function runTests() {
     });
     await scheduleHandler(reqStatus, resStatus);
     assert.strictEqual(resStatus._getStatusCode(), 200);
-    assert.strictEqual(resStatus._getData().success, true);
-    assert.ok(resStatus._getData().cloudStorage);
+    const statusData = resStatus._getData();
+    assert.strictEqual(statusData.success, true);
+    assert.ok(statusData.cloudStorage);
+    assert.ok(typeof statusData.isSharedCloudActive === 'boolean');
+    assert.ok(statusData.cloudStorage.vercelBlob !== undefined);
     console.log('  ✓ Endpoint de diagnóstico y configuración pública (/api/schedule?info=status) validado.');
   }
 
