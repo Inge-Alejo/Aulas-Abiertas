@@ -46,6 +46,11 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Se requiere un prompt de texto válido.' });
     }
 
+    // Límites de seguridad contra DoS, inyección de contexto y agotamiento de cuota de tokens
+    const cleanPrompt = prompt.slice(0, 3000).trim();
+    const safeHistory = Array.isArray(history) ? history.slice(-20) : [];
+    const safeContext = typeof scheduleContext === 'string' ? scheduleContext.slice(0, 35000) : '';
+
     const systemInstruction = `Eres el Asistente Académico Oficial de Aulas Abiertas, iniciativa de la Facultad de Medicina de la Universidad de Antioquia (UdeA) y el equipo de Teleducación.
 Tu misión es orientar con rigor, calidez y precisión a estudiantes de medicina, docentes, médicos especialistas y público general sobre la programación académica de conferencias, temas en salud, ponentes, especialidades y modalidades de conexión.
 
@@ -56,7 +61,7 @@ INFORMACIÓN INSTITUCIONAL VERIFICADA:
 - Zona horaria de todas las actividades: America/Bogota (UTC-5).
 
 CONTEXTO DE LA PROGRAMACIÓN ACADÉMICA ACTUAL:
-${scheduleContext ? scheduleContext : 'No se suministró contexto de actividades para esta consulta.'}
+${safeContext ? safeContext : 'No se suministró contexto de actividades para esta consulta.'}
 
 DIRECTRICES DE RESPUESTA:
 1. Responde siempre en español, con tono académico, cercano y profesional.
@@ -68,19 +73,19 @@ DIRECTRICES DE RESPUESTA:
     const contents = [];
     
     // Si hay historial previo
-    if (Array.isArray(history)) {
-      history.forEach((msg) => {
+    safeHistory.forEach((msg) => {
+      if (msg && typeof msg.text === 'string') {
         contents.push({
           role: msg.role === 'user' ? 'user' : 'model',
-          parts: [{ text: msg.text }]
+          parts: [{ text: String(msg.text).slice(0, 3000) }]
         });
-      });
-    }
+      }
+    });
 
     // Agregar el mensaje actual del usuario
     contents.push({
       role: 'user',
-      parts: [{ text: prompt }]
+      parts: [{ text: cleanPrompt }]
     });
 
     let lastError = null;

@@ -15,6 +15,21 @@ function sanitizeString(str) {
     .trim();
 }
 
+/**
+ * Comparación criptográfica segura en tiempo constante (previene ataques de temporización / timing attacks)
+ */
+function safeCompare(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  const hashA = crypto.createHash('sha256').update(a).digest();
+  const hashB = crypto.createHash('sha256').update(b).digest();
+  return crypto.timingSafeEqual(hashA, hashB);
+}
+
+// Almacén en memoria de intentos fallidos por IP para mitigación de ataques de fuerza bruta (Rate Limiting)
+const FAILED_LOGIN_ATTEMPTS = new Map();
+const MAX_FAILED_ATTEMPTS = 10;
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minuto
+
 // Clave secreta para firmar tokens de sesión
 const getSessionSecret = () => {
   const secret = process.env.ADMIN_SESSION_SECRET || process.env.SESSION_SECRET;
@@ -172,6 +187,22 @@ export default async function handler(req, res) {
 
   // 3. INICIAR SESIÓN (LOGIN)
   if (action === 'login' && req.method === 'POST') {
+    const clientIp = (
+      req.headers['x-forwarded-for'] ||
+      req.headers['x-real-ip'] ||
+      req.socket?.remoteAddress ||
+      'unknown'
+    ).split(',')[0].trim();
+
+    const now = Date.now();
+    const ipRecord = FAILED_LOGIN_ATTEMPTS.get(clientIp);
+    if (ipRecord && ipRecord.count >= MAX_FAILED_ATTEMPTS && (now - ipRecord.firstAttempt < RATE_LIMIT_WINDOW_MS)) {
+      const waitSeconds = Math.ceil((RATE_LIMIT_WINDOW_MS - (now - ipRecord.firstAttempt)) / 1000);
+      return res.status(429).json({
+        error: `Demasiados intentos fallidos de inicio de sesión. Por motivos de seguridad, espera ${waitSeconds} segundos antes de intentar nuevamente.`
+      });
+    }
+
     const rawEmail = body.email || req.query?.email || '';
     const rawPassword = body.password || req.query?.password || '';
 
@@ -195,13 +226,23 @@ export default async function handler(req, res) {
       });
     }
 
-    // 2. Comprobar contraseña con tolerancia a espacios y comillas envolventes
+    // 2. Comprobar contraseña de forma segura en tiempo constante (previene timing attacks)
     const passMatches =
-      cleanPass === adminPassword ||
-      cleanPass.replace(/^["']|["']$/g, '') === adminPassword.replace(/^["']|["']$/g, '') ||
-      cleanPass.replace(/\r\n|\n|\r/g, '').trim() === adminPassword;
+      safeCompare(cleanPass, adminPassword) ||
+      safeCompare(cleanPass.replace(/^["']|["']$/g, ''), adminPassword.replace(/^["']|["']$/g, '')) ||
+      safeCompare(cleanPass.replace(/\r\n|\n|\r/g, '').trim(), adminPassword);
 
     if (!passMatches) {
+      // Registrar intento fallido para rate-limiting
+      const current = FAILED_LOGIN_ATTEMPTS.get(clientIp) || { count: 0, firstAttempt: now };
+      if (now - current.firstAttempt > RATE_LIMIT_WINDOW_MS) {
+        current.count = 1;
+        current.firstAttempt = now;
+      } else {
+        current.count += 1;
+      }
+      FAILED_LOGIN_ATTEMPTS.set(clientIp, current);
+
       if (cleanPass.toLowerCase() === adminPassword.toLowerCase()) {
         return res.status(401).json({
           error: 'Contraseña incorrecta: verifica mayúsculas y minúsculas (la contraseña distingue entre mayúsculas y minúsculas).'
@@ -211,6 +252,9 @@ export default async function handler(req, res) {
         error: 'Contraseña incorrecta. Verifica la clave definida en las variables de entorno de Vercel.'
       });
     }
+
+    // Limpiar intentos fallidos tras inicio exitoso
+    FAILED_LOGIN_ATTEMPTS.delete(clientIp);
 
     // 3. Correo institucional efectivo
     const effectiveEmail = cleanEmail && cleanEmail.includes('@')

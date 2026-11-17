@@ -287,6 +287,47 @@ function parseActivitiesFromAi(rawText) {
   throw new Error('No se pudo extraer ninguna actividad válida de la respuesta del modelo.');
 }
 
+/**
+ * Valida la URL para prevenir ataques de falsificación de peticiones del lado del servidor (SSRF).
+ * Bloquea protocolos inseguros, direcciones locales, rangos IP privados y metadatos en la nube.
+ * @param {string} rawUrl
+ * @returns {boolean}
+ */
+export function isSafeScrapeUrl(rawUrl) {
+  if (!rawUrl || typeof rawUrl !== 'string') return false;
+  try {
+    const parsed = new URL(rawUrl.trim());
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+      return false;
+    }
+
+    const host = parsed.hostname.toLowerCase();
+
+    // Bloquear localhost, 127.0.0.1, 0.0.0.0, [::1], dominios locales
+    if (host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0' || host === '[::1]' || host === '::1') {
+      return false;
+    }
+
+    // Bloquear metadatos de proveedores de nube (AWS, GCP, Azure: 169.254.169.254)
+    if (host.startsWith('169.254.')) {
+      return false;
+    }
+
+    // Bloquear rangos de redes privadas (RFC 1918)
+    if (/^10\./.test(host) || /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(host) || /^192\.168\./.test(host)) {
+      return false;
+    }
+
+    if (host.endsWith('.local') || host.endsWith('.internal') || host.endsWith('.localhost')) {
+      return false;
+    }
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export default async function handler(req, res) {
   const origin = req.headers.origin || '*';
   res.setHeader('Access-Control-Allow-Origin', origin);
@@ -316,8 +357,14 @@ export default async function handler(req, res) {
     const { url, rawContent } = req.body || {};
     let contentToAnalyze = rawContent || '';
 
-    // Si se proporciona una URL de MailerLite, obtener el contenido HTML
-    if (url && typeof url === 'string' && url.startsWith('http')) {
+    // Si se proporciona una URL de MailerLite, validar seguridad (anti-SSRF) y obtener el contenido HTML
+    if (url && typeof url === 'string') {
+      if (!isSafeScrapeUrl(url)) {
+        return res.status(400).json({
+          error: 'URL no permitida por políticas de seguridad (anti-SSRF). Proporciona un enlace público válido HTTPS (ej. boletín de MailerLite).'
+        });
+      }
+
       try {
         const fetchRes = await fetch(url, {
           headers: {

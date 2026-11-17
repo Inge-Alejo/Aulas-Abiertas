@@ -41,6 +41,13 @@ import {
   scrapeMailerliteWithGemini
 } from './services/geminiService.js';
 
+import {
+  escapeHtml,
+  sanitizeUrl
+} from './utils/security.js';
+
+export { escapeHtml, sanitizeUrl };
+
 // Estado global de la aplicación
 const state = {
   allActivities: [],
@@ -384,40 +391,51 @@ function renderSpotlightActivity() {
  */
 function renderSpotlightItemCard(act, isLive) {
   const isPresencial = (act.modality || '').toLowerCase().includes('presenc') && !(act.modality || '').toLowerCase().includes('híbrid');
-  const hasMeeting = Boolean(act.meeting_url) && !isPresencial;
-  const hasRecording = Boolean(act.recording_url);
+  const meetingUrl = sanitizeUrl(act.meeting_url);
+  const recordingUrl = sanitizeUrl(act.recording_url);
+  const hasMeeting = Boolean(meetingUrl) && !isPresencial;
+  const hasRecording = Boolean(recordingUrl);
+
+  const safeId = escapeHtml(act.id);
+  const safeTitle = escapeHtml(act.title);
+  const safeDept = escapeHtml(act.department || 'Facultad de Medicina');
+  const safeSpeakers = escapeHtml(act.speakers);
+  const safeLocation = escapeHtml(act.location);
+  const safeSummary = escapeHtml(act.summary);
+  const safeModality = escapeHtml(act.modality || 'Virtual');
+  const safeModalityClass = escapeHtml((act.modality || 'virtual').toLowerCase().replace(/[^a-z0-9_-]/g, ''));
 
   return `
-    <article class="spotlight-item-card ${isLive ? 'is-live' : ''}" id="spotlight-item-${act.id}" tabindex="0">
+    <article class="spotlight-item-card ${isLive ? 'is-live' : ''}" id="spotlight-item-${safeId}" tabindex="0">
       <div>
         <div class="spotlight-item-top">
           <span class="spotlight-item-time">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             ${formatTime12h(act.startTime)}${act.endTime ? ` – ${formatTime12h(act.endTime)}` : ''}
           </span>
-          <span class="card-modality-badge modality-${(act.modality || 'virtual').toLowerCase()}">${act.modality || 'Virtual'}</span>
+          <span class="card-modality-badge modality-${safeModalityClass}">${safeModality}</span>
         </div>
 
-        <div class="spotlight-item-dept">${act.department || 'Facultad de Medicina'}</div>
-        <h4 class="spotlight-item-title">${act.title}</h4>
+        <div class="spotlight-item-dept">${safeDept}</div>
+        <h4 class="spotlight-item-title">${safeTitle}</h4>
 
-        ${act.speakers ? `
+        ${safeSpeakers ? `
         <div class="spotlight-item-speakers">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <span><strong>Presenta:</strong> ${act.speakers}</span>
+          <span><strong>Presenta:</strong> ${safeSpeakers}</span>
         </div>
         ` : ''}
 
-        ${act.location ? `
+        ${safeLocation ? `
         <div class="spotlight-item-location">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          <span>${act.location}</span>
+          <span>${safeLocation}</span>
         </div>
         ` : ''}
 
-        ${act.summary ? `
+        ${safeSummary ? `
         <div class="spotlight-item-summary">
-          ${act.summary}
+          ${safeSummary}
         </div>
         ` : ''}
       </div>
@@ -429,7 +447,7 @@ function renderSpotlightItemCard(act, isLive) {
             <span>Modalidad Presencial — Asistencia en sede</span>
           </div>
         ` : (hasMeeting ? `
-          <a href="${act.meeting_url}" target="_blank" rel="noopener noreferrer" class="btn-spotlight-access ${isLive ? 'btn-spotlight-live' : ''}" style="width: 100%; justify-content: center; font-size: 0.875rem; padding: 10px 16px;">
+          <a href="${meetingUrl}" target="_blank" rel="noopener noreferrer" class="btn-spotlight-access ${isLive ? 'btn-spotlight-live' : ''}" style="width: 100%; justify-content: center; font-size: 0.875rem; padding: 10px 16px;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
             ${isLive ? 'Conectarse a la Sesión en Vivo' : 'Ingresar a la Sesión'}
           </a>
@@ -440,7 +458,7 @@ function renderSpotlightItemCard(act, isLive) {
         `)}
 
         ${hasRecording ? `
-          <a href="${act.recording_url}" target="_blank" rel="noopener noreferrer" class="btn-recording-link" style="width: 100%; justify-content: center; font-size: 0.8125rem; padding: 8px 12px;">
+          <a href="${recordingUrl}" target="_blank" rel="noopener noreferrer" class="btn-recording-link" style="width: 100%; justify-content: center; font-size: 0.8125rem; padding: 8px 12px;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
             Ver grabación
           </a>
@@ -628,38 +646,49 @@ function renderScheduleList() {
  */
 function renderActivityCard(act) {
   const isPresencial = (act.modality || '').toLowerCase().includes('presenc') && !(act.modality || '').toLowerCase().includes('híbrid');
-  const hasMeeting = Boolean(act.meeting_url) && !isPresencial;
-  const hasRecording = Boolean(act.recording_url);
+  const meetingUrl = sanitizeUrl(act.meeting_url);
+  const recordingUrl = sanitizeUrl(act.recording_url);
+  const hasMeeting = Boolean(meetingUrl) && !isPresencial;
+  const hasRecording = Boolean(recordingUrl);
+
+  const safeId = escapeHtml(act.id);
+  const safeTitle = escapeHtml(act.title);
+  const safeDept = escapeHtml(act.department);
+  const safeSpeakers = escapeHtml(act.speakers);
+  const safeLocation = escapeHtml(act.location);
+  const safeSummary = escapeHtml(act.summary);
+  const safeModality = escapeHtml(act.modality);
+  const safeModalityClass = escapeHtml((act.modality || '').toLowerCase().replace(/[^a-z0-9_-]/g, ''));
 
   return `
-    <article class="activity-card" id="act-${act.id}" tabindex="0" aria-label="${act.title}">
+    <article class="activity-card" id="act-${safeId}" tabindex="0" aria-label="${safeTitle}">
       <div class="card-top-row">
         <span class="card-time-badge">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           ${formatTime12h(act.startTime)}${act.endTime ? ` – ${formatTime12h(act.endTime)}` : ''}
         </span>
-        <span class="card-modality-badge modality-${act.modality.toLowerCase()}">${act.modality}</span>
+        <span class="card-modality-badge modality-${safeModalityClass}">${safeModality}</span>
       </div>
 
-      <div class="card-department">${act.department}</div>
-      <h4 class="card-title">${act.title}</h4>
+      <div class="card-department">${safeDept}</div>
+      <h4 class="card-title">${safeTitle}</h4>
 
-      ${act.speakers ? `
+      ${safeSpeakers ? `
       <div class="card-speakers">
-        <strong>Presenta:</strong> ${act.speakers}
+        <strong>Presenta:</strong> ${safeSpeakers}
       </div>
       ` : ''}
 
-      ${act.location ? `
+      ${safeLocation ? `
       <div class="card-location">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0; margin-top:2px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        <span>${act.location}</span>
+        <span>${safeLocation}</span>
       </div>
       ` : ''}
 
-      ${act.summary ? `
+      ${safeSummary ? `
       <div class="card-summary">
-        ${act.summary}
+        ${safeSummary}
       </div>
       ` : ''}
 
@@ -670,14 +699,14 @@ function renderActivityCard(act) {
             Asistencia presencial en sede
           </span>
         ` : (hasMeeting ? `
-          <a href="${act.meeting_url}" target="_blank" rel="noopener noreferrer" class="btn-session-link" id="link-meet-${act.id}">
+          <a href="${meetingUrl}" target="_blank" rel="noopener noreferrer" class="btn-session-link" id="link-meet-${safeId}">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="10 8 16 12 10 16 10 8"/><circle cx="12" cy="12" r="10"/></svg>
             Ingresar a la sesión
           </a>
         ` : '')}
 
         ${hasRecording ? `
-          <a href="${act.recording_url}" target="_blank" rel="noopener noreferrer" class="btn-recording-link" id="link-rec-${act.id}">
+          <a href="${recordingUrl}" target="_blank" rel="noopener noreferrer" class="btn-recording-link" id="link-rec-${safeId}">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
             Ver grabación
           </a>
@@ -1009,37 +1038,40 @@ function showToast(message, type = 'info') {
   toast.style.cssText = `
     background-color: ${bgColor};
     color: #FFFFFF;
-    padding: 12px 20px;
-    border-radius: 6px;
+    padding: 14px 22px;
+    border-radius: 8px;
     font-size: 0.875rem;
     font-weight: 600;
-    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
     display: flex;
     align-items: center;
     gap: 10px;
     opacity: 0;
-    transform: translateY(10px);
-    transition: all 250ms ease;
+    transform: translateY(16px) scale(0.96);
+    transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1);
     pointer-events: auto;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   `;
   toast.textContent = message;
 
   toastContainer.appendChild(toast);
 
-  // Animación de entrada
+  // Animación de entrada suave
   requestAnimationFrame(() => {
     toast.style.opacity = '1';
-    toast.style.transform = 'translateY(0)';
+    toast.style.transform = 'translateY(0) scale(1)';
   });
 
-  // Salida automática tras 3.5 segundos
+  // Salida automática tras 4 segundos
   setTimeout(() => {
     toast.style.opacity = '0';
-    toast.style.transform = 'translateY(10px)';
+    toast.style.transform = 'translateY(10px) scale(0.97)';
     setTimeout(() => {
       toast.remove();
-    }, 250);
-  }, 3500);
+    }, 280);
+  }, 4000);
 }
 
 /* ==========================================================================
@@ -1357,17 +1389,24 @@ function setupAdminPanel() {
             const rawD = act.date || act.fecha || act.dia || '';
             const normD = normalizeDate(rawD);
             const formattedDay = isValidDate(normD) ? formatDayLabel(normD) : (normD || rawD || 'Por confirmar');
-            const isoBadge = normD ? `<span style="display: block; font-size: 0.72rem; color: var(--text-muted); font-family: var(--font-mono); font-weight: normal;">${normD}</span>` : '';
+            const safeDay = escapeHtml(formattedDay);
+            const safeIso = normD ? `<span style="display: block; font-size: 0.72rem; color: var(--text-muted); font-family: var(--font-mono); font-weight: normal;">${escapeHtml(normD)}</span>` : '';
+            const safeTime = escapeHtml(formatTime12h(act.start_time || act.startTime || act.hora || '07:00'));
+            const safeDept = escapeHtml(act.department || act.departamento || '');
+            const safeTitle = escapeHtml(act.title || act.titulo || '');
+            const safeMod = escapeHtml(act.modality || act.modalidad || 'Virtual');
+            const safeModClass = escapeHtml((act.modality || act.modalidad || '').toLowerCase().replace(/[^a-z0-9_-]/g, ''));
+
             return `
             <tr>
               <td>
-                <strong style="color: var(--udea-green-primary);">${formattedDay}</strong>
-                ${isoBadge}
+                <strong style="color: var(--udea-green-primary);">${safeDay}</strong>
+                ${safeIso}
               </td>
-              <td><span style="font-family: var(--font-mono); font-weight: 600;">${formatTime12h(act.start_time || act.startTime || act.hora || '07:00')}</span></td>
-              <td>${act.department || act.departamento || ''}</td>
-              <td>${act.title || act.titulo || ''}</td>
-              <td><span class="card-modality-badge modality-${(act.modality || act.modalidad || '').toLowerCase()}">${act.modality || act.modalidad || 'Virtual'}</span></td>
+              <td><span style="font-family: var(--font-mono); font-weight: 600;">${safeTime}</span></td>
+              <td>${safeDept}</td>
+              <td>${safeTitle}</td>
+              <td><span class="card-modality-badge modality-${safeModClass}">${safeMod}</span></td>
             </tr>
           `;
           }).join('');

@@ -50,9 +50,17 @@
   --radius-lg: 12px;
   --radius-full: 9999px;
   
-  /* Transiciones */
-  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  /* Curvas de aceleración y desaceleración orgánica (UI/UX Pro Max Motion System) */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  
+  /* Transiciones optimizadas por contexto */
+  --transition-micro: 120ms var(--ease-out-expo);
+  --transition-fast: 180ms var(--ease-out-expo);
+  --transition-normal: 280ms var(--ease-out-expo);
+  --transition-smooth: 420ms var(--ease-out-expo);
+  --transition-spring: 360ms var(--ease-spring);
 }
 
 /* Reset y Accesibilidad */
@@ -377,15 +385,20 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  transition: all var(--transition-fast);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
   border: 1px solid transparent;
   cursor: pointer;
+  will-change: transform;
 }
 
 .btn-primary:hover {
   background-color: var(--udea-green-dark);
-  box-shadow: 0 4px 12px rgba(0, 77, 37, 0.28);
+  box-shadow: 0 8px 20px -3px rgba(0, 77, 37, 0.32);
   transform: translateY(-2px);
+}
+
+.btn-primary:active {
+  transform: translateY(0) scale(0.98);
 }
 
 .btn-secondary {
@@ -399,8 +412,9 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   align-items: center;
   gap: 10px;
   border: 1px solid var(--border-strong);
-  transition: all var(--transition-fast);
+  transition: transform var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast), background-color var(--transition-fast), box-shadow var(--transition-fast);
   cursor: pointer;
+  will-change: transform;
 }
 
 .btn-secondary:hover {
@@ -408,6 +422,11 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   border-color: var(--udea-green-primary);
   color: var(--udea-green-primary);
   transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-secondary:active {
+  transform: translateY(0) scale(0.98);
 }
 
 .hero-stats {
@@ -600,16 +619,17 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  transition: all var(--transition-normal);
+  transition: transform var(--transition-normal), border-color var(--transition-normal), box-shadow var(--transition-normal), background-color var(--transition-normal);
   position: relative;
   overflow: hidden;
+  will-change: transform, box-shadow;
 }
 
 .spotlight-item-card:hover {
   background: rgba(255, 255, 255, 0.1);
   border-color: var(--accent-lime);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
 }
 
 .spotlight-item-card.is-live {
@@ -1054,16 +1074,43 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   padding: 24px;
   display: flex;
   flex-direction: column;
-  transition: all var(--transition-normal);
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal), border-color var(--transition-normal);
   position: relative;
   box-shadow: var(--shadow-sm);
+  will-change: transform, box-shadow;
 }
 
 .activity-card:hover {
-  border-color: var(--udea-green-border);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
+  border-color: rgba(0, 77, 37, 0.35);
+  box-shadow: 0 14px 28px -6px rgba(0, 77, 37, 0.12), 0 4px 10px -2px rgba(0, 0, 0, 0.04);
+  transform: translateY(-3px);
 }
+
+.activity-card:active {
+  transform: translateY(-1px) scale(0.995);
+}
+
+@keyframes cardEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.activities-list .activity-card {
+  animation: cardEntrance var(--transition-smooth) backwards;
+}
+
+.activities-list .activity-card:nth-child(1) { animation-delay: 20ms; }
+.activities-list .activity-card:nth-child(2) { animation-delay: 40ms; }
+.activities-list .activity-card:nth-child(3) { animation-delay: 60ms; }
+.activities-list .activity-card:nth-child(4) { animation-delay: 80ms; }
+.activities-list .activity-card:nth-child(5) { animation-delay: 100ms; }
+.activities-list .activity-card:nth-child(6) { animation-delay: 120ms; }
 
 .card-top-row {
   display: flex;
@@ -1374,15 +1421,20 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: transform var(--transition-fast), background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+  will-change: transform;
 }
 
 .btn-carousel-nav:hover:not(:disabled) {
   background-color: var(--udea-green-primary);
   color: #FFFFFF;
   border-color: var(--udea-green-primary);
-  box-shadow: var(--shadow-sm);
-  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 77, 37, 0.2);
+  transform: translateY(-1px) scale(1.04);
+}
+
+.btn-carousel-nav:active:not(:disabled) {
+  transform: translateY(0) scale(0.96);
 }
 
 .btn-carousel-nav:disabled {
@@ -1406,7 +1458,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 
 .playlists-carousel-track {
   display: flex;
-  transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
   width: 100%;
   will-change: transform;
 }
@@ -1438,13 +1490,18 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   padding: 20px;
   display: flex;
   flex-direction: column;
-  transition: all var(--transition-fast);
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal), border-color var(--transition-normal);
+  will-change: transform, box-shadow;
 }
 
 .playlist-card:hover {
-  border-color: var(--udea-green-primary);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
+  border-color: rgba(0, 77, 37, 0.35);
+  box-shadow: 0 12px 24px -4px rgba(0, 77, 37, 0.1), 0 4px 8px -2px rgba(0, 0, 0, 0.04);
+  transform: translateY(-3px);
+}
+
+.playlist-card:active {
+  transform: translateY(-1px) scale(0.99);
 }
 
 .playlist-card-icon {
@@ -1949,13 +2006,19 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   position: fixed;
   inset: 0;
   background-color: rgba(15, 23, 42, 0.65);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   z-index: 1100;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 16px;
+  animation: backdrop-fade 0.25s var(--ease-out-expo);
+}
+
+@keyframes backdrop-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .modal-dialog {
@@ -1963,10 +2026,11 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   border-radius: var(--radius-md);
   max-width: 500px;
   width: 100%;
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
   overflow: hidden;
-  border: 1px solid var(--border-subtle);
-  animation: modal-enter 0.25s ease-out;
+  border: 1px solid rgba(0, 77, 37, 0.15);
+  animation: modal-enter 0.32s var(--ease-out-expo);
+  will-change: transform, opacity;
 }
 
 .admin-dialog {
@@ -1974,8 +2038,14 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 
 @keyframes modal-enter {
-  from { opacity: 0; transform: scale(0.96) translateY(8px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 .modal-header {

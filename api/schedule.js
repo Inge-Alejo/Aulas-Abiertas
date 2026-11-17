@@ -465,15 +465,49 @@ export default async function handler(req, res) {
       });
     }
 
+    if (activities.length > 500) {
+      return res.status(400).json({
+        error: 'El lote de actividades excede el límite de seguridad (máximo 500 actividades por publicación).'
+      });
+    }
+
+    // Sanitización estricta de campos para prevenir inyección NoSQL, datos corruptos y Stored XSS
+    const sanitizeField = (val, maxLen = 500) => {
+      if (val == null) return '';
+      return String(val)
+        .slice(0, maxLen)
+        .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '')
+        .trim();
+    };
+
+    const sanitizedActivities = activities.slice(0, 500).map((act, index) => ({
+      id: sanitizeField(act.id || `AA-${index}`, 100),
+      date: sanitizeField(act.date, 30),
+      startTime: sanitizeField(act.startTime || act.start_time, 20),
+      endTime: sanitizeField(act.endTime || act.end_time, 20),
+      department: sanitizeField(act.department, 200),
+      title: sanitizeField(act.title, 500),
+      speakers: sanitizeField(act.speakers, 500),
+      modality: sanitizeField(act.modality, 50),
+      location: sanitizeField(act.location, 300),
+      meeting_url: sanitizeField(act.meeting_url, 2000),
+      recording_url: sanitizeField(act.recording_url, 2000),
+      summary: sanitizeField(act.summary, 3000),
+      weekKey: sanitizeField(act.weekKey, 30),
+      weekMonday: sanitizeField(act.weekMonday, 30),
+      weekSunday: sanitizeField(act.weekSunday, 30),
+      dayLabel: sanitizeField(act.dayLabel, 100)
+    }));
+
     const nowIso = new Date().toISOString();
     const version = Date.now();
 
     const payload = {
-      activities,
-      source,
-      updatedBy: updatedBy || session.email,
+      activities: sanitizedActivities,
+      source: sanitizeField(source, 200),
+      updatedBy: sanitizeField(updatedBy || session.email, 150),
       updatedAt: nowIso,
-      count: activities.length,
+      count: sanitizedActivities.length,
       version
     };
 
